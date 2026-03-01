@@ -176,7 +176,7 @@ UIController::UIController()
 #if defined _WINDOWS64 || defined _DURANGO || defined __ORBIS__
 	m_fScreenWidth = 1920.0f;
 	m_fScreenHeight = 1080.0f;
-	m_bScreenWidthSetup = true;
+	m_bScreenWidthSetup = false;
 #else
 	m_fScreenWidth = 1280.0f;
 	m_fScreenHeight = 720.0f;
