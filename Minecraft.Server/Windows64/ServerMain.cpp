@@ -56,6 +56,7 @@ struct DedicatedServerConfig
 	char name[17];
 	int maxPlayers;
 	__int64 seed;
+	ServerRuntime::EServerLogLevel logLevel;
 	bool hasSeed;
 	bool showHelp;
 };
@@ -96,21 +97,28 @@ static int WaitForServerStoppedThreadProc(void *)
 
 static void PrintUsage()
 {
-	printf("Minecraft.Server.exe [options]\n");
-	printf("  -port <1-65535>       Listen TCP port (default: 25565)\n");
-	printf("  -ip <addr>            Bind address (default: 0.0.0.0)\n");
-	printf("  -bind <addr>          Alias of -ip\n");
-	printf("  -name <name>          Host display name (max 16 chars)\n");
-	printf("  -maxplayers <1-8>     Public slots (default: 8)\n");
-	printf("  -seed <int64>         World seed\n");
-	printf("  -help                 Show this help\n");
+	ServerRuntime::LogInfo("usage", "Minecraft.Server.exe [options]");
+	ServerRuntime::LogInfo("usage", "  -port <1-65535>       Listen TCP port (default: 25565)");
+	ServerRuntime::LogInfo("usage", "  -ip <addr>            Bind address (default: 0.0.0.0)");
+	ServerRuntime::LogInfo("usage", "  -bind <addr>          Alias of -ip");
+	ServerRuntime::LogInfo("usage", "  -name <name>          Host display name (max 16 chars)");
+	ServerRuntime::LogInfo("usage", "  -maxplayers <1-8>     Public slots (default: 8)");
+	ServerRuntime::LogInfo("usage", "  -seed <int64>         World seed");
+	ServerRuntime::LogInfo("usage", "  -loglevel <level>     debug|info|warn|error (default: info)");
+	ServerRuntime::LogInfo("usage", "  -help                 Show this help");
 }
 
 using ServerRuntime::LoadServerPropertiesConfig;
+using ServerRuntime::LogError;
+using ServerRuntime::LogErrorf;
+using ServerRuntime::LogInfof;
 using ServerRuntime::LogStartupStep;
+using ServerRuntime::LogWarn;
 using ServerRuntime::LogWorldIO;
 using ServerRuntime::SaveServerPropertiesConfig;
+using ServerRuntime::SetServerLogLevel;
 using ServerRuntime::ServerPropertiesConfig;
+using ServerRuntime::TryParseServerLogLevel;
 using ServerRuntime::WideToUtf8;
 using ServerRuntime::BootstrapWorldForServer;
 using ServerRuntime::eWorldBootstrap_Failed;
@@ -161,7 +169,7 @@ static bool ParseCommandLine(int argc, char **argv, DedicatedServerConfig *confi
 			int port = 0;
 			if (!ParseIntArg(argv[++i], &port) || port <= 0 || port > 65535)
 			{
-				printf("Invalid -port value.\n");
+				LogError("startup", "Invalid -port value.");
 				return false;
 			}
 			config->port = port;
@@ -179,7 +187,7 @@ static bool ParseCommandLine(int argc, char **argv, DedicatedServerConfig *confi
 			int maxPlayers = 0;
 			if (!ParseIntArg(argv[++i], &maxPlayers) || maxPlayers <= 0 || maxPlayers > MINECRAFT_NET_MAX_PLAYERS)
 			{
-				printf("Invalid -maxplayers value.\n");
+				LogError("startup", "Invalid -maxplayers value.");
 				return false;
 			}
 			config->maxPlayers = maxPlayers;
@@ -188,14 +196,22 @@ static bool ParseCommandLine(int argc, char **argv, DedicatedServerConfig *confi
 		{
 			if (!ParseInt64Arg(argv[++i], &config->seed))
 			{
-				printf("Invalid -seed value.\n");
+				LogError("startup", "Invalid -seed value.");
 				return false;
 			}
 			config->hasSeed = true;
 		}
+		else if ((_stricmp(arg, "-loglevel") == 0) && (i + 1 < argc))
+		{
+			if (!TryParseServerLogLevel(argv[++i], &config->logLevel))
+			{
+				LogError("startup", "Invalid -loglevel value. Use debug/info/warn/error.");
+				return false;
+			}
+		}
 		else
 		{
-			printf("Unknown or incomplete argument: %s\n", arg);
+			LogErrorf("startup", "Unknown or incomplete argument: %s", arg);
 			return false;
 		}
 	}
@@ -253,6 +269,7 @@ int main(int argc, char **argv)
 	strncpy_s(config.name, sizeof(config.name), "DedicatedServer", _TRUNCATE);
 	config.maxPlayers = MINECRAFT_NET_MAX_PLAYERS;
 	config.seed = 0;
+	config.logLevel = ServerRuntime::eServerLogLevel_Info;
 	config.hasSeed = false;
 	config.showHelp = false;
 
@@ -267,6 +284,7 @@ int main(int argc, char **argv)
 		return 0;
 	}
 
+	SetServerLogLevel(config.logLevel);
 	LogStartupStep("initializing process state");
 	SetConsoleCtrlHandler(ConsoleCtrlHandlerProc, TRUE);
 	SetExeWorkingDirectory();
@@ -289,7 +307,7 @@ int main(int argc, char **argv)
 	LogStartupStep("creating hidden window");
 	if (!InitInstance(hInstance, SW_HIDE))
 	{
-		printf("Failed to create window instance.\n");
+		LogError("startup", "Failed to create window instance.");
 		return 2;
 	}
 	ShowWindow(g_hWnd, SW_HIDE);
@@ -297,7 +315,7 @@ int main(int argc, char **argv)
 	LogStartupStep("initializing graphics device wrappers");
 	if (FAILED(InitDevice()))
 	{
-		printf("Failed to initialize D3D device.\n");
+		LogError("startup", "Failed to initialize D3D device.");
 		CleanupDevice();
 		return 2;
 	}
@@ -353,7 +371,7 @@ int main(int argc, char **argv)
 	Minecraft *minecraft = Minecraft::GetInstance();
 	if (minecraft == NULL)
 	{
-		printf("Minecraft initialization failed.\n");
+		LogError("startup", "Minecraft initialization failed.");
 		CleanupDevice();
 		return 3;
 	}
@@ -411,7 +429,7 @@ int main(int argc, char **argv)
 	}
 	else if (worldBootstrap.status == eWorldBootstrap_Failed)
 	{
-		printf("Failed to load configured world \"%s\".\n", WideToUtf8(targetWorldName).c_str());
+		LogErrorf("world-io", "Failed to load configured world \"%s\".", WideToUtf8(targetWorldName).c_str());
 		WinsockNetLayer::Shutdown();
 		g_NetworkManager.Terminate();
 		CleanupDevice();
@@ -446,7 +464,7 @@ int main(int argc, char **argv)
 
 	if (startupResult != 0)
 	{
-		printf("Failed to start dedicated server (code %d).\n", startupResult);
+		LogErrorf("startup", "Failed to start dedicated server (code %d).", startupResult);
 		WinsockNetLayer::Shutdown();
 		g_NetworkManager.Terminate();
 		CleanupDevice();
@@ -454,14 +472,14 @@ int main(int argc, char **argv)
 	}
 
 	LogStartupStep("server startup complete");
-	printf("Dedicated server listening on %s:%d\n", g_Win64MultiplayerIP, g_Win64MultiplayerPort);
+	LogInfof("startup", "Dedicated server listening on %s:%d", g_Win64MultiplayerIP, g_Win64MultiplayerPort);
 	DWORD nextAutosaveTick = GetTickCount() + kAutosaveIntervalMs;
 	bool autosaveRequested = false;
 
 	while (!g_shutdownRequested && !app.m_bShutdown)
 	{
 		TickCoreSystems();
-		app.HandleXuiActions();
+		HandleXuiActions();
 
 		if (autosaveRequested && app.GetXuiServerAction(kServerActionPad) == eXuiServerAction_Idle)
 		{
@@ -489,7 +507,7 @@ int main(int argc, char **argv)
 		Sleep(10);
 	}
 
-	printf("Stopping dedicated server...\n");
+	LogStartupStep("stopping dedicated server");
 	MinecraftServer *server = MinecraftServer::getInstance();
 	if (server != NULL)
 	{
@@ -503,7 +521,7 @@ int main(int argc, char **argv)
 	if (!WaitForWorldActionIdle(kServerActionPad, 15000, &TickCoreSystems, &HandleXuiActions))
 	{
 		LogWorldIO("shutdown save timed out");
-		printf("Timed out waiting for shutdown save action to finish.\n");
+		LogWarn("world-io", "Timed out waiting for shutdown save action to finish.");
 	}
 	else
 	{

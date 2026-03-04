@@ -68,8 +68,7 @@ static void SetStorageSaveUniqueFilename(const std::string &saveFilename)
 
 static void LogSaveFilename(const char *prefix, const std::string &saveFilename)
 {
-	printf("[world-io] %s: %s\n", prefix, saveFilename.c_str());
-	fflush(stdout);
+	LogInfof("world-io", "%s: %s", (prefix != NULL) ? prefix : "save-filename", saveFilename.c_str());
 }
 
 static void LogEnumeratedSaveInfo(int index, const SAVE_INFO &saveInfo)
@@ -87,7 +86,7 @@ static void LogEnumeratedSaveInfo(int index, const SAVE_INFO &saveInfo)
 		index,
 		titleUtf8.c_str(),
 		filenameUtf8.c_str());
-	LogWorldIO(logLine);
+	LogDebug("world-io", logLine);
 }
 
 /**
