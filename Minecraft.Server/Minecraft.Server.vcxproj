@@ -646,12 +646,20 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\Minecraft.Client\glWrapper.cpp" />
+    <ClCompile Include="ServerLogger.cpp" />
+    <ClCompile Include="ServerProperties.cpp" />
+    <ClCompile Include="WorldManager.cpp" />
     <ClCompile Include="..\Minecraft.Client\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\Minecraft.Client\stubs.cpp" />
     <ClCompile Include="Windows64\ServerMain.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ServerLogger.h" />
+    <ClInclude Include="ServerProperties.h" />
+    <ClInclude Include="WorldManager.h" />
   </ItemGroup>
   <ItemGroup>
     <MASM Include="..\Minecraft.Client\iob_shim.asm" />

@@ -6,8 +6,28 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ServerLogger.cpp">
+      <Filter>Server</Filter>
+    </ClCompile>
+    <ClCompile Include="ServerProperties.cpp">
+      <Filter>Server</Filter>
+    </ClCompile>
+    <ClCompile Include="WorldManager.cpp">
+      <Filter>Server</Filter>
+    </ClCompile>
     <ClCompile Include="Windows64\ServerMain.cpp">
       <Filter>Server</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ServerLogger.h">
+      <Filter>Server</Filter>
+    </ClInclude>
+    <ClInclude Include="ServerProperties.h">
+      <Filter>Server</Filter>
+    </ClInclude>
+    <ClInclude Include="WorldManager.h">
+      <Filter>Server</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

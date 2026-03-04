@@ -6,6 +6,9 @@
 #include "Minecraft.h"
 #include "MinecraftServer.h"
 #include "Options.h"
+#include "..\ServerLogger.h"
+#include "..\ServerProperties.h"
+#include "..\WorldManager.h"
 #include "Tesselator.h"
 #include "Windows64/4JLibs/inc/4J_Render.h"
 #include "Windows64/GameConfig/Minecraft.spa.h"
@@ -58,6 +61,8 @@ struct DedicatedServerConfig
 };
 
 static volatile bool g_shutdownRequested = false;
+static const DWORD kAutosaveIntervalMs = 60 * 1000;
+static const int kServerActionPad = 0;
 
 static BOOL WINAPI ConsoleCtrlHandlerProc(DWORD ctrlType)
 {
@@ -75,6 +80,11 @@ static BOOL WINAPI ConsoleCtrlHandlerProc(DWORD ctrlType)
 	}
 }
 
+/**
+ * サーバー停止通知が到達するまで待機する終了用スレッド関数
+ *
+ * シャットダウン時にネットワーク層の停止完了を同期するために使う
+ */
 static int WaitForServerStoppedThreadProc(void *)
 {
 	if (g_NetworkManager.ServerStoppedValid())
@@ -96,11 +106,17 @@ static void PrintUsage()
 	printf("  -help                 Show this help\n");
 }
 
-static void LogStartupStep(const char *message)
-{
-	printf("[startup] %s\n", message);
-	fflush(stdout);
-}
+using ServerRuntime::LoadServerPropertiesConfig;
+using ServerRuntime::LogStartupStep;
+using ServerRuntime::LogWorldIO;
+using ServerRuntime::SaveServerPropertiesConfig;
+using ServerRuntime::ServerPropertiesConfig;
+using ServerRuntime::WideToUtf8;
+using ServerRuntime::BootstrapWorldForServer;
+using ServerRuntime::eWorldBootstrap_Failed;
+using ServerRuntime::eWorldBootstrap_Loaded;
+using ServerRuntime::WaitForWorldActionIdle;
+using ServerRuntime::WorldBootstrapResult;
 
 static bool ParseIntArg(const char *value, int *outValue)
 {
@@ -199,6 +215,36 @@ static void SetExeWorkingDirectory()
 	}
 }
 
+/**
+ * 非同期処理進行に必須なコアサブシステムを1フレーム分進める
+ *
+ * ストレージ/プロフィール/ネットワークの進行停止を防ぐため、
+ * 待機ループ中も継続的に呼び出す
+ */
+static void TickCoreSystems()
+{
+	g_NetworkManager.DoWork();
+	ProfileManager.Tick();
+	StorageManager.Tick();
+}
+
+/**
+ * キュー済みの XUI / サーバーアクションを1回処理する
+ */
+static void HandleXuiActions()
+{
+	app.HandleXuiActions();
+}
+
+/**
+ * Dedicated Server Entory Point
+ *
+ * 主な責務:
+ * - プロセス/描画/ネットワークの初期化
+ * - `WorldManager` によるワールドロードまたは新規作成
+ * - メインループと定期オートセーブ実行
+ * - 終了時の最終保存と各サブシステムの安全停止
+ */
 int main(int argc, char **argv)
 {
 	DedicatedServerConfig config;
@@ -338,12 +384,46 @@ int main(int argc, char **argv)
 	app.SetGameHostOption(eGameHostOption_HostCanChangeHunger, 1);
 	app.SetGameHostOption(eGameHostOption_HostCanBeInvisible, 1);
 
+	StorageManager.SetSaveDisabled(false);
+	// server.properties から world 名と固定 save-id を取得し、
+	// WorldManager にロード/新規作成判定を委譲する
+	ServerPropertiesConfig serverProperties = LoadServerPropertiesConfig();
+	std::wstring targetWorldName = serverProperties.worldName;
+	if (targetWorldName.empty())
+	{
+		targetWorldName = L"world"; // デフォ名
+	}
+	WorldBootstrapResult worldBootstrap = BootstrapWorldForServer(serverProperties, kServerActionPad, &TickCoreSystems);
+	if (worldBootstrap.status == eWorldBootstrap_Loaded)
+	{
+		const std::string &loadedSaveFilename = worldBootstrap.resolvedSaveId;
+		if (!loadedSaveFilename.empty() && _stricmp(loadedSaveFilename.c_str(), serverProperties.worldSaveId.c_str()) != 0)
+		{
+			// 実際に読み込まれた save-id を設定ファイルへ戻して、
+			// 次回起動時の探索キーを揃える
+			LogWorldIO("updating level-id to loaded save filename");
+			serverProperties.worldSaveId = loadedSaveFilename;
+			if (!SaveServerPropertiesConfig(serverProperties))
+			{
+				LogWorldIO("failed to persist updated level-id");
+			}
+		}
+	}
+	else if (worldBootstrap.status == eWorldBootstrap_Failed)
+	{
+		printf("Failed to load configured world \"%s\".\n", WideToUtf8(targetWorldName).c_str());
+		WinsockNetLayer::Shutdown();
+		g_NetworkManager.Terminate();
+		CleanupDevice();
+		return 4;
+	}
+
 	NetworkGameInitData *param = new NetworkGameInitData();
 	if (config.hasSeed)
 	{
 		param->seed = config.seed;
 	}
-	param->saveData = NULL;
+	param->saveData = worldBootstrap.saveData;
 	param->settings = app.GetGameHostOption(eGameHostOption_All);
 	param->dedicatedNoLocalHostPlayer = true;
 
@@ -356,9 +436,7 @@ int main(int argc, char **argv)
 
 	while (startThread->isRunning() && !g_shutdownRequested)
 	{
-		g_NetworkManager.DoWork();
-		ProfileManager.Tick();
-		StorageManager.Tick();
+		TickCoreSystems();
 		Sleep(10);
 	}
 
@@ -377,23 +455,61 @@ int main(int argc, char **argv)
 
 	LogStartupStep("server startup complete");
 	printf("Dedicated server listening on %s:%d\n", g_Win64MultiplayerIP, g_Win64MultiplayerPort);
+	DWORD nextAutosaveTick = GetTickCount() + kAutosaveIntervalMs;
+	bool autosaveRequested = false;
 
 	while (!g_shutdownRequested && !app.m_bShutdown)
 	{
-		g_NetworkManager.DoWork();
-		ProfileManager.Tick();
-		StorageManager.Tick();
+		TickCoreSystems();
 		app.HandleXuiActions();
+
+		if (autosaveRequested && app.GetXuiServerAction(kServerActionPad) == eXuiServerAction_Idle)
+		{
+			LogWorldIO("autosave completed");
+			autosaveRequested = false;
+		}
 
 		if (MinecraftServer::serverHalted())
 		{
 			break;
 		}
 
+		DWORD now = GetTickCount();
+		if ((LONG)(now - nextAutosaveTick) >= 0)
+		{
+			if (app.GetXuiServerAction(kServerActionPad) == eXuiServerAction_Idle)
+			{
+				LogWorldIO("requesting autosave");
+				app.SetXuiServerAction(kServerActionPad, eXuiServerAction_AutoSaveGame);
+				autosaveRequested = true;
+			}
+			nextAutosaveTick = now + kAutosaveIntervalMs;
+		}
+
 		Sleep(10);
 	}
 
 	printf("Stopping dedicated server...\n");
+	MinecraftServer *server = MinecraftServer::getInstance();
+	if (server != NULL)
+	{
+		server->setSaveOnExit(true);
+	}
+
+	LogWorldIO("requesting save before shutdown");
+	// 終了時保存の前に Idle へ戻して、既存の action と競合しないようにする
+	WaitForWorldActionIdle(kServerActionPad, 5000, &TickCoreSystems, &HandleXuiActions);
+	app.SetXuiServerAction(kServerActionPad, eXuiServerAction_SaveGame);
+	if (!WaitForWorldActionIdle(kServerActionPad, 15000, &TickCoreSystems, &HandleXuiActions))
+	{
+		LogWorldIO("shutdown save timed out");
+		printf("Timed out waiting for shutdown save action to finish.\n");
+	}
+	else
+	{
+		LogWorldIO("shutdown save completed");
+	}
+
 	MinecraftServer::HaltServer();
 
 	if (g_NetworkManager.ServerStoppedValid())
