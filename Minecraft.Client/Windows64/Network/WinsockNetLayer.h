@@ -62,6 +62,7 @@ public:
 	static bool Initialize();
 	static void Shutdown();
 
+	static bool HostGame(const char *bindIp, int port);
 	static bool HostGame(int port);
 	static bool JoinGame(const char *ip, int port);
 

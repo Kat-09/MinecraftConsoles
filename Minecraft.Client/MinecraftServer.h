@@ -40,6 +40,7 @@ typedef struct _NetworkGameInitData
 	LevelGenerationOptions *levelGen;
 	DWORD texturePackId;
 	bool findSeed;
+	bool dedicatedNoLocalHostPlayer;
 	unsigned int xzSize;
 	unsigned char hellScale;
 	ESavePlatform savePlatform;
@@ -52,6 +53,7 @@ typedef struct _NetworkGameInitData
 		levelGen = NULL;
 		texturePackId = 0;
 		findSeed = false;
+		dedicatedNoLocalHostPlayer = false;
 		xzSize = LEVEL_LEGACY_WIDTH;
 		hellScale = HELL_LEVEL_LEGACY_SCALE;
 		savePlatform = SAVE_FILE_PLATFORM_LOCAL;

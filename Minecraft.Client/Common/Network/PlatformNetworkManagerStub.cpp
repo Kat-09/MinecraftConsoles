@@ -361,9 +361,13 @@ void CPlatformNetworkManagerStub::HostGame(int localUsersMask, bool bOnlineGame,
 	_HostGame( localUsersMask, publicSlots, privateSlots );
 
 #ifdef _WINDOWS64
-	int port = WIN64_NET_DEFAULT_PORT;
+	int port = (g_Win64MultiplayerPort > 0) ? g_Win64MultiplayerPort : WIN64_NET_DEFAULT_PORT;
+	const char *bindIP = g_Win64MultiplayerIP;
+	if (bindIP != NULL && bindIP[0] == 0)
+		bindIP = NULL;
+
 	if (!WinsockNetLayer::IsActive())
-		WinsockNetLayer::HostGame(port);
+		WinsockNetLayer::HostGame(bindIP, port);
 
 	const wchar_t* hostName = IQNet::m_player[0].m_gamertag;
 	unsigned int settings = app.GetGameHostOption(eGameHostOption_All);
