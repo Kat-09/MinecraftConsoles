@@ -33,15 +33,21 @@ Basic LAN multiplayer is available on the Windows build
 - Other players on the same LAN can discover the session from the in-game Join Game menu
 - Game connections use TCP port `25565` by default
 - LAN discovery uses UDP port `25566`
-- You can override your in-game username at launch with `-name`
-
-Example:
-
-```powershell
-Minecraft.Client.exe -name Steve
-```
 
 This feature is based on [LCEMP](https://github.com/LCEMP/LCEMP/)
+
+### Launch Arguments
+
+| Argument           | Description                                                                                                    |
+|--------------------|----------------------------------------------------------------------------------------------------------------|
+| `-name <username>` | Sets your in-game username                                                                                     |
+| `-ip <address>`    | Manually connect to an IP if LAN advertising does not work or if the server cannot be discovered automatically |
+| `-port <port>`     | Override the default port if it was changed in the source                                                      |
+
+Example:
+```
+Minecraft.Client.exe -name Steve -ip 192.168.0.25 -port 25565
+```
 
 ## Controls (Keyboard & Mouse)
 
@@ -51,7 +57,7 @@ This feature is based on [LCEMP](https://github.com/LCEMP/LCEMP/)
 - **Sprint**: `Ctrl` (Hold) or Double-tap `W`
 - **Inventory**: `E`
 - **Drop Item**: `Q`
-- **Crafting**: `C`
+- **Crafting**: `C` Use `Q` and `E` to move through tabs (cycles Left/Right)
 - **Toggle View (FPS/TPS)**: `F5`
 - **Fullscreen**: `F11`
 - **Pause Menu**: `Esc`
@@ -64,6 +70,7 @@ This feature is based on [LCEMP](https://github.com/LCEMP/LCEMP/)
 - **Toggle HUD**: `F1`
 - **Toggle Debug Info**: `F3`
 - **Open Debug Overlay**: `F4`
+- **Toggle Debug Console**: `F6`
 
 ## Build & Run
 

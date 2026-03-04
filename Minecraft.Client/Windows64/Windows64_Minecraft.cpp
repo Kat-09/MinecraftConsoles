@@ -85,10 +85,11 @@ BOOL g_bWidescreen = TRUE;
 int g_iScreenWidth = 1920;
 int g_iScreenHeight = 1080;
 
-char g_Win64Username[17] = { 0 };
-wchar_t g_Win64UsernameW[17] = { 0 };
 UINT g_ScreenWidth = 1920;
 UINT g_ScreenHeight = 1080;
+
+char g_Win64Username[17] = { 0 };
+wchar_t g_Win64UsernameW[17] = { 0 };
 
 // Fullscreen toggle state
 static bool g_isFullscreen = false;
@@ -768,7 +769,7 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 		char cmdLineA[1024];
 		strncpy_s(cmdLineA, sizeof(cmdLineA), lpCmdLine, _TRUNCATE);
 
-		char* nameArg = strstr(cmdLineA, "-name ");
+		char *nameArg = strstr(cmdLineA, "-name ");
 		if (nameArg)
 		{
 			nameArg += 6;
@@ -779,22 +780,38 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 			nameBuf[n] = 0;
 			strncpy_s(g_Win64Username, 17, nameBuf, _TRUNCATE);
 		}
+
+		char *ipArg = strstr(cmdLineA, "-ip ");
+		if (ipArg)
+		{
+			ipArg += 4;
+			while (*ipArg == ' ') ipArg++;
+			char ipBuf[256];
+			int n = 0;
+			while (ipArg[n] && ipArg[n] != ' ' && n < 255) { ipBuf[n] = ipArg[n]; n++; }
+			ipBuf[n] = 0;
+			strncpy_s(g_Win64MultiplayerIP, 256, ipBuf, _TRUNCATE);
+			g_Win64MultiplayerJoin = true;
+		}
+
+		char *portArg = strstr(cmdLineA, "-port ");
+		if (portArg)
+		{
+			portArg += 6;
+			while (*portArg == ' ') portArg++;
+			char portBuf[16];
+			int n = 0;
+			while (portArg[n] && portArg[n] != ' ' && n < 15) { portBuf[n] = portArg[n]; n++; }
+			portBuf[n] = 0;
+			g_Win64MultiplayerPort = atoi(portBuf);
+		}
 	}
 
 	if (g_Win64Username[0] == 0)
 	{
 		DWORD sz = 17;
-		static bool seeded = false;
-		if (!seeded)
-		{
-			seeded = true;
-			srand((unsigned int)time(NULL));
-		}
-
-		int r = rand() % 10000; // 0�9999
-
-		snprintf(g_Win64Username, 17, "Player%04d", r);
-
+		if (!GetUserNameA(g_Win64Username, &sz))
+			strncpy_s(g_Win64Username, 17, "Player", _TRUNCATE);
 		g_Win64Username[16] = 0;
 	}
 
@@ -1272,7 +1289,7 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 			}
 		}
 
-		// F1 toggles the HUD, F3 toggles the debug console overlay, F11 toggles fullscreen
+		// F1 toggles the HUD
 		if (KMInput.IsKeyPressed(VK_F1))
 		{
 			int primaryPad = ProfileManager.GetPrimaryPad();
@@ -1280,21 +1297,43 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 			app.SetGameSettings(primaryPad, eGameSetting_DisplayHUD, displayHud ? 0 : 1);
 			app.SetGameSettings(primaryPad, eGameSetting_DisplayHand, displayHud ? 0 : 1);
 		}
-		
+
+		// F3 toggles onscreen debug info
 		if (KMInput.IsKeyPressed(VK_F3))
 		{
-			static bool s_debugConsole = false;
-			s_debugConsole = !s_debugConsole;
-			ui.ShowUIDebugConsole(s_debugConsole);
+			if (Minecraft* pMinecraft = Minecraft::GetInstance())
+			{
+				if (pMinecraft->options)
+				{
+					pMinecraft->options->renderDebug = !pMinecraft->options->renderDebug;
+				}
+			}
 		}
 
 #ifdef _DEBUG_MENUS_ENABLED
-		if (KMInput.IsKeyPressed(VK_F4))
-		{
-			ui.NavigateToScene(ProfileManager.GetPrimaryPad(), eUIScene_DebugOverlay, NULL, eUILayer_Debug);
-		}
+		// F4 Open debug overlay
+        if (KMInput.IsKeyPressed(VK_F4))
+        {
+            if (Minecraft *pMinecraft = Minecraft::GetInstance())
+            {
+                if (pMinecraft->options &&
+                    app.GetGameStarted() && !ui.GetMenuDisplayed(0) && pMinecraft->screen == NULL)
+                {
+                    ui.NavigateToScene(0, eUIScene_DebugOverlay, NULL, eUILayer_Debug);
+                }
+            }
+        }
+
+        // F6 Open debug console
+        if (KMInput.IsKeyPressed(VK_F6))
+        {
+        	static bool s_debugConsole = false;
+        	s_debugConsole = !s_debugConsole;
+        	ui.ShowUIDebugConsole(s_debugConsole);
+        }
 #endif
 
+		// F11 Toggle fullscreen
 		if (KMInput.IsKeyPressed(VK_F11))
 		{
 			ToggleFullscreen();
@@ -1311,33 +1350,6 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 				}
 			}
 		}
-
-#ifdef _DEBUG_MENUS_ENABLED
-		// F3 toggles onscreen debug info
-		if (KMInput.IsKeyPressed(VK_F3))
-		{
-			if (Minecraft* pMinecraft = Minecraft::GetInstance())
-			{
-				if (pMinecraft->options && app.DebugSettingsOn())
-				{
-					pMinecraft->options->renderDebug = !pMinecraft->options->renderDebug;
-				}
-			}
-		}
-
-		// F4 opens debug overlay
-		if (KMInput.IsKeyPressed(VK_F4))
-		{
-			if (Minecraft* pMinecraft = Minecraft::GetInstance())
-			{
-				if (pMinecraft->options && app.DebugSettingsOn() &&
-					app.GetGameStarted() && !ui.GetMenuDisplayed(0) && pMinecraft->screen == NULL)
-				{
-					ui.NavigateToScene(0, eUIScene_DebugOverlay, NULL, eUILayer_Debug);
-				}
-			}
-		}
-#endif
 
 #if 0
 		// has the game defined profile data been changed (by a profile load)
