@@ -101,6 +101,9 @@ For more information, see [COMPILE.md](COMPILE.md)
 
 - Native builds for platforms other than Windows have not been tested and are most likely non-functional. The Windows nightly build may still run on macOS and Linux through Wine or CrossOver, but that path is unofficial and not currently supported
 
+## Contributors
+Would you like to contribute to this project? Please read our [Contributor's Guide](CONTRIBUTING.md) before doing so! This document includes our current goals, standards for inclusions, rules, and more.
+
 ## Star History
 
 ## Star History
