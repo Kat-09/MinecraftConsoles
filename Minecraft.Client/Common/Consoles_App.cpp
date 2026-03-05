@@ -5724,6 +5724,66 @@ void CMinecraftApp::RemoveMemoryTextureFile(const wstring &wName)
 	LeaveCriticalSection(&csMemFilesLock);
 }
 
+void CMinecraftApp::ScanAndLoadCustomSkins() // By 0xlibless ;) 
+{
+	DebugPrintf("CustomSkins scanning inited\n");
+	
+	// Try multiple relative paths just in case (game dir or project dir)
+	const wchar_t* paths[] = { L"CustomSkins\\*.png", L"..\\CustomSkins\\*.png" };
+	const wchar_t* folderPaths[] = { L"CustomSkins\\", L"..\\CustomSkins\\" };
+	
+	for (int i = 0; i < 2; ++i)
+	{
+		WIN32_FIND_DATAW fd;
+		HANDLE hFind = FindFirstFileW(paths[i], &fd);
+		if (hFind != INVALID_HANDLE_VALUE)
+		{
+			DebugPrintf("Found CustomSkins folder at: %ls\n", folderPaths[i]);
+			do {
+				if (!(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+				{
+					wstring filename = fd.cFileName;
+					wstring fullPath = wstring(folderPaths[i]) + filename;
+					FILE* f = _wfopen(fullPath.c_str(), L"rb");
+					if (f)
+					{
+						DebugPrintf("Loading skin file: %ls\n", fullPath.c_str());
+						fseek(f, 0, SEEK_END);
+						DWORD dwSize = (DWORD)ftell(f);
+						rewind(f);
+						if (dwSize > 0 && dwSize < 2 * 1024 * 1024) // 2MB limit
+						{
+							BYTE* pData = new BYTE[dwSize];
+							if (fread(pData, 1, dwSize, f) == dwSize)
+							{
+								AddMemoryTextureFile(filename, pData, dwSize);
+								app.m_customSkinNames.push_back(filename);
+								DebugPrintf("Successfully loaded custom skin: %ls\n", filename.c_str());
+							}
+							else
+							{
+								delete[] pData;
+							}
+						}
+						else
+						{
+							DebugPrintf("Skin file too large or empty: %ls (%d bytes)\n", fullPath.c_str(), dwSize);
+						}
+						fclose(f);
+					}
+					else
+					{
+						DebugPrintf("Failed to open file: %ls\n", fullPath.c_str());
+					}
+				}
+			} while (FindNextFileW(hFind, &fd));
+			FindClose(hFind);
+			return; // Found and scanned
+		}
+	}
+	DebugPrintf("Error: CustomSkins folder not found in common locations.\n");
+}
+
 bool CMinecraftApp::DefaultCapeExists()
 {
 	wstring wTex=L"Special_Cape.png";
