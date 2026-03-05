@@ -327,7 +327,7 @@ int main(int argc, char **argv)
 	ui.init(g_pd3dDevice, g_pImmediateContext, g_pRenderTargetView, g_pDepthStencilView, g_iScreenWidth, g_iScreenHeight);
 
 	InputManager.Initialise(1, 3, MINECRAFT_ACTION_MAX, ACTION_MAX_MENU);
-	KMInput.Init(g_hWnd);
+	g_KBMInput.Init();
 	DefineActions();
 	InputManager.SetJoypadMapVal(0, 0);
 	InputManager.SetKeyRepeatRate(0.3f, 0.2f);
