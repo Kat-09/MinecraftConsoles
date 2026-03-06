@@ -8,6 +8,7 @@
 #include <fstream>
 #include <map>
 #include <stdio.h>
+#include <stdlib.h>
 #include <unordered_map>
 
 namespace ServerRuntime
@@ -21,19 +22,52 @@ struct ServerPropertyDefault
 static const char *kServerPropertiesPath = "server.properties";
 static const size_t kMaxSaveIdLength = 31;
 
+static const int kDefaultServerPort = 25565;
+static const int kDefaultMaxPlayers = 8;
+static const int kMaxDedicatedPlayers = 8;
+static const int kDefaultAutosaveIntervalSeconds = 60;
+
 static const ServerPropertyDefault kServerPropertyDefaults[] =
 {
-	{ "level-name", "world" },
-	{ "level-id", "world" },
-	{ "level-type", "default" },
+	{ "allow-flight", "true" },
+	{ "allow-nether", "true" },
+	{ "autosave-interval", "60" },
+	{ "bedrock-fog", "true" },
+	{ "bonus-chest", "false" },
+	{ "difficulty", "1" },
+	{ "disable-saving", "false" },
+	{ "do-daylight-cycle", "true" },
+	{ "do-mob-loot", "true" },
+	{ "do-mob-spawning", "true" },
+	{ "do-tile-drops", "true" },
+	{ "fire-spreads", "true" },
+	{ "friends-of-friends", "false" },
 	{ "gamemode", "0" },
+	{ "gamertags", "true" },
+	{ "generate-structures", "true" },
+	{ "host-can-be-invisible", "true" },
+	{ "host-can-change-hunger", "true" },
+	{ "host-can-fly", "true" },
+	{ "keep-inventory", "false" },
+	{ "level-id", "world" },
+	{ "level-name", "world" },
+	{ "level-seed", "" },
+	{ "level-type", "default" },
+	{ "log-level", "info" },
 	{ "max-build-height", "256" },
-	{ "spawn-animals", "true" },
-	{ "spawn-npcs", "true" },
-	{ "spawn-monsters", "true" },
+	{ "max-players", "8" },
+	{ "mob-griefing", "true" },
+	{ "motd", "A Minecraft Server" },
+	{ "natural-regeneration", "true" },
 	{ "pvp", "true" },
-	{ "server-ip", "" },
-	{ "motd", "A Minecraft Server" }
+	{ "server-ip", "0.0.0.0" },
+	{ "server-name", "DedicatedServer" },
+	{ "server-port", "25565" },
+	{ "spawn-animals", "true" },
+	{ "spawn-monsters", "true" },
+	{ "spawn-npcs", "true" },
+	{ "tnt", "true" },
+	{ "trust-players", "true" }
 };
 
 static std::string TrimAscii(const std::string &value)
@@ -51,6 +85,134 @@ static std::string TrimAscii(const std::string &value)
 	}
 
 	return value.substr(start, end - start);
+}
+
+static std::string ToLowerAscii(const std::string &value)
+{
+	std::string lowered = value;
+	for (size_t i = 0; i < lowered.length(); ++i)
+	{
+		unsigned char ch = (unsigned char)lowered[i];
+		lowered[i] = (char)std::tolower(ch);
+	}
+	return lowered;
+}
+
+static std::string BoolToString(bool value)
+{
+	return value ? "true" : "false";
+}
+
+static std::string IntToString(int value)
+{
+	char buffer[32] = {};
+	sprintf_s(buffer, sizeof(buffer), "%d", value);
+	return std::string(buffer);
+}
+
+static std::string Int64ToString(__int64 value)
+{
+	char buffer[64] = {};
+	_i64toa_s(value, buffer, sizeof(buffer), 10);
+	return std::string(buffer);
+}
+
+static int ClampInt(int value, int minValue, int maxValue)
+{
+	if (value < minValue)
+	{
+		return minValue;
+	}
+	if (value > maxValue)
+	{
+		return maxValue;
+	}
+	return value;
+}
+
+static bool TryParseBool(const std::string &value, bool *outValue)
+{
+	if (outValue == NULL)
+	{
+		return false;
+	}
+
+	std::string lowered = ToLowerAscii(TrimAscii(value));
+	if (lowered == "true" || lowered == "1" || lowered == "yes" || lowered == "on")
+	{
+		*outValue = true;
+		return true;
+	}
+	if (lowered == "false" || lowered == "0" || lowered == "no" || lowered == "off")
+	{
+		*outValue = false;
+		return true;
+	}
+	return false;
+}
+
+static bool TryParseInt(const std::string &value, int *outValue)
+{
+	if (outValue == NULL)
+	{
+		return false;
+	}
+
+	std::string trimmed = TrimAscii(value);
+	if (trimmed.empty())
+	{
+		return false;
+	}
+
+	char *end = NULL;
+	long parsed = strtol(trimmed.c_str(), &end, 10);
+	if (end == trimmed.c_str() || *end != 0)
+	{
+		return false;
+	}
+
+	*outValue = (int)parsed;
+	return true;
+}
+
+static bool TryParseInt64(const std::string &value, __int64 *outValue)
+{
+	if (outValue == NULL)
+	{
+		return false;
+	}
+
+	std::string trimmed = TrimAscii(value);
+	if (trimmed.empty())
+	{
+		return false;
+	}
+
+	char *end = NULL;
+	__int64 parsed = _strtoi64(trimmed.c_str(), &end, 10);
+	if (end == trimmed.c_str() || *end != 0)
+	{
+		return false;
+	}
+
+	*outValue = parsed;
+	return true;
+}
+
+static std::string LogLevelToPropertyValue(EServerLogLevel level)
+{
+	switch (level)
+	{
+	case eServerLogLevel_Debug:
+		return "debug";
+	case eServerLogLevel_Warn:
+		return "warn";
+	case eServerLogLevel_Error:
+		return "error";
+	case eServerLogLevel_Info:
+	default:
+		return "info";
+	}
 }
 
 /**
@@ -222,7 +384,7 @@ static bool WriteServerPropertiesFile(const char *filePath, const std::unordered
 	}
 
 	fprintf(outFile, "# Minecraft server properties\n");
-	fprintf(outFile, "# Auto-generated when missing\n");
+	fprintf(outFile, "# Auto-generated and normalized when missing\n");
 
 	std::map<std::string, std::string> sortedProperties(properties.begin(), properties.end());
 	for (std::map<std::string, std::string>::const_iterator it = sortedProperties.begin(); it != sortedProperties.end(); ++it)
@@ -232,6 +394,203 @@ static bool WriteServerPropertiesFile(const char *filePath, const std::unordered
 
 	fclose(outFile);
 	return true;
+}
+
+static bool ReadNormalizedBoolProperty(
+	std::unordered_map<std::string, std::string> *properties,
+	const char *key,
+	bool defaultValue,
+	bool *shouldWrite)
+{
+	std::string raw = TrimAscii((*properties)[key]);
+	bool value = defaultValue;
+	if (!TryParseBool(raw, &value))
+	{
+		value = defaultValue;
+	}
+
+	std::string normalized = BoolToString(value);
+	if (raw != normalized)
+	{
+		(*properties)[key] = normalized;
+		if (shouldWrite != NULL)
+		{
+			*shouldWrite = true;
+		}
+	}
+
+	return value;
+}
+
+static int ReadNormalizedIntProperty(
+	std::unordered_map<std::string, std::string> *properties,
+	const char *key,
+	int defaultValue,
+	int minValue,
+	int maxValue,
+	bool *shouldWrite)
+{
+	std::string raw = TrimAscii((*properties)[key]);
+	int value = defaultValue;
+	if (!TryParseInt(raw, &value))
+	{
+		value = defaultValue;
+	}
+	value = ClampInt(value, minValue, maxValue);
+
+	std::string normalized = IntToString(value);
+	if (raw != normalized)
+	{
+		(*properties)[key] = normalized;
+		if (shouldWrite != NULL)
+		{
+			*shouldWrite = true;
+		}
+	}
+
+	return value;
+}
+
+static std::string ReadNormalizedStringProperty(
+	std::unordered_map<std::string, std::string> *properties,
+	const char *key,
+	const std::string &defaultValue,
+	size_t maxLength,
+	bool *shouldWrite)
+{
+	std::string value = TrimAscii((*properties)[key]);
+	if (value.empty())
+	{
+		value = defaultValue;
+	}
+	if (maxLength > 0 && value.length() > maxLength)
+	{
+		value.resize(maxLength);
+	}
+
+	if (value != (*properties)[key])
+	{
+		(*properties)[key] = value;
+		if (shouldWrite != NULL)
+		{
+			*shouldWrite = true;
+		}
+	}
+
+	return value;
+}
+
+static bool ReadNormalizedOptionalInt64Property(
+	std::unordered_map<std::string, std::string> *properties,
+	const char *key,
+	__int64 *outValue,
+	bool *shouldWrite)
+{
+	std::string raw = TrimAscii((*properties)[key]);
+	if (raw.empty())
+	{
+		if ((*properties)[key] != "")
+		{
+			(*properties)[key] = "";
+			if (shouldWrite != NULL)
+			{
+				*shouldWrite = true;
+			}
+		}
+		return false;
+	}
+
+	__int64 parsed = 0;
+	if (!TryParseInt64(raw, &parsed))
+	{
+		(*properties)[key] = "";
+		if (shouldWrite != NULL)
+		{
+			*shouldWrite = true;
+		}
+		return false;
+	}
+
+	std::string normalized = Int64ToString(parsed);
+	if (raw != normalized)
+	{
+		(*properties)[key] = normalized;
+		if (shouldWrite != NULL)
+		{
+			*shouldWrite = true;
+		}
+	}
+
+	if (outValue != NULL)
+	{
+		*outValue = parsed;
+	}
+	return true;
+}
+
+static EServerLogLevel ReadNormalizedLogLevelProperty(
+	std::unordered_map<std::string, std::string> *properties,
+	const char *key,
+	EServerLogLevel defaultValue,
+	bool *shouldWrite)
+{
+	std::string raw = TrimAscii((*properties)[key]);
+	EServerLogLevel value = defaultValue;
+	if (!TryParseServerLogLevel(raw.c_str(), &value))
+	{
+		value = defaultValue;
+	}
+
+	std::string normalized = LogLevelToPropertyValue(value);
+	if (raw != normalized)
+	{
+		(*properties)[key] = normalized;
+		if (shouldWrite != NULL)
+		{
+			*shouldWrite = true;
+		}
+	}
+
+	return value;
+}
+
+static std::string ReadNormalizedLevelTypeProperty(
+	std::unordered_map<std::string, std::string> *properties,
+	const char *key,
+	bool *outIsFlat,
+	bool *shouldWrite)
+{
+	std::string raw = TrimAscii((*properties)[key]);
+	std::string lowered = ToLowerAscii(raw);
+
+	bool isFlat = false;
+	std::string normalized = "default";
+	if (lowered == "flat" || lowered == "superflat" || lowered == "1")
+	{
+		isFlat = true;
+		normalized = "flat";
+	}
+	else if (lowered == "default" || lowered == "normal" || lowered == "0")
+	{
+		isFlat = false;
+		normalized = "default";
+	}
+
+	if (raw != normalized)
+	{
+		(*properties)[key] = normalized;
+		if (shouldWrite != NULL)
+		{
+			*shouldWrite = true;
+		}
+	}
+
+	if (outIsFlat != NULL)
+	{
+		*outIsFlat = isFlat;
+	}
+
+	return normalized;
 }
 
 /**
@@ -313,6 +672,50 @@ ServerPropertiesConfig LoadServerPropertiesConfig()
 	merged["level-name"] = worldName;
 	merged["level-id"] = worldSaveId;
 
+	config.worldName = Utf8ToWide(worldName.c_str());
+	config.worldSaveId = worldSaveId;
+
+	config.serverPort = ReadNormalizedIntProperty(&merged, "server-port", kDefaultServerPort, 1, 65535, &shouldWrite);
+	config.serverIp = ReadNormalizedStringProperty(&merged, "server-ip", "0.0.0.0", 255, &shouldWrite);
+	config.serverName = ReadNormalizedStringProperty(&merged, "server-name", "DedicatedServer", 16, &shouldWrite);
+	config.maxPlayers = ReadNormalizedIntProperty(&merged, "max-players", kDefaultMaxPlayers, 1, kMaxDedicatedPlayers, &shouldWrite);
+	config.seed = 0;
+	config.hasSeed = ReadNormalizedOptionalInt64Property(&merged, "level-seed", &config.seed, &shouldWrite);
+	config.logLevel = ReadNormalizedLogLevelProperty(&merged, "log-level", eServerLogLevel_Info, &shouldWrite);
+	config.autosaveIntervalSeconds = ReadNormalizedIntProperty(&merged, "autosave-interval", kDefaultAutosaveIntervalSeconds, 5, 3600, &shouldWrite);
+
+	config.difficulty = ReadNormalizedIntProperty(&merged, "difficulty", 1, 0, 3, &shouldWrite);
+	config.gameMode = ReadNormalizedIntProperty(&merged, "gamemode", 0, 0, 1, &shouldWrite);
+	config.levelType = ReadNormalizedLevelTypeProperty(&merged, "level-type", &config.levelTypeFlat, &shouldWrite);
+	config.generateStructures = ReadNormalizedBoolProperty(&merged, "generate-structures", true, &shouldWrite);
+	config.bonusChest = ReadNormalizedBoolProperty(&merged, "bonus-chest", false, &shouldWrite);
+	config.pvp = ReadNormalizedBoolProperty(&merged, "pvp", true, &shouldWrite);
+	config.trustPlayers = ReadNormalizedBoolProperty(&merged, "trust-players", true, &shouldWrite);
+	config.fireSpreads = ReadNormalizedBoolProperty(&merged, "fire-spreads", true, &shouldWrite);
+	config.tnt = ReadNormalizedBoolProperty(&merged, "tnt", true, &shouldWrite);
+	config.spawnAnimals = ReadNormalizedBoolProperty(&merged, "spawn-animals", true, &shouldWrite);
+	config.spawnNpcs = ReadNormalizedBoolProperty(&merged, "spawn-npcs", true, &shouldWrite);
+	config.spawnMonsters = ReadNormalizedBoolProperty(&merged, "spawn-monsters", true, &shouldWrite);
+	config.allowFlight = ReadNormalizedBoolProperty(&merged, "allow-flight", true, &shouldWrite);
+	config.allowNether = ReadNormalizedBoolProperty(&merged, "allow-nether", true, &shouldWrite);
+	config.friendsOfFriends = ReadNormalizedBoolProperty(&merged, "friends-of-friends", false, &shouldWrite);
+	config.gamertags = ReadNormalizedBoolProperty(&merged, "gamertags", true, &shouldWrite);
+	config.bedrockFog = ReadNormalizedBoolProperty(&merged, "bedrock-fog", true, &shouldWrite);
+	config.hostCanFly = ReadNormalizedBoolProperty(&merged, "host-can-fly", true, &shouldWrite);
+	config.hostCanChangeHunger = ReadNormalizedBoolProperty(&merged, "host-can-change-hunger", true, &shouldWrite);
+	config.hostCanBeInvisible = ReadNormalizedBoolProperty(&merged, "host-can-be-invisible", true, &shouldWrite);
+	config.disableSaving = ReadNormalizedBoolProperty(&merged, "disable-saving", false, &shouldWrite);
+	config.mobGriefing = ReadNormalizedBoolProperty(&merged, "mob-griefing", true, &shouldWrite);
+	config.keepInventory = ReadNormalizedBoolProperty(&merged, "keep-inventory", false, &shouldWrite);
+	config.doMobSpawning = ReadNormalizedBoolProperty(&merged, "do-mob-spawning", true, &shouldWrite);
+	config.doMobLoot = ReadNormalizedBoolProperty(&merged, "do-mob-loot", true, &shouldWrite);
+	config.doTileDrops = ReadNormalizedBoolProperty(&merged, "do-tile-drops", true, &shouldWrite);
+	config.naturalRegeneration = ReadNormalizedBoolProperty(&merged, "natural-regeneration", true, &shouldWrite);
+	config.doDaylightCycle = ReadNormalizedBoolProperty(&merged, "do-daylight-cycle", true, &shouldWrite);
+
+	config.maxBuildHeight = ReadNormalizedIntProperty(&merged, "max-build-height", 256, 64, 256, &shouldWrite);
+	config.motd = ReadNormalizedStringProperty(&merged, "motd", "A Minecraft Server", 255, &shouldWrite);
+
 	if (shouldWrite)
 	{
 		if (WriteServerPropertiesFile(kServerPropertiesPath, merged))
@@ -325,8 +728,6 @@ ServerPropertiesConfig LoadServerPropertiesConfig()
 		}
 	}
 
-	config.worldName = Utf8ToWide(worldName.c_str());
-	config.worldSaveId = worldSaveId;
 	return config;
 }
 
@@ -355,7 +756,7 @@ bool SaveServerPropertiesConfig(const ServerPropertiesConfig &config)
 	std::string worldName = TrimAscii(WideToUtf8(config.worldName));
 	if (worldName.empty())
 	{
-		worldName = "world"; // フォルト名
+		worldName = "world"; // デフォルト名
 	}
 
 	std::string worldSaveId = TrimAscii(config.worldSaveId);

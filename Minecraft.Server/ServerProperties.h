@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include "ServerLogger.h"
 
 namespace ServerRuntime
 {
@@ -13,6 +14,58 @@ namespace ServerRuntime
 		std::wstring worldName;
 		/** world save id `level-id` */
 		std::string worldSaveId;
+
+		/** `server-port` */
+		int serverPort;
+		/** `server-ip` */
+		std::string serverIp;
+		/** `server-name` (max 16 chars at runtime) */
+		std::string serverName;
+		/** `max-players` */
+		int maxPlayers;
+		/** `level-seed` is explicitly set */
+		bool hasSeed;
+		/** `level-seed` */
+		__int64 seed;
+		/** `log-level` */
+		EServerLogLevel logLevel;
+		/** `autosave-interval` (seconds) */
+		int autosaveIntervalSeconds;
+
+		/** host options / game settings */
+		int difficulty;
+		int gameMode;
+		bool levelTypeFlat;
+		bool generateStructures;
+		bool bonusChest;
+		bool pvp;
+		bool trustPlayers;
+		bool fireSpreads;
+		bool tnt;
+		bool spawnAnimals;
+		bool spawnNpcs;
+		bool spawnMonsters;
+		bool allowFlight;
+		bool allowNether;
+		bool friendsOfFriends;
+		bool gamertags;
+		bool bedrockFog;
+		bool hostCanFly;
+		bool hostCanChangeHunger;
+		bool hostCanBeInvisible;
+		bool disableSaving;
+		bool mobGriefing;
+		bool keepInventory;
+		bool doMobSpawning;
+		bool doMobLoot;
+		bool doTileDrops;
+		bool naturalRegeneration;
+		bool doDaylightCycle;
+
+		/** other MinecraftServer runtime settings */
+		int maxBuildHeight;
+		std::string levelType;
+		std::string motd;
 	};
 
 	/**

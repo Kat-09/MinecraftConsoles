@@ -5,7 +5,6 @@
 #include "Input.h"
 #include "Minecraft.h"
 #include "MinecraftServer.h"
-#include "Options.h"
 #include "..\ServerLogger.h"
 #include "..\ServerProperties.h"
 #include "..\WorldManager.h"
@@ -62,7 +61,7 @@ struct DedicatedServerConfig
 };
 
 static volatile bool g_shutdownRequested = false;
-static const DWORD kAutosaveIntervalMs = 60 * 1000;
+static const DWORD kDefaultAutosaveIntervalMs = 60 * 1000;
 static const int kServerActionPad = 0;
 
 static BOOL WINAPI ConsoleCtrlHandlerProc(DWORD ctrlType)
@@ -98,13 +97,13 @@ static int WaitForServerStoppedThreadProc(void *)
 static void PrintUsage()
 {
 	ServerRuntime::LogInfo("usage", "Minecraft.Server.exe [options]");
-	ServerRuntime::LogInfo("usage", "  -port <1-65535>       Listen TCP port (default: 25565)");
-	ServerRuntime::LogInfo("usage", "  -ip <addr>            Bind address (default: 0.0.0.0)");
+	ServerRuntime::LogInfo("usage", "  -port <1-65535>       Listen TCP port (default: server.properties:server-port)");
+	ServerRuntime::LogInfo("usage", "  -ip <addr>            Bind address (default: server.properties:server-ip)");
 	ServerRuntime::LogInfo("usage", "  -bind <addr>          Alias of -ip");
-	ServerRuntime::LogInfo("usage", "  -name <name>          Host display name (max 16 chars)");
-	ServerRuntime::LogInfo("usage", "  -maxplayers <1-8>     Public slots (default: 8)");
-	ServerRuntime::LogInfo("usage", "  -seed <int64>         World seed");
-	ServerRuntime::LogInfo("usage", "  -loglevel <level>     debug|info|warn|error (default: info)");
+	ServerRuntime::LogInfo("usage", "  -name <name>          Host display name (max 16 chars, default: server.properties:server-name)");
+	ServerRuntime::LogInfo("usage", "  -maxplayers <1-8>     Public slots (default: server.properties:max-players)");
+	ServerRuntime::LogInfo("usage", "  -seed <int64>         World seed (overrides server.properties:level-seed)");
+	ServerRuntime::LogInfo("usage", "  -loglevel <level>     debug|info|warn|error (default: server.properties:log-level)");
 	ServerRuntime::LogInfo("usage", "  -help                 Show this help");
 }
 
@@ -232,6 +231,30 @@ static void SetExeWorkingDirectory()
 	}
 }
 
+static void ApplyServerPropertiesToDedicatedConfig(const ServerPropertiesConfig &serverProperties, DedicatedServerConfig *config)
+{
+	if (config == NULL)
+	{
+		return;
+	}
+
+	config->port = serverProperties.serverPort;
+	strncpy_s(
+		config->bindIP,
+		sizeof(config->bindIP),
+		serverProperties.serverIp.empty() ? "0.0.0.0" : serverProperties.serverIp.c_str(),
+		_TRUNCATE);
+	strncpy_s(
+		config->name,
+		sizeof(config->name),
+		serverProperties.serverName.empty() ? "DedicatedServer" : serverProperties.serverName.c_str(),
+		_TRUNCATE);
+	config->maxPlayers = serverProperties.maxPlayers;
+	config->logLevel = serverProperties.logLevel;
+	config->hasSeed = serverProperties.hasSeed;
+	config->seed = serverProperties.seed;
+}
+
 /**
  * 非同期処理進行に必須なコアサブシステムを1フレーム分進める
  *
@@ -274,6 +297,13 @@ int main(int argc, char **argv)
 	config.hasSeed = false;
 	config.showHelp = false;
 
+	SetConsoleCtrlHandler(ConsoleCtrlHandlerProc, TRUE);
+	SetExeWorkingDirectory();
+
+	// server.properties の値をベース設定として読み込み、CLI で必要に応じて上書きする
+	ServerPropertiesConfig serverProperties = LoadServerPropertiesConfig();
+	ApplyServerPropertiesToDedicatedConfig(serverProperties, &config);
+
 	if (!ParseCommandLine(argc, argv, &config))
 	{
 		PrintUsage();
@@ -287,8 +317,6 @@ int main(int argc, char **argv)
 
 	SetServerLogLevel(config.logLevel);
 	LogStartupStep("initializing process state");
-	SetConsoleCtrlHandler(ConsoleCtrlHandlerProc, TRUE);
-	SetExeWorkingDirectory();
 
 	g_iScreenWidth = 1280;
 	g_iScreenHeight = 720;
@@ -378,35 +406,40 @@ int main(int argc, char **argv)
 	}
 
 	app.InitGameSettings();
-	if (minecraft->options != NULL)
-	{
-		minecraft->options->set(Options::Option::MUSIC, 0.0f);
-		minecraft->options->set(Options::Option::SOUND, 0.0f);
-	}
 
 	MinecraftServer::resetFlags();
 	app.SetTutorialMode(false);
 	app.SetCorruptSaveDeleted(false);
-	app.SetGameHostOption(eGameHostOption_Difficulty, 1);
-	app.SetGameHostOption(eGameHostOption_FriendsOfFriends, 0);
-	app.SetGameHostOption(eGameHostOption_Gamertags, 1);
-	app.SetGameHostOption(eGameHostOption_BedrockFog, 1);
-	app.SetGameHostOption(eGameHostOption_GameType, 0);
-	app.SetGameHostOption(eGameHostOption_LevelType, 0);
-	app.SetGameHostOption(eGameHostOption_Structures, 1);
-	app.SetGameHostOption(eGameHostOption_BonusChest, 0);
-	app.SetGameHostOption(eGameHostOption_PvP, 1);
-	app.SetGameHostOption(eGameHostOption_TrustPlayers, 1);
-	app.SetGameHostOption(eGameHostOption_FireSpreads, 1);
-	app.SetGameHostOption(eGameHostOption_TNT, 1);
-	app.SetGameHostOption(eGameHostOption_HostCanFly, 1);
-	app.SetGameHostOption(eGameHostOption_HostCanChangeHunger, 1);
-	app.SetGameHostOption(eGameHostOption_HostCanBeInvisible, 1);
+	app.SetGameHostOption(eGameHostOption_Difficulty, serverProperties.difficulty);
+	app.SetGameHostOption(eGameHostOption_FriendsOfFriends, serverProperties.friendsOfFriends ? 1 : 0);
+	app.SetGameHostOption(eGameHostOption_Gamertags, serverProperties.gamertags ? 1 : 0);
+	app.SetGameHostOption(eGameHostOption_BedrockFog, serverProperties.bedrockFog ? 1 : 0);
+	app.SetGameHostOption(eGameHostOption_GameType, serverProperties.gameMode);
+	app.SetGameHostOption(eGameHostOption_LevelType, serverProperties.levelTypeFlat ? 1 : 0);
+	app.SetGameHostOption(eGameHostOption_Structures, serverProperties.generateStructures ? 1 : 0);
+	app.SetGameHostOption(eGameHostOption_BonusChest, serverProperties.bonusChest ? 1 : 0);
+	app.SetGameHostOption(eGameHostOption_PvP, serverProperties.pvp ? 1 : 0);
+	app.SetGameHostOption(eGameHostOption_TrustPlayers, serverProperties.trustPlayers ? 1 : 0);
+	app.SetGameHostOption(eGameHostOption_FireSpreads, serverProperties.fireSpreads ? 1 : 0);
+	app.SetGameHostOption(eGameHostOption_TNT, serverProperties.tnt ? 1 : 0);
+	app.SetGameHostOption(
+		eGameHostOption_CheatsEnabled,
+		(serverProperties.hostCanFly || serverProperties.hostCanChangeHunger || serverProperties.hostCanBeInvisible) ? 1 : 0);
+	app.SetGameHostOption(eGameHostOption_HostCanFly, serverProperties.hostCanFly ? 1 : 0);
+	app.SetGameHostOption(eGameHostOption_HostCanChangeHunger, serverProperties.hostCanChangeHunger ? 1 : 0);
+	app.SetGameHostOption(eGameHostOption_HostCanBeInvisible, serverProperties.hostCanBeInvisible ? 1 : 0);
+	app.SetGameHostOption(eGameHostOption_DisableSaving, serverProperties.disableSaving ? 1 : 0);
+	app.SetGameHostOption(eGameHostOption_MobGriefing, serverProperties.mobGriefing ? 1 : 0);
+	app.SetGameHostOption(eGameHostOption_KeepInventory, serverProperties.keepInventory ? 1 : 0);
+	app.SetGameHostOption(eGameHostOption_DoMobSpawning, serverProperties.doMobSpawning ? 1 : 0);
+	app.SetGameHostOption(eGameHostOption_DoMobLoot, serverProperties.doMobLoot ? 1 : 0);
+	app.SetGameHostOption(eGameHostOption_DoTileDrops, serverProperties.doTileDrops ? 1 : 0);
+	app.SetGameHostOption(eGameHostOption_NaturalRegeneration, serverProperties.naturalRegeneration ? 1 : 0);
+	app.SetGameHostOption(eGameHostOption_DoDaylightCycle, serverProperties.doDaylightCycle ? 1 : 0);
 
-	StorageManager.SetSaveDisabled(false);
+	StorageManager.SetSaveDisabled(serverProperties.disableSaving);
 	// server.properties から world 名と固定 save-id を取得し、
 	// WorldManager にロード/新規作成判定を委譲する
-	ServerPropertiesConfig serverProperties = LoadServerPropertiesConfig();
 	std::wstring targetWorldName = serverProperties.worldName;
 	if (targetWorldName.empty())
 	{
@@ -491,7 +524,12 @@ int main(int argc, char **argv)
 			LogWorldIO("initial save completed");
 		}
 	}
-	DWORD nextAutosaveTick = GetTickCount() + kAutosaveIntervalMs;
+	DWORD autosaveIntervalMs = kDefaultAutosaveIntervalMs;
+	if (serverProperties.autosaveIntervalSeconds > 0)
+	{
+		autosaveIntervalMs = (DWORD)(serverProperties.autosaveIntervalSeconds * 1000);
+	}
+	DWORD nextAutosaveTick = GetTickCount() + autosaveIntervalMs;
 	bool autosaveRequested = false;
 
 	while (!g_shutdownRequested && !app.m_bShutdown)
@@ -519,7 +557,7 @@ int main(int argc, char **argv)
 				app.SetXuiServerAction(kServerActionPad, eXuiServerAction_AutoSaveGame);
 				autosaveRequested = true;
 			}
-			nextAutosaveTick = now + kAutosaveIntervalMs;
+			nextAutosaveTick = now + autosaveIntervalMs;
 		}
 
 		Sleep(10);
