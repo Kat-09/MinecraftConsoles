@@ -3,6 +3,7 @@
 #include "UI.h"
 #include "UIScene.h"
 #include "UIControl_Slider.h"
+#include "UIControl_TexturePackList.h"
 #include "..\..\..\Minecraft.World\StringHelpers.h"
 #include "..\..\LocalPlayer.h"
 #include "..\..\DLCTexturePack.h"
@@ -238,6 +239,7 @@ UIController::UIController()
 	m_mouseDraggingSliderScene = eUIScene_COUNT;
 	m_mouseDraggingSliderId = -1;
 	m_mouseClickConsumedByScene = false;
+	m_bMouseHoverHorizontalList = false;
 	m_lastHoverMouseX = -1;
 	m_lastHoverMouseY = -1;
 	m_accumulatedTicks = 0;
@@ -899,12 +901,13 @@ void UIController::tickInput()
 					// use their own SetTouchFocus for Flash-side hit testing.
 					if (mouseMoved)
 					{
+						m_bMouseHoverHorizontalList = false;
 						vector<UIControl *> *controls = pScene->GetControls();
 						if (controls)
 						{
 							int hitControlId = -1;
 							S32 hitArea = INT_MAX;
-							bool hitIsTextInput = false;
+							UIControl *hitCtrl = NULL;
 							for (size_t i = 0; i < controls->size(); ++i)
 							{
 								UIControl *ctrl = (*controls)[i];
@@ -914,7 +917,7 @@ void UIController::tickInput()
 								UIControl::eUIControlType type = ctrl->getControlType();
 								if (type != UIControl::eButton && type != UIControl::eTextInput &&
 									type != UIControl::eCheckBox && type != UIControl::eSlider &&
-									type != UIControl::eButtonList)
+									type != UIControl::eButtonList && type != UIControl::eTexturePackList)
 									continue;
 
 								// If the scene has an active panel (e.g. tab menus),
@@ -927,6 +930,10 @@ void UIController::tickInput()
 								S32 cy = ctrl->getYPos() + panelOffsetY;
 								S32 cw = ctrl->getWidth();
 								S32 ch = ctrl->getHeight();
+								// TexturePackList origin is where the slot area starts,
+								// not the top-left of the whole control — use GetRealHeight.
+								if (type == UIControl::eTexturePackList)
+									ch = ((UIControl_TexturePackList *)ctrl)->GetRealHeight();
 								if (cw <= 0 || ch <= 0)
 									continue;
 
@@ -941,24 +948,54 @@ void UIController::tickInput()
 											(S32)sceneMouseX, (S32)sceneMouseY, false);
 										hitControlId = -1;
 										hitArea = INT_MAX;
+										hitCtrl = NULL;
 										break; // ButtonList takes priority
+									}
+									if (type == UIControl::eTexturePackList)
+									{
+										// TexturePackList expects coords relative to its origin.
+										UIControl_TexturePackList *pList = (UIControl_TexturePackList *)ctrl;
+										pScene->SetFocusToElement(ctrl->getId());
+										pList->SetTouchFocus(
+											(S32)(sceneMouseX - cx), (S32)(sceneMouseY - cy), false);
+										m_bMouseHoverHorizontalList = true;
+										hitControlId = -1;
+										hitArea = INT_MAX;
+										hitCtrl = NULL;
+										break;
 									}
 									S32 area = cw * ch;
 									if (area < hitArea)
 									{
 										hitControlId = ctrl->getId();
 										hitArea = area;
-										hitIsTextInput = (type == UIControl::eTextInput);
+										hitCtrl = ctrl;
+										if (type == UIControl::eSlider)
+											m_bMouseHoverHorizontalList = true;
 									}
 								}
 							}
 
-							// Set focus directly via Flash AS, matching the click path.
-							// Skip TextInput — its Iggy focus is set on click (below)
-							// to avoid showing the caret on mere hover.
-							if (hitControlId >= 0 && !hitIsTextInput && pScene->getControlFocus() != hitControlId)
+							if (hitControlId >= 0 && pScene->getControlFocus() != hitControlId)
 							{
-								pScene->SetFocusToElement(hitControlId);
+								// During direct editing, don't let hover move focus
+								// away to other TextInputs (e.g. sign lines).
+								if (hitCtrl && hitCtrl->getControlType() == UIControl::eTextInput
+									&& pScene->isDirectEditBlocking())
+								{
+									// Skip — keep focus on the actively-edited input
+								}
+								else
+								{
+									pScene->SetFocusToElement(hitControlId);
+									// TextInput: SetFocusToElement triggers ChangeState which
+									// shows the caret. Hide it immediately — the render pass
+									// happens after both tickInput and scene tick, so no flicker.
+									if (hitCtrl && hitCtrl->getControlType() == UIControl::eTextInput)
+									{
+										((UIControl_TextInput *)hitCtrl)->setCaretVisible(false);
+									}
+								}
 							}
 						}
 					}
@@ -1372,11 +1409,14 @@ void UIController::handleKeyPress(unsigned int iPad, unsigned int key)
 				down = true;
 			}
 
-			// Remap scroll wheel to UP/DOWN so all scenes get it without
-			// needing per-scene OTHER_STICK handling.
+			// Remap scroll wheel to navigation actions. Use LEFT/RIGHT when
+			// hovering a horizontal list (e.g. TexturePackList), UP/DOWN otherwise.
 			if (pressed && g_KBMInput.IsKBMActive())
 			{
-				key = (key == ACTION_MENU_OTHER_STICK_UP) ? ACTION_MENU_UP : ACTION_MENU_DOWN;
+				if (m_bMouseHoverHorizontalList)
+					key = (key == ACTION_MENU_OTHER_STICK_UP) ? ACTION_MENU_LEFT : ACTION_MENU_RIGHT;
+				else
+					key = (key == ACTION_MENU_OTHER_STICK_UP) ? ACTION_MENU_UP : ACTION_MENU_DOWN;
 			}
 		}
 	}

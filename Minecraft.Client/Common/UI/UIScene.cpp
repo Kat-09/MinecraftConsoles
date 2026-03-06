@@ -447,6 +447,19 @@ void UIScene::tick()
 		IggyPlayerTickRS( swf );
 		m_hasTickedOnce = true;
 	}
+
+#ifdef _WINDOWS64
+	{
+		vector<UIControl_TextInput*> inputs;
+		getDirectEditInputs(inputs);
+		for (size_t i = 0; i < inputs.size(); i++)
+		{
+			UIControl_TextInput::EDirectEditResult result = inputs[i]->tickDirectEdit();
+			if (result != UIControl_TextInput::eDirectEdit_Continue)
+				onDirectEditFinished(inputs[i], result);
+		}
+	}
+#endif
 }
 
 UIControl* UIScene::GetMainPanel()
@@ -455,6 +468,18 @@ UIControl* UIScene::GetMainPanel()
 }
 
 #ifdef _WINDOWS64
+bool UIScene::isDirectEditBlocking()
+{
+	vector<UIControl_TextInput*> inputs;
+	getDirectEditInputs(inputs);
+	for (size_t i = 0; i < inputs.size(); i++)
+	{
+		if (inputs[i]->isDirectEditing() || inputs[i]->getDirectEditCooldown() > 0)
+			return true;
+	}
+	return false;
+}
+
 bool UIScene::handleMouseClick(F32 x, F32 y)
 {
 	S32 panelOffsetX = 0, panelOffsetY = 0;
@@ -464,6 +489,28 @@ bool UIScene::handleMouseClick(F32 x, F32 y)
 		pMainPanel->UpdateControl();
 		panelOffsetX = pMainPanel->getXPos();
 		panelOffsetY = pMainPanel->getYPos();
+	}
+
+	// Click-outside-to-deselect: confirm any active direct edit if
+	// the click landed outside the editing text input.
+	{
+		vector<UIControl_TextInput*> deInputs;
+		getDirectEditInputs(deInputs);
+		for (size_t i = 0; i < deInputs.size(); i++)
+		{
+			if (!deInputs[i]->isDirectEditing())
+				continue;
+			deInputs[i]->UpdateControl();
+			S32 cx = deInputs[i]->getXPos() + panelOffsetX;
+			S32 cy = deInputs[i]->getYPos() + panelOffsetY;
+			S32 cw = deInputs[i]->getWidth();
+			S32 ch = deInputs[i]->getHeight();
+			if (!(cw > 0 && ch > 0 && x >= cx && x <= cx + cw && y >= cy && y <= cy + ch))
+			{
+				deInputs[i]->confirmDirectEdit();
+				onDirectEditFinished(deInputs[i], UIControl_TextInput::eDirectEdit_Confirmed);
+			}
+		}
 	}
 
 	vector<UIControl *> *controls = GetControls();

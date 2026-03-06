@@ -56,9 +56,6 @@ UIScene_DebugSetCamera::UIScene_DebugSetCamera(int iPad, void *initData, UILayer
 	m_labelCamZ.init(L"CamZ");
 	m_labelYRotElev.init(L"Y-Rot & Elevation (Degs)");
 
-#ifdef _WINDOWS64
-	m_activeDirectEditControl = eControl_Teleport; // sentinel — no active edit
-#endif
 }
 
 wstring UIScene_DebugSetCamera::getMoviePath()
@@ -80,30 +77,30 @@ UIControl_TextInput* UIScene_DebugSetCamera::getTextInputForControl(eControls ct
 	}
 }
 
+void UIScene_DebugSetCamera::getDirectEditInputs(vector<UIControl_TextInput*> &inputs)
+{
+	inputs.push_back(&m_textInputX);
+	inputs.push_back(&m_textInputY);
+	inputs.push_back(&m_textInputZ);
+	inputs.push_back(&m_textInputYRot);
+	inputs.push_back(&m_textInputElevation);
+}
+
+void UIScene_DebugSetCamera::onDirectEditFinished(UIControl_TextInput *input, UIControl_TextInput::EDirectEditResult result)
+{
+	wstring value = input->getEditBuffer();
+	double val = 0;
+	if (!value.empty()) val = _fromString<double>(value);
+
+	if (input == &m_textInputX)           currentPosition->m_camX = val;
+	else if (input == &m_textInputY)      currentPosition->m_camY = val;
+	else if (input == &m_textInputZ)      currentPosition->m_camZ = val;
+	else if (input == &m_textInputYRot)   currentPosition->m_yRot = val;
+	else if (input == &m_textInputElevation) currentPosition->m_elev = val;
+}
+
 bool UIScene_DebugSetCamera::handleMouseClick(F32 x, F32 y)
 {
-	// If currently editing, confirm the current edit before processing the click
-	if (m_activeDirectEditControl != eControl_Teleport)
-	{
-		UIControl_TextInput* active = getTextInputForControl(m_activeDirectEditControl);
-		if (active && active->isDirectEditing())
-		{
-			wstring value = active->getEditBuffer();
-			double val = 0;
-			if (!value.empty()) val = _fromString<double>(value);
-			switch (m_activeDirectEditControl)
-			{
-			case eControl_CamX:      currentPosition->m_camX = val; break;
-			case eControl_CamY:      currentPosition->m_camY = val; break;
-			case eControl_CamZ:      currentPosition->m_camZ = val; break;
-			case eControl_YRot:      currentPosition->m_yRot = val; break;
-			case eControl_Elevation: currentPosition->m_elev = val; break;
-			}
-			active->confirmDirectEdit();
-		}
-		m_activeDirectEditControl = eControl_Teleport;
-	}
-
 	UIScene::handleMouseClick(x, y);
 	return true; // always consume to prevent Iggy re-entry on empty space
 }
@@ -112,40 +109,12 @@ bool UIScene_DebugSetCamera::handleMouseClick(F32 x, F32 y)
 void UIScene_DebugSetCamera::tick()
 {
 	UIScene::tick();
-
-#ifdef _WINDOWS64
-	UIControl_TextInput* inputs[] = { &m_textInputX, &m_textInputY, &m_textInputZ, &m_textInputYRot, &m_textInputElevation };
-	for (int i = 0; i < 5; i++)
-	{
-		UIControl_TextInput::EDirectEditResult result = inputs[i]->tickDirectEdit();
-		if (result == UIControl_TextInput::eDirectEdit_Confirmed)
-		{
-			wstring value = inputs[i]->getEditBuffer();
-			double val = 0;
-			if (!value.empty()) val = _fromString<double>(value);
-			eControls ctrl = (eControls)i; // eControl_CamX=0, CamY=1, CamZ=2, YRot=3, Elevation=4
-			switch (ctrl)
-			{
-			case eControl_CamX:      currentPosition->m_camX = val; break;
-			case eControl_CamY:      currentPosition->m_camY = val; break;
-			case eControl_CamZ:      currentPosition->m_camZ = val; break;
-			case eControl_YRot:      currentPosition->m_yRot = val; break;
-			case eControl_Elevation: currentPosition->m_elev = val; break;
-			}
-			m_activeDirectEditControl = eControl_Teleport;
-		}
-		else if (result == UIControl_TextInput::eDirectEdit_Cancelled)
-		{
-			m_activeDirectEditControl = eControl_Teleport;
-		}
-	}
-#endif
 }
 
 void UIScene_DebugSetCamera::handleInput(int iPad, int key, bool repeat, bool pressed, bool released, bool &handled)
 {
 #ifdef _WINDOWS64
-	if (m_activeDirectEditControl != eControl_Teleport) { handled = true; return; }
+	if (isDirectEditBlocking()) { handled = true; return; }
 #endif
 	ui.AnimateKeyPress(iPad, key, repeat, pressed, released);
 
@@ -172,7 +141,7 @@ void UIScene_DebugSetCamera::handleInput(int iPad, int key, bool repeat, bool pr
 void UIScene_DebugSetCamera::handlePress(F64 controlId, F64 childId)
 {
 #ifdef _WINDOWS64
-	if (m_activeDirectEditControl != eControl_Teleport) return;
+	if (isDirectEditBlocking()) return;
 #endif
 	switch((int)controlId)
 	{
@@ -190,8 +159,7 @@ void UIScene_DebugSetCamera::handlePress(F64 controlId, F64 childId)
 #ifdef _WINDOWS64
 		if (g_KBMInput.IsKBMActive())
 		{
-			m_activeDirectEditControl = m_keyboardCallbackControl;
-			UIControl_TextInput* input = getTextInputForControl(m_activeDirectEditControl);
+			UIControl_TextInput* input = getTextInputForControl(m_keyboardCallbackControl);
 			if (input) input->beginDirectEdit(25);
 		}
 		else

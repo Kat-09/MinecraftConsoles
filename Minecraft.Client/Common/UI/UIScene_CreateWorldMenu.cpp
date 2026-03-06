@@ -289,14 +289,6 @@ void UIScene_CreateWorldMenu::tick()
 {
 	UIScene::tick();
 
-#ifdef _WINDOWS64
-	UIControl_TextInput::EDirectEditResult editResult = m_editWorldName.tickDirectEdit();
-	if (editResult == UIControl_TextInput::eDirectEdit_Confirmed || editResult == UIControl_TextInput::eDirectEdit_Cancelled)
-	{
-		m_worldName = m_editWorldName.getEditBuffer();
-		m_buttonCreateWorld.setEnable(!m_worldName.empty());
-	}
-#endif
 
 	if(m_iSetTexturePackDescription >= 0 )
 	{
@@ -360,11 +352,24 @@ int UIScene_CreateWorldMenu::ContinueOffline(void *pParam,int iPad,C4JStorage::E
 
 #endif
 
+#ifdef _WINDOWS64
+void UIScene_CreateWorldMenu::getDirectEditInputs(vector<UIControl_TextInput*> &inputs)
+{
+	inputs.push_back(&m_editWorldName);
+}
+
+void UIScene_CreateWorldMenu::onDirectEditFinished(UIControl_TextInput *input, UIControl_TextInput::EDirectEditResult result)
+{
+	m_worldName = input->getEditBuffer();
+	m_buttonCreateWorld.setEnable(!m_worldName.empty());
+}
+#endif
+
 void UIScene_CreateWorldMenu::handleInput(int iPad, int key, bool repeat, bool pressed, bool released, bool &handled)
 {
 	if(m_bIgnoreInput) return;
 #ifdef _WINDOWS64
-	if (m_editWorldName.isDirectEditing() || m_editWorldName.getDirectEditCooldown() > 0) { handled = true; return; }
+	if (isDirectEditBlocking()) { handled = true; return; }
 #endif
 
 	ui.AnimateKeyPress(m_iPad, key, repeat, pressed, released);
@@ -421,7 +426,7 @@ void UIScene_CreateWorldMenu::handlePress(F64 controlId, F64 childId)
 {
 	if(m_bIgnoreInput) return;
 #ifdef _WINDOWS64
-	if (m_editWorldName.isDirectEditing() || m_editWorldName.getDirectEditCooldown() > 0) return;
+	if (isDirectEditBlocking()) return;
 #endif
 
 	//CD - Added for audio

@@ -6,6 +6,7 @@ using namespace std;
 
 #include "UIEnums.h"
 #include "UIControl_Base.h"
+#include "UIControl_TextInput.h"
 
 class ItemRenderer;
 class UILayer;
@@ -184,6 +185,13 @@ public:
 	virtual UIControl* GetMainPanel();
 
 #ifdef _WINDOWS64
+	// Direct edit support: scenes override to register their text inputs.
+	// Base class handles tickDirectEdit in tick(), click-outside-to-deselect
+	// in handleMouseClick(), and provides isDirectEditBlocking() for guards.
+	virtual void getDirectEditInputs(vector<UIControl_TextInput*> &inputs) {}
+	virtual void onDirectEditFinished(UIControl_TextInput *input, UIControl_TextInput::EDirectEditResult result) {}
+	bool isDirectEditBlocking();
+
 	// Mouse click dispatch. Hit-tests C++ controls and picks the smallest-area
 	// match, then calls handlePress. Override for custom behaviour (e.g. crafting).
 	virtual bool handleMouseClick(F32 x, F32 y);

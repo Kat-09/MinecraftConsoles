@@ -34,10 +34,6 @@ UIScene_DebugCreateSchematic::UIScene_DebugCreateSchematic(int iPad, void *initD
 	m_buttonCreate.init(L"Create",eControl_Create);
 
 	m_data = new ConsoleSchematicFile::XboxSchematicInitParam();
-
-#ifdef _WINDOWS64
-	m_activeDirectEditControl = eControl_Create; // sentinel: no active edit
-#endif
 }
 
 wstring UIScene_DebugCreateSchematic::getMoviePath()
@@ -61,9 +57,41 @@ UIControl_TextInput* UIScene_DebugCreateSchematic::getTextInputForControl(eContr
 }
 
 #ifdef _WINDOWS64
+void UIScene_DebugCreateSchematic::getDirectEditInputs(vector<UIControl_TextInput*> &inputs)
+{
+	inputs.push_back(&m_textInputName);
+	inputs.push_back(&m_textInputStartX);
+	inputs.push_back(&m_textInputStartY);
+	inputs.push_back(&m_textInputStartZ);
+	inputs.push_back(&m_textInputEndX);
+	inputs.push_back(&m_textInputEndY);
+	inputs.push_back(&m_textInputEndZ);
+}
+
+void UIScene_DebugCreateSchematic::onDirectEditFinished(UIControl_TextInput *input, UIControl_TextInput::EDirectEditResult result)
+{
+	wstring value = input->getEditBuffer();
+	int iVal = 0;
+	if (!value.empty())
+		iVal = _fromString<int>(value);
+
+	if (input == &m_textInputName)
+	{
+		if (!value.empty())
+			swprintf(m_data->name, 64, L"%ls", value.c_str());
+		else
+			swprintf(m_data->name, 64, L"schematic");
+	}
+	else if (input == &m_textInputStartX) m_data->startX = iVal;
+	else if (input == &m_textInputStartY) m_data->startY = iVal;
+	else if (input == &m_textInputStartZ) m_data->startZ = iVal;
+	else if (input == &m_textInputEndX)   m_data->endX = iVal;
+	else if (input == &m_textInputEndY)   m_data->endY = iVal;
+	else if (input == &m_textInputEndZ)   m_data->endZ = iVal;
+}
+
 bool UIScene_DebugCreateSchematic::handleMouseClick(F32 x, F32 y)
 {
-	if (m_activeDirectEditControl != eControl_Create) return true;
 	UIScene::handleMouseClick(x, y);
 	return true; // always consume to prevent Iggy re-entry on empty space
 }
@@ -72,48 +100,12 @@ bool UIScene_DebugCreateSchematic::handleMouseClick(F32 x, F32 y)
 void UIScene_DebugCreateSchematic::tick()
 {
 	UIScene::tick();
-
-#ifdef _WINDOWS64
-	UIControl_TextInput* allInputs[] = { &m_textInputName, &m_textInputStartX, &m_textInputStartY, &m_textInputStartZ, &m_textInputEndX, &m_textInputEndY, &m_textInputEndZ };
-	for (int i = 0; i < 7; i++)
-		allInputs[i]->tickDirectEdit();
-
-	if (m_activeDirectEditControl != eControl_Create)
-	{
-		UIControl_TextInput* active = getTextInputForControl(m_activeDirectEditControl);
-		if (active && !active->isDirectEditing())
-		{
-			// Edit finished — apply value
-			wstring value = active->getEditBuffer();
-			int iVal = 0;
-			if (!value.empty() && m_activeDirectEditControl != eControl_Name)
-				iVal = _fromString<int>(value);
-
-			switch (m_activeDirectEditControl)
-			{
-			case eControl_Name:
-				if (!value.empty())
-					swprintf(m_data->name, 64, L"%ls", value.c_str());
-				else
-					swprintf(m_data->name, 64, L"schematic");
-				break;
-			case eControl_StartX: m_data->startX = iVal; break;
-			case eControl_StartY: m_data->startY = iVal; break;
-			case eControl_StartZ: m_data->startZ = iVal; break;
-			case eControl_EndX:   m_data->endX = iVal; break;
-			case eControl_EndY:   m_data->endY = iVal; break;
-			case eControl_EndZ:   m_data->endZ = iVal; break;
-			}
-			m_activeDirectEditControl = eControl_Create;
-		}
-	}
-#endif
 }
 
 void UIScene_DebugCreateSchematic::handleInput(int iPad, int key, bool repeat, bool pressed, bool released, bool &handled)
 {
 #ifdef _WINDOWS64
-	if (m_activeDirectEditControl != eControl_Create) return;
+	if (isDirectEditBlocking()) return;
 #endif
 	ui.AnimateKeyPress(iPad, key, repeat, pressed, released);
 
@@ -140,7 +132,7 @@ void UIScene_DebugCreateSchematic::handleInput(int iPad, int key, bool repeat, b
 void UIScene_DebugCreateSchematic::handlePress(F64 controlId, F64 childId)
 {
 #ifdef _WINDOWS64
-	if (m_activeDirectEditControl != eControl_Create) return;
+	if (isDirectEditBlocking()) return;
 #endif
 	switch((int)controlId)
 	{
@@ -192,8 +184,7 @@ void UIScene_DebugCreateSchematic::handlePress(F64 controlId, F64 childId)
 #ifdef _WINDOWS64
 			if (g_KBMInput.IsKBMActive())
 			{
-				m_activeDirectEditControl = m_keyboardCallbackControl;
-				UIControl_TextInput* input = getTextInputForControl(m_activeDirectEditControl);
+				UIControl_TextInput* input = getTextInputForControl(m_keyboardCallbackControl);
 				if (input) input->beginDirectEdit(25);
 			}
 			else

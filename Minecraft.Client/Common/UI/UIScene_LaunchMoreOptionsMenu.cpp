@@ -211,12 +211,6 @@ void UIScene_LaunchMoreOptionsMenu::tick()
 {
 	UIScene::tick();
 
-#ifdef _WINDOWS64
-	UIControl_TextInput::EDirectEditResult editResult = m_editSeed.tickDirectEdit();
-	if (editResult == UIControl_TextInput::eDirectEdit_Confirmed)
-		m_params->seed = m_editSeed.getEditBuffer();
-#endif
-
 	bool bMultiplayerAllowed = ProfileManager.IsSignedInLive(m_params->iPad) && ProfileManager.AllowedToPlayMultiplayer(m_params->iPad);
 
 	if (bMultiplayerAllowed != m_bMultiplayerAllowed)
@@ -264,7 +258,7 @@ void UIScene_LaunchMoreOptionsMenu::handleInput(int iPad, int key, bool repeat, 
 {
 	if(m_bIgnoreInput) return;
 #ifdef _WINDOWS64
-	if (m_editSeed.isDirectEditing() || m_editSeed.getDirectEditCooldown() > 0) return;
+	if (isDirectEditBlocking()) return;
 #endif
 
 	//app.DebugPrintf("UIScene_DebugOverlay handling input for pad %d, key %d, down- %s, pressed- %s, released- %s\n", iPad, key, down?"TRUE":"FALSE", pressed?"TRUE":"FALSE", released?"TRUE":"FALSE");
@@ -581,11 +575,24 @@ int UIScene_LaunchMoreOptionsMenu::KeyboardCompleteSeedCallback(LPVOID lpParam,b
 	return 0;
 }
 
+#ifdef _WINDOWS64
+void UIScene_LaunchMoreOptionsMenu::getDirectEditInputs(vector<UIControl_TextInput*> &inputs)
+{
+	inputs.push_back(&m_editSeed);
+}
+
+void UIScene_LaunchMoreOptionsMenu::onDirectEditFinished(UIControl_TextInput *input, UIControl_TextInput::EDirectEditResult result)
+{
+	if (result == UIControl_TextInput::eDirectEdit_Confirmed)
+		m_params->seed = input->getEditBuffer();
+}
+#endif
+
 void UIScene_LaunchMoreOptionsMenu::handlePress(F64 controlId, F64 childId)
 {
 	if(m_bIgnoreInput) return;
 #ifdef _WINDOWS64
-	if (m_editSeed.isDirectEditing() || m_editSeed.getDirectEditCooldown() > 0) return;
+	if (isDirectEditBlocking()) return;
 #endif
 
 	switch((int)controlId)

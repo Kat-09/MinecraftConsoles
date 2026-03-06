@@ -24,9 +24,6 @@ private:
 
 	ConsoleSchematicFile::XboxSchematicInitParam *m_data;
 
-#ifdef _WINDOWS64
-	eControls m_activeDirectEditControl;
-#endif
 
 public:
 	UIScene_DebugCreateSchematic(int iPad, void *initData, UILayer *parentLayer);
@@ -63,6 +60,8 @@ protected:
 
 	virtual wstring getMoviePath();
 #ifdef _WINDOWS64
+	virtual void getDirectEditInputs(vector<UIControl_TextInput*> &inputs);
+	virtual void onDirectEditFinished(UIControl_TextInput *input, UIControl_TextInput::EDirectEditResult result);
 	virtual bool handleMouseClick(F32 x, F32 y);
 #endif
 
