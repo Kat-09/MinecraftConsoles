@@ -861,7 +861,7 @@ void UIController::tickInput()
 						{
 							int hitControlId = -1;
 							S32 hitArea = INT_MAX;
-							bool hitIsTextInput = false;
+							UIControl *hitCtrl = NULL;
 							for (size_t i = 0; i < controls->size(); ++i)
 							{
 								UIControl *ctrl = (*controls)[i];
@@ -898,6 +898,7 @@ void UIController::tickInput()
 											(S32)sceneMouseX, (S32)sceneMouseY, false);
 										hitControlId = -1;
 										hitArea = INT_MAX;
+										hitCtrl = NULL;
 										break; // ButtonList takes priority
 									}
 									S32 area = cw * ch;
@@ -905,17 +906,31 @@ void UIController::tickInput()
 									{
 										hitControlId = ctrl->getId();
 										hitArea = area;
-										hitIsTextInput = (type == UIControl::eTextInput);
+										hitCtrl = ctrl;
 									}
 								}
 							}
 
-							// Set focus directly via Flash AS, matching the click path.
-							// Skip TextInput — its Iggy focus is set on click (below)
-							// to avoid showing the caret on mere hover.
-							if (hitControlId >= 0 && !hitIsTextInput && pScene->getControlFocus() != hitControlId)
+							if (hitControlId >= 0 && pScene->getControlFocus() != hitControlId)
 							{
-								pScene->SetFocusToElement(hitControlId);
+								// During direct editing, don't let hover move focus
+								// away to other TextInputs (e.g. sign lines).
+								if (hitCtrl && hitCtrl->getControlType() == UIControl::eTextInput
+									&& pScene->isDirectEditBlocking())
+								{
+									// Skip — keep focus on the actively-edited input
+								}
+								else
+								{
+									pScene->SetFocusToElement(hitControlId);
+									// TextInput: SetFocusToElement triggers ChangeState which
+									// shows the caret. Hide it immediately — the render pass
+									// happens after both tickInput and scene tick, so no flicker.
+									if (hitCtrl && hitCtrl->getControlType() == UIControl::eTextInput)
+									{
+										((UIControl_TextInput *)hitCtrl)->setCaretVisible(false);
+									}
+								}
 							}
 						}
 					}

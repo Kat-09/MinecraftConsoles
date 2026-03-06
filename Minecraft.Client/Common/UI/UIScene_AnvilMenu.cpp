@@ -97,11 +97,15 @@ void UIScene_AnvilMenu::tick()
 	UIScene_AbstractContainerMenu::tick();
 
 #ifdef _WINDOWS64
-	UIControl_TextInput::EDirectEditResult editResult = m_textInputAnvil.tickDirectEdit();
-	if (editResult == UIControl_TextInput::eDirectEdit_Confirmed)
+	// Live update: sync item name per-keystroke while editing (like Java edition)
+	if (m_textInputAnvil.isDirectEditing())
 	{
-		m_itemName = m_textInputAnvil.getEditBuffer();
-		updateItemName();
+		const wstring& buf = m_textInputAnvil.getEditBuffer();
+		if (buf != m_itemName)
+		{
+			m_itemName = buf;
+			updateItemName();
+		}
 	}
 #endif
 
@@ -315,6 +319,19 @@ UIControl *UIScene_AnvilMenu::getSection(ESceneSection eSection)
 	return control;
 }
 
+#ifdef _WINDOWS64
+void UIScene_AnvilMenu::getDirectEditInputs(vector<UIControl_TextInput*> &inputs)
+{
+	inputs.push_back(&m_textInputAnvil);
+}
+
+void UIScene_AnvilMenu::onDirectEditFinished(UIControl_TextInput *input, UIControl_TextInput::EDirectEditResult result)
+{
+	m_itemName = input->getEditBuffer();
+	updateItemName();
+}
+#endif
+
 int UIScene_AnvilMenu::KeyboardCompleteCallback(LPVOID lpParam,bool bRes)
 {
 	UIScene_AnvilMenu *pClass=(UIScene_AnvilMenu *)lpParam;
@@ -344,7 +361,7 @@ int UIScene_AnvilMenu::KeyboardCompleteCallback(LPVOID lpParam,bool bRes)
 void UIScene_AnvilMenu::handleEditNamePressed()
 {
 #ifdef _WINDOWS64
-	if (m_textInputAnvil.isDirectEditing() || m_textInputAnvil.getDirectEditCooldown() > 0)
+	if (isDirectEditBlocking())
 		return;
 
 	if (g_KBMInput.IsKBMActive())

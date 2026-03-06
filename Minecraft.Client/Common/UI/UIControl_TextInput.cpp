@@ -193,7 +193,7 @@ UIControl_TextInput::EDirectEditResult UIControl_TextInput::tickDirectEdit()
 		{
 			m_bDirectEditing = false;
 			m_iDirectEditCooldown = 4;
-			setLabel(m_editBuffer.c_str());
+			setLabel(m_editBuffer.c_str(), true);
 			setCaretVisible(false);
 			return eDirectEdit_Confirmed;
 		}
@@ -263,7 +263,7 @@ void UIControl_TextInput::cancelDirectEdit()
 		m_editBuffer = m_textBeforeEdit;
 		m_bDirectEditing = false;
 		m_iDirectEditCooldown = 4;
-		setLabel(m_editBuffer.c_str());
+		setLabel(m_editBuffer.c_str(), true);
 		setCaretVisible(false);
 	}
 }
@@ -273,7 +273,7 @@ void UIControl_TextInput::confirmDirectEdit()
 	if (m_bDirectEditing)
 	{
 		m_bDirectEditing = false;
-		setLabel(m_editBuffer.c_str());
+		setLabel(m_editBuffer.c_str(), true);
 		setCaretVisible(false);
 	}
 }
