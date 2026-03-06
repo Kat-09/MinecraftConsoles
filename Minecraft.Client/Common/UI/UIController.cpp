@@ -237,6 +237,7 @@ UIController::UIController()
 	m_winUserIndex = 0;
 	m_mouseDraggingSliderScene = eUIScene_COUNT;
 	m_mouseDraggingSliderId = -1;
+	m_mouseClickConsumedByScene = false;
 	m_lastHoverMouseX = -1;
 	m_lastHoverMouseY = -1;
 	m_accumulatedTicks = 0;
@@ -784,40 +785,36 @@ void UIController::tickInput()
 #endif
 		{
 #ifdef _WINDOWS64
+			m_mouseClickConsumedByScene = false;
 			if (!g_KBMInput.IsMouseGrabbed() && g_KBMInput.IsKBMActive())
 			{
 				UIScene *pScene = NULL;
-				for (int grp = 0; grp < eUIGroup_COUNT && !pScene; ++grp)
+				// Search by layer priority across all groups (layer-first).
+				// Tooltip layer is skipped because it holds non-interactive
+				// overlays (button hints, timer) that should never capture mouse.
+				// Old group-first order found those tooltips on eUIGroup_Fullscreen
+				// before reaching in-game menus on eUIGroup_Player1.
+				static const EUILayer mouseLayers[] = {
+#ifndef _CONTENT_PACKAGE
+					eUILayer_Debug,
+#endif
+					eUILayer_Error,
+					eUILayer_Alert,
+					eUILayer_Popup,
+					eUILayer_Fullscreen,
+					eUILayer_Scene,
+				};
+				for (int l = 0; l < _countof(mouseLayers) && !pScene; ++l)
 				{
-					pScene = m_groups[grp]->GetTopScene(eUILayer_Debug);
-					if (!pScene) pScene = m_groups[grp]->GetTopScene(eUILayer_Tooltips);
-					if (!pScene) pScene = m_groups[grp]->GetTopScene(eUILayer_Error);
-					if (!pScene) pScene = m_groups[grp]->GetTopScene(eUILayer_Alert);
-					if (!pScene) pScene = m_groups[grp]->GetTopScene(eUILayer_Popup);
-					if (!pScene) pScene = m_groups[grp]->GetTopScene(eUILayer_Fullscreen);
-					if (!pScene) pScene = m_groups[grp]->GetTopScene(eUILayer_Scene);
+					for (int grp = 0; grp < eUIGroup_COUNT && !pScene; ++grp)
+					{
+						pScene = m_groups[grp]->GetTopScene(mouseLayers[l]);
+					}
 				}
 				if (pScene && pScene->getMovie())
 				{
-					Iggy *movie = pScene->getMovie();
 					int rawMouseX = g_KBMInput.GetMouseX();
 					int rawMouseY = g_KBMInput.GetMouseY();
-					F32 mouseX = (F32)rawMouseX;
-					F32 mouseY = (F32)rawMouseY;
-
-					extern HWND g_hWnd;
-					if (g_hWnd)
-					{
-						RECT rc;
-						GetClientRect(g_hWnd, &rc);
-						int winW = rc.right - rc.left;
-						int winH = rc.bottom - rc.top;
-						if (winW > 0 && winH > 0)
-						{
-							mouseX = mouseX * (m_fScreenWidth / (F32)winW);
-							mouseY = mouseY * (m_fScreenHeight / (F32)winH);
-						}
-					}
 
 					// Only update hover focus when the mouse has actually moved,
 					// so that mouse-wheel scrolling can change list selection
@@ -826,43 +823,21 @@ void UIController::tickInput()
 					m_lastHoverMouseX = rawMouseX;
 					m_lastHoverMouseY = rawMouseY;
 
-					if (mouseMoved)
+					// Convert mouse to scene/movie coordinates
+					F32 sceneMouseX = (F32)rawMouseX;
+					F32 sceneMouseY = (F32)rawMouseY;
 					{
-						IggyFocusHandle currentFocus = IGGY_FOCUS_NULL;
-						IggyFocusableObject focusables[64];
-						S32 numFocusables = 0;
-						IggyPlayerGetFocusableObjects(movie, &currentFocus, focusables, 64, &numFocusables);
-
-						if (numFocusables > 0 && numFocusables <= 64)
+						extern HWND g_hWnd;
+						RECT rc;
+						if (g_hWnd && GetClientRect(g_hWnd, &rc))
 						{
-							IggyFocusHandle hitObject = IGGY_FOCUS_NULL;
-							for (S32 i = 0; i < numFocusables; ++i)
+							int winW = rc.right - rc.left;
+							int winH = rc.bottom - rc.top;
+							if (winW > 0 && winH > 0)
 							{
-								if (mouseX >= focusables[i].x0 && mouseX <= focusables[i].x1 &&
-									mouseY >= focusables[i].y0 && mouseY <= focusables[i].y1)
-								{
-									hitObject = focusables[i].object;
-									break;
-								}
+								sceneMouseX = sceneMouseX * ((F32)pScene->getRenderWidth() / (F32)winW);
+								sceneMouseY = sceneMouseY * ((F32)pScene->getRenderHeight() / (F32)winH);
 							}
-
-							if (hitObject != IGGY_FOCUS_NULL && hitObject != currentFocus)
-							{
-								IggyPlayerSetFocusRS(movie, hitObject, 0);
-							}
-						}
-					}
-
-					// Convert mouse to scene/movie coordinates for slider hit testing
-					F32 sceneMouseX = mouseX;
-					F32 sceneMouseY = mouseY;
-					{
-						S32 displayWidth = 0, displayHeight = 0;
-						pScene->GetParentLayer()->getRenderDimensions(displayWidth, displayHeight);
-						if (displayWidth > 0 && displayHeight > 0)
-						{
-							sceneMouseX = mouseX * ((F32)pScene->getRenderWidth() / (F32)displayWidth);
-							sceneMouseY = mouseY * ((F32)pScene->getRenderHeight() / (F32)displayHeight);
 						}
 					}
 
@@ -874,6 +849,105 @@ void UIController::tickInput()
 						pMainPanel->UpdateControl();
 						panelOffsetX = pMainPanel->getXPos();
 						panelOffsetY = pMainPanel->getYPos();
+					}
+
+					// Mouse hover — hit test against C++ control bounds.
+					// Simple controls use SetFocusToElement; list controls
+					// use their own SetTouchFocus for Flash-side hit testing.
+					if (mouseMoved)
+					{
+						vector<UIControl *> *controls = pScene->GetControls();
+						if (controls)
+						{
+							int hitControlId = -1;
+							S32 hitCx = -1;
+							for (size_t i = 0; i < controls->size(); ++i)
+							{
+								UIControl *ctrl = (*controls)[i];
+								if (!ctrl || !ctrl->getVisible() || ctrl->getId() < 0)
+									continue;
+
+								UIControl::eUIControlType type = ctrl->getControlType();
+								if (type != UIControl::eButton && type != UIControl::eTextInput &&
+									type != UIControl::eCheckBox && type != UIControl::eSlider &&
+									type != UIControl::eButtonList)
+									continue;
+
+								// If the scene has an active panel (e.g. tab menus),
+								// skip controls that aren't children of that panel.
+								if (pMainPanel && ctrl->getParentPanel() != pMainPanel)
+									continue;
+
+								ctrl->UpdateControl();
+								S32 cx = ctrl->getXPos() + panelOffsetX;
+								S32 cy = ctrl->getYPos() + panelOffsetY;
+								S32 cw = ctrl->getWidth();
+								S32 ch = ctrl->getHeight();
+								if (cw <= 0 || ch <= 0)
+									continue;
+
+								if (sceneMouseX >= cx && sceneMouseX <= cx + cw &&
+									sceneMouseY >= cy && sceneMouseY <= cy + ch)
+								{
+									if (type == UIControl::eButtonList)
+									{
+										// ButtonList manages focus internally via Flash —
+										// pass mouse coords so it can highlight the right item.
+										((UIControl_ButtonList *)ctrl)->SetTouchFocus(
+											(S32)sceneMouseX, (S32)sceneMouseY, false);
+										hitControlId = -1;
+										hitCx = -1;
+										break; // ButtonList takes priority
+									}
+									else if (cx > hitCx)
+									{
+										// When multiple controls overlap (e.g. debug scenes
+										// with side-by-side TextInputs reporting full width),
+										// pick the one whose left edge is closest to mouse X.
+										hitControlId = ctrl->getId();
+										hitCx = cx;
+									}
+								}
+							}
+
+							if (hitControlId >= 0 && pScene->getControlFocus() != hitControlId)
+							{
+								// Set focus via Iggy's internal focus system so that
+								// action dispatch (ACTION_MENU_OK) targets the right
+								// control. SetFocusToElement calls Flash's AS SetFocus
+								// which triggers full focus behavior (including caret
+								// visibility on TextInputs), so prefer IggyPlayerSetFocusRS.
+								Iggy *movie = pScene->getMovie();
+								IggyFocusHandle currentFocus = IGGY_FOCUS_NULL;
+								IggyFocusableObject focusables[64];
+								S32 numFocusables = 0;
+								IggyPlayerGetFocusableObjects(movie, &currentFocus, focusables, 64, &numFocusables);
+								// Iggy focusable bounds may overlap (same wide-width issue
+								// as C++ bounds). Pick the one with largest x0 <= mouseX.
+								bool iggyFocusSet = false;
+								S32 bestFocusX0 = -1;
+								S32 bestFocusIdx = -1;
+								for (S32 fi = 0; fi < numFocusables && fi < 64; ++fi)
+								{
+									if (sceneMouseX >= focusables[fi].x0 && sceneMouseX <= focusables[fi].x1 &&
+										sceneMouseY >= focusables[fi].y0 && sceneMouseY <= focusables[fi].y1)
+									{
+										if (focusables[fi].x0 > bestFocusX0)
+										{
+											bestFocusX0 = focusables[fi].x0;
+											bestFocusIdx = fi;
+										}
+									}
+								}
+								if (bestFocusIdx >= 0)
+								{
+									IggyPlayerSetFocusRS(movie, focusables[bestFocusIdx].object, 0);
+									iggyFocusSet = true;
+								}
+								if (!iggyFocusSet)
+									pScene->SetFocusToElement(hitControlId);
+							}
+						}
 					}
 
 					bool leftPressed = g_KBMInput.IsMouseButtonPressed(KeyboardMouseInput::MOUSE_LEFT);
@@ -890,10 +964,49 @@ void UIController::tickInput()
 						vector<UIControl *> *controls = pScene->GetControls();
 						if (controls)
 						{
+							// Set Iggy dispatch focus for TextInput on click (not hover)
+							// so ACTION_MENU_OK targets the correct text field.
+							for (size_t i = 0; i < controls->size(); ++i)
+							{
+								UIControl *ctrl = (*controls)[i];
+								if (!ctrl || ctrl->getControlType() != UIControl::eTextInput || !ctrl->getVisible())
+									continue;
+								if (pMainPanel && ctrl->getParentPanel() != pMainPanel)
+									continue;
+								ctrl->UpdateControl();
+								S32 cx = ctrl->getXPos() + panelOffsetX;
+								S32 cy = ctrl->getYPos() + panelOffsetY;
+								S32 cw = ctrl->getWidth();
+								S32 ch = ctrl->getHeight();
+								if (cw > 0 && ch > 0 &&
+									sceneMouseX >= cx && sceneMouseX <= cx + cw &&
+									sceneMouseY >= cy && sceneMouseY <= cy + ch)
+								{
+									Iggy *movie = pScene->getMovie();
+									IggyFocusHandle currentFocus = IGGY_FOCUS_NULL;
+									IggyFocusableObject focusables[64];
+									S32 numFocusables = 0;
+									IggyPlayerGetFocusableObjects(movie, &currentFocus, focusables, 64, &numFocusables);
+									for (S32 fi = 0; fi < numFocusables && fi < 64; ++fi)
+									{
+										if (sceneMouseX >= focusables[fi].x0 && sceneMouseX <= focusables[fi].x1 &&
+											sceneMouseY >= focusables[fi].y0 && sceneMouseY <= focusables[fi].y1)
+										{
+											IggyPlayerSetFocusRS(movie, focusables[fi].object, 0);
+											break;
+										}
+									}
+									break;
+								}
+							}
+
 							for (size_t i = 0; i < controls->size(); ++i)
 							{
 								UIControl *ctrl = (*controls)[i];
 								if (!ctrl || ctrl->getControlType() != UIControl::eSlider || !ctrl->getVisible())
+									continue;
+
+								if (pMainPanel && ctrl->getParentPanel() != pMainPanel)
 									continue;
 
 								UIControl_Slider *pSlider = (UIControl_Slider *)ctrl;
@@ -941,6 +1054,12 @@ void UIController::tickInput()
 					{
 						m_mouseDraggingSliderScene = eUIScene_COUNT;
 						m_mouseDraggingSliderId = -1;
+					}
+
+					// Let the scene handle mouse clicks for custom navigation (e.g. crafting slots)
+					if (leftPressed && m_mouseDraggingSliderId < 0)
+					{
+						m_mouseClickConsumedByScene = pScene->handleMouseClick(sceneMouseX, sceneMouseY);
 					}
 				}
 			}
@@ -1206,7 +1325,7 @@ void UIController::handleKeyPress(unsigned int iPad, unsigned int key)
 
 		if ((key == ACTION_MENU_OK || key == ACTION_MENU_A) && !g_KBMInput.IsMouseGrabbed())
 		{
-			if (m_mouseDraggingSliderId < 0)
+			if (m_mouseDraggingSliderId < 0 && !m_mouseClickConsumedByScene)
 			{
 				if (g_KBMInput.IsMouseButtonPressed(KeyboardMouseInput::MOUSE_LEFT))  { pressed = true; down = true; }
 				if (g_KBMInput.IsMouseButtonReleased(KeyboardMouseInput::MOUSE_LEFT)) { released = true; down = false; }
@@ -1230,6 +1349,13 @@ void UIController::handleKeyPress(unsigned int iPad, unsigned int key)
 				g_KBMInput.ConsumeMouseWheel();
 				pressed = true;
 				down = true;
+			}
+
+			// Remap scroll wheel to UP/DOWN so all scenes get it without
+			// needing per-scene OTHER_STICK handling.
+			if (pressed && g_KBMInput.IsKBMActive())
+			{
+				key = (key == ACTION_MENU_OTHER_STICK_UP) ? ACTION_MENU_UP : ACTION_MENU_DOWN;
 			}
 		}
 	}

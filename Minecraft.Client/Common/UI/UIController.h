@@ -160,6 +160,7 @@ private:
 	unsigned int m_winUserIndex;
 	EUIScene m_mouseDraggingSliderScene;
 	int m_mouseDraggingSliderId;
+	bool m_mouseClickConsumedByScene;
 	int m_lastHoverMouseX;
 	int m_lastHoverMouseY;
 	//bool m_bSysUIShowing;

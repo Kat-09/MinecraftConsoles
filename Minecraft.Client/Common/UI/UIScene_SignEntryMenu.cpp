@@ -18,6 +18,9 @@ UIScene_SignEntryMenu::UIScene_SignEntryMenu(int iPad, void *_initData, UILayer 
 
 	m_bConfirmed = false;
 	m_bIgnoreInput = false;
+#ifdef _WINDOWS64
+	m_iActiveDirectEditLine = -1;
+#endif
 
 	m_buttonConfirm.init(app.GetString(IDS_DONE), eControl_Confirm);
 	m_labelMessage.init(app.GetString(IDS_EDIT_SIGN_MESSAGE));
@@ -77,6 +80,18 @@ void UIScene_SignEntryMenu::tick()
 {
 	UIScene::tick();
 
+#ifdef _WINDOWS64
+	for (int i = 0; i < 4; i++)
+		m_textInputLines[i].tickDirectEdit();
+
+	if (m_iActiveDirectEditLine >= 0)
+	{
+		UIControl_TextInput& line = m_textInputLines[m_iActiveDirectEditLine];
+		if (!line.isDirectEditing())
+			m_iActiveDirectEditLine = -1;
+	}
+#endif
+
 	if(m_bConfirmed)
 	{
 		m_bConfirmed = false;
@@ -107,6 +122,30 @@ void UIScene_SignEntryMenu::tick()
 void UIScene_SignEntryMenu::handleInput(int iPad, int key, bool repeat, bool pressed, bool released, bool &handled)
 {
 	if(m_bConfirmed || m_bIgnoreInput) return;
+#ifdef _WINDOWS64
+	if (m_iActiveDirectEditLine >= 0)
+	{
+		// Mouse click while editing — confirm current line and let click through
+		if (key == ACTION_MENU_OK && pressed && g_KBMInput.IsMouseButtonPressed(KeyboardMouseInput::MOUSE_LEFT))
+		{
+			m_textInputLines[m_iActiveDirectEditLine].confirmDirectEdit();
+			m_iActiveDirectEditLine = -1;
+		}
+		else
+		{
+			handled = true;
+			return;
+		}
+	}
+	for (int i = 0; i < 4; i++)
+	{
+		if (m_textInputLines[i].getDirectEditCooldown() > 0)
+		{
+			handled = true;
+			return;
+		}
+	}
+#endif
 
 	ui.AnimateKeyPress(iPad, key, repeat, pressed, released);
 
@@ -142,21 +181,36 @@ void UIScene_SignEntryMenu::handleInput(int iPad, int key, bool repeat, bool pre
 
 int UIScene_SignEntryMenu::KeyboardCompleteCallback(LPVOID lpParam,bool bRes)
 {
-	// 4J HEG - No reason to set value if keyboard was cancelled
 	UIScene_SignEntryMenu *pClass=(UIScene_SignEntryMenu *)lpParam;
 	pClass->m_bIgnoreInput = false;
 	if (bRes)
 	{
+#ifdef _WINDOWS64
+		uint16_t pchText[128];
+		ZeroMemory(pchText, 128 * sizeof(uint16_t));
+		Win64_GetKeyboardText(pchText, 128);
+		pClass->m_textInputLines[pClass->m_iEditingLine].setLabel((wchar_t *)pchText);
+#else
 		uint16_t pchText[128];
 		ZeroMemory(pchText, 128 * sizeof(uint16_t) );
 		InputManager.GetText(pchText);
 		pClass->m_textInputLines[pClass->m_iEditingLine].setLabel((wchar_t *)pchText);
+#endif
 	}
 	return 0;
 }
 
 void UIScene_SignEntryMenu::handlePress(F64 controlId, F64 childId)
 {
+#ifdef _WINDOWS64
+	// After direct edit ends (Enter/Escape), skip input for a few frames
+	// to absorb the matching ACTION_MENU_OK that would re-open the edit.
+	for (int i = 0; i < 4; i++)
+	{
+		if (m_textInputLines[i].isDirectEditing() || m_textInputLines[i].getDirectEditCooldown() > 0)
+			return;
+	}
+#endif
 	switch((int)controlId)
 	{
 	case eControl_Confirm:
@@ -170,6 +224,24 @@ void UIScene_SignEntryMenu::handlePress(F64 controlId, F64 childId)
 	case eControl_Line4:
 		{
 			m_iEditingLine = (int)controlId;
+#ifdef _WINDOWS64
+			if (g_KBMInput.IsKBMActive())
+			{
+				m_iActiveDirectEditLine = m_iEditingLine;
+				m_textInputLines[m_iEditingLine].beginDirectEdit(15);
+			}
+			else
+			{
+				m_bIgnoreInput = true;
+				UIKeyboardInitData kbData;
+				kbData.title       = app.GetString(IDS_SIGN_TITLE);
+				kbData.defaultText = m_textInputLines[m_iEditingLine].getLabel();
+				kbData.maxChars    = 15;
+				kbData.callback    = &UIScene_SignEntryMenu::KeyboardCompleteCallback;
+				kbData.lpParam     = this;
+				ui.NavigateToScene(m_iPad, eUIScene_Keyboard, &kbData, eUILayer_Fullscreen, eUIGroup_Fullscreen);
+			}
+#else
 			m_bIgnoreInput = true;
 #ifdef _XBOX_ONE
 			// 4J-PB - Xbox One uses the Windows virtual keyboard, and doesn't have the Xbox 360 Latin keyboard type, so we can't restrict the input set to alphanumeric. The closest we get is the emailSmtpAddress type.
@@ -187,6 +259,7 @@ void UIScene_SignEntryMenu::handlePress(F64 controlId, F64 childId)
 			}
 #else
 			InputManager.RequestKeyboard(app.GetString(IDS_SIGN_TITLE),m_textInputLines[m_iEditingLine].getLabel(),(DWORD)m_iPad,15,&UIScene_SignEntryMenu::KeyboardCompleteCallback,this,C_4JInput::EKeyboardMode_Alphabet);
+#endif
 #endif
 		}
 		break;

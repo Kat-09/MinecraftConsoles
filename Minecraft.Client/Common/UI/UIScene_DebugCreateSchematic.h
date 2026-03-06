@@ -24,6 +24,10 @@ private:
 
 	ConsoleSchematicFile::XboxSchematicInitParam *m_data;
 
+#ifdef _WINDOWS64
+	eControls m_activeDirectEditControl;
+#endif
+
 public:
 	UIScene_DebugCreateSchematic(int iPad, void *initData, UILayer *parentLayer);
 
@@ -58,8 +62,12 @@ protected:
 	UI_END_MAP_ELEMENTS_AND_NAMES()
 
 	virtual wstring getMoviePath();
+#ifdef _WINDOWS64
+	virtual bool handleMouseClick(F32 x, F32 y);
+#endif
 
 public:
+	virtual void tick();
 	// INPUT
 	virtual void handleInput(int iPad, int key, bool repeat, bool pressed, bool released, bool &handled);
 
@@ -68,6 +76,7 @@ protected:
 	virtual void handleCheckboxToggled(F64 controlId, bool selected);
 
 private:
+	UIControl_TextInput* getTextInputForControl(eControls ctrl);
 	static int KeyboardCompleteCallback(LPVOID lpParam,const bool bRes);
 };
 #endif

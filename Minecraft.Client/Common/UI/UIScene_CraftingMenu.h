@@ -70,6 +70,13 @@ public:
 	virtual void handleTouchBoxRebuild();
 	virtual void handleTimerComplete(int id);
 #endif
+#ifdef _WINDOWS64
+	virtual bool handleMouseClick(F32 x, F32 y);
+	// Cached from customDraw — H slot bounding boxes in SWF space
+	F32 m_hSlotX0, m_hSlotY0, m_hSlotY1;
+	F32 m_hSlotSpacing; // x distance between slot 0 and slot 1
+	bool m_hSlotBoundsValid;
+#endif
 
 protected:
 	UIControl m_controlMainPanel;

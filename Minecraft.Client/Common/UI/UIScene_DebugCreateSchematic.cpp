@@ -34,6 +34,10 @@ UIScene_DebugCreateSchematic::UIScene_DebugCreateSchematic(int iPad, void *initD
 	m_buttonCreate.init(L"Create",eControl_Create);
 
 	m_data = new ConsoleSchematicFile::XboxSchematicInitParam();
+
+#ifdef _WINDOWS64
+	m_activeDirectEditControl = eControl_Create; // sentinel: no active edit
+#endif
 }
 
 wstring UIScene_DebugCreateSchematic::getMoviePath()
@@ -41,8 +45,76 @@ wstring UIScene_DebugCreateSchematic::getMoviePath()
 	return L"DebugCreateSchematic";
 }
 
+UIControl_TextInput* UIScene_DebugCreateSchematic::getTextInputForControl(eControls ctrl)
+{
+	switch (ctrl)
+	{
+	case eControl_Name:   return &m_textInputName;
+	case eControl_StartX: return &m_textInputStartX;
+	case eControl_StartY: return &m_textInputStartY;
+	case eControl_StartZ: return &m_textInputStartZ;
+	case eControl_EndX:   return &m_textInputEndX;
+	case eControl_EndY:   return &m_textInputEndY;
+	case eControl_EndZ:   return &m_textInputEndZ;
+	default: return NULL;
+	}
+}
+
+#ifdef _WINDOWS64
+bool UIScene_DebugCreateSchematic::handleMouseClick(F32 x, F32 y)
+{
+	if (m_activeDirectEditControl != eControl_Create) return true;
+	UIScene::handleMouseClick(x, y);
+	return true; // always consume to prevent Iggy re-entry on empty space
+}
+#endif
+
+void UIScene_DebugCreateSchematic::tick()
+{
+	UIScene::tick();
+
+#ifdef _WINDOWS64
+	UIControl_TextInput* allInputs[] = { &m_textInputName, &m_textInputStartX, &m_textInputStartY, &m_textInputStartZ, &m_textInputEndX, &m_textInputEndY, &m_textInputEndZ };
+	for (int i = 0; i < 7; i++)
+		allInputs[i]->tickDirectEdit();
+
+	if (m_activeDirectEditControl != eControl_Create)
+	{
+		UIControl_TextInput* active = getTextInputForControl(m_activeDirectEditControl);
+		if (active && !active->isDirectEditing())
+		{
+			// Edit finished — apply value
+			wstring value = active->getEditBuffer();
+			int iVal = 0;
+			if (!value.empty() && m_activeDirectEditControl != eControl_Name)
+				iVal = _fromString<int>(value);
+
+			switch (m_activeDirectEditControl)
+			{
+			case eControl_Name:
+				if (!value.empty())
+					swprintf(m_data->name, 64, L"%ls", value.c_str());
+				else
+					swprintf(m_data->name, 64, L"schematic");
+				break;
+			case eControl_StartX: m_data->startX = iVal; break;
+			case eControl_StartY: m_data->startY = iVal; break;
+			case eControl_StartZ: m_data->startZ = iVal; break;
+			case eControl_EndX:   m_data->endX = iVal; break;
+			case eControl_EndY:   m_data->endY = iVal; break;
+			case eControl_EndZ:   m_data->endZ = iVal; break;
+			}
+			m_activeDirectEditControl = eControl_Create;
+		}
+	}
+#endif
+}
+
 void UIScene_DebugCreateSchematic::handleInput(int iPad, int key, bool repeat, bool pressed, bool released, bool &handled)
 {
+#ifdef _WINDOWS64
+	if (m_activeDirectEditControl != eControl_Create) return;
+#endif
 	ui.AnimateKeyPress(iPad, key, repeat, pressed, released);
 
 	switch(key)
@@ -67,6 +139,9 @@ void UIScene_DebugCreateSchematic::handleInput(int iPad, int key, bool repeat, b
 
 void UIScene_DebugCreateSchematic::handlePress(F64 controlId, F64 childId)
 {
+#ifdef _WINDOWS64
+	if (m_activeDirectEditControl != eControl_Create) return;
+#endif
 	switch((int)controlId)
 	{
 	case eControl_Create:
@@ -112,8 +187,29 @@ void UIScene_DebugCreateSchematic::handlePress(F64 controlId, F64 childId)
 	case eControl_EndX:
 	case eControl_EndY:
 	case eControl_EndZ:
-		m_keyboardCallbackControl = (eControls)((int)controlId);	
-		InputManager.RequestKeyboard(L"Enter something",L"",(DWORD)0,25,&UIScene_DebugCreateSchematic::KeyboardCompleteCallback,this,C_4JInput::EKeyboardMode_Default);
+		{
+			m_keyboardCallbackControl = (eControls)((int)controlId);
+#ifdef _WINDOWS64
+			if (g_KBMInput.IsKBMActive())
+			{
+				m_activeDirectEditControl = m_keyboardCallbackControl;
+				UIControl_TextInput* input = getTextInputForControl(m_activeDirectEditControl);
+				if (input) input->beginDirectEdit(25);
+			}
+			else
+			{
+				UIKeyboardInitData kbData;
+				kbData.title       = L"Enter something";
+				kbData.defaultText = L"";
+				kbData.maxChars    = 25;
+				kbData.callback    = &UIScene_DebugCreateSchematic::KeyboardCompleteCallback;
+				kbData.lpParam     = this;
+				ui.NavigateToScene(m_iPad, eUIScene_Keyboard, &kbData, eUILayer_Fullscreen, eUIGroup_Fullscreen);
+			}
+#else
+			InputManager.RequestKeyboard(L"Enter something",L"",(DWORD)0,25,&UIScene_DebugCreateSchematic::KeyboardCompleteCallback,this,C_4JInput::EKeyboardMode_Default);
+#endif
+		}
 		break;
 	};
 }
@@ -138,9 +234,15 @@ int UIScene_DebugCreateSchematic::KeyboardCompleteCallback(LPVOID lpParam,bool b
 {
 	UIScene_DebugCreateSchematic *pClass=(UIScene_DebugCreateSchematic *)lpParam;
 
+#ifdef _WINDOWS64
+	uint16_t pchText[128];
+	ZeroMemory(pchText, 128 * sizeof(uint16_t));
+	Win64_GetKeyboardText(pchText, 128);
+#else
 	uint16_t pchText[128];
 	ZeroMemory(pchText, 128 * sizeof(uint16_t) );
 	InputManager.GetText(pchText);
+#endif
 
 	if(pchText[0]!=0)
 	{

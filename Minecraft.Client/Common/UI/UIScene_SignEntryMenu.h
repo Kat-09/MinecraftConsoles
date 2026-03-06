@@ -21,6 +21,9 @@ private:
 	int m_iEditingLine;
 	bool m_bConfirmed;
 	bool m_bIgnoreInput;
+#ifdef _WINDOWS64
+	int m_iActiveDirectEditLine;
+#endif
 
 	UIControl_Button m_buttonConfirm;
 	UIControl_Label m_labelMessage;

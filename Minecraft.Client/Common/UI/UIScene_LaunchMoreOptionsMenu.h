@@ -160,6 +160,8 @@ private:
 
 #ifdef __PSVITA__
 	virtual void handleTouchInput(unsigned int iPad, S32 x, S32 y, int iId, bool bPressed, bool bRepeat, bool bReleased);
-	virtual UIControl* GetMainPanel();
 #endif //__PSVITA__
+#if defined(__PSVITA__) || defined(_WINDOWS64)
+	virtual UIControl* GetMainPanel();
+#endif
 };

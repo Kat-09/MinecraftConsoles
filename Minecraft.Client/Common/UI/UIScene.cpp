@@ -234,7 +234,7 @@ void UIScene::initialiseMovie()
 	m_bUpdateOpacity = true;
 }
 
-#ifdef __PSVITA__
+#if defined(__PSVITA__) || defined(_WINDOWS64)
 void UIScene::SetFocusToElement(int iID)
 {
 	IggyDataValue result;
@@ -454,6 +454,80 @@ UIControl* UIScene::GetMainPanel()
 	return NULL;
 }
 
+#ifdef _WINDOWS64
+bool UIScene::handleMouseClick(F32 x, F32 y)
+{
+	S32 panelOffsetX = 0, panelOffsetY = 0;
+	UIControl *pMainPanel = GetMainPanel();
+	if (pMainPanel)
+	{
+		pMainPanel->UpdateControl();
+		panelOffsetX = pMainPanel->getXPos();
+		panelOffsetY = pMainPanel->getYPos();
+	}
+
+	vector<UIControl *> *controls = GetControls();
+	if (!controls) return false;
+
+	// Flash may report overlapping bounds for side-by-side controls (e.g.
+	// TextInputs with full 630px width in debug scenes). Among all controls
+	// that contain the click point, pick the one whose left edge (cx) is
+	// closest to the click X — i.e. largest cx that is still <= x.
+	int bestId = -1;
+	S32 bestCx = -1;
+	UIControl *bestCtrl = NULL;
+
+	for (size_t i = 0; i < controls->size(); ++i)
+	{
+		UIControl *ctrl = (*controls)[i];
+		if (!ctrl || !ctrl->getVisible() || ctrl->getId() < 0)
+			continue;
+
+		UIControl::eUIControlType type = ctrl->getControlType();
+		if (type != UIControl::eButton && type != UIControl::eTextInput &&
+			type != UIControl::eCheckBox)
+			continue;
+
+		if (pMainPanel && ctrl->getParentPanel() != pMainPanel)
+			continue;
+
+		ctrl->UpdateControl();
+		S32 cx = ctrl->getXPos() + panelOffsetX;
+		S32 cy = ctrl->getYPos() + panelOffsetY;
+		S32 cw = ctrl->getWidth();
+		S32 ch = ctrl->getHeight();
+		if (cw <= 0 || ch <= 0)
+			continue;
+
+		if (x >= cx && x <= cx + cw && y >= cy && y <= cy + ch)
+		{
+			if (cx > bestCx)
+			{
+				bestCx = cx;
+				bestId = ctrl->getId();
+				bestCtrl = ctrl;
+			}
+		}
+	}
+
+	if (bestId >= 0 && bestCtrl)
+	{
+		if (bestCtrl->getControlType() == UIControl::eCheckBox)
+		{
+			UIControl_CheckBox *cb = (UIControl_CheckBox *)bestCtrl;
+			bool newState = !cb->IsChecked();
+			cb->setChecked(newState);
+			handleCheckboxToggled((F64)bestId, newState);
+		}
+		else
+		{
+			handlePress((F64)bestId, 0);
+		}
+		return true;
+	}
+	return false;
+}
+#endif
 
 void UIScene::addTimer(int id, int ms)
 {
