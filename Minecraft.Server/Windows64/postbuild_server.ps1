@@ -63,8 +63,3 @@ Copy-FirstExisting @(
     (Join-Path $ProjectRoot ("x64\\{0}\\iggy_w64.dll" -f $Configuration))
 ) (Join-Path $OutDir "iggy_w64.dll")
 
-Copy-FirstExisting @(
-    (Join-Path $ClientRoot "Windows64\\Miles\\lib\\redist64\\mss64.dll"),
-    (Join-Path $ProjectRoot ("x64\\{0}\\mss64.dll" -f $Configuration))
-) (Join-Path $OutDir "mss64.dll")
-

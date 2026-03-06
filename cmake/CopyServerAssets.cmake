@@ -69,8 +69,4 @@ copy_first_existing("iggy_w64.dll"
   "Minecraft.Client/Windows64/Iggy/lib/redist64/iggy_w64.dll"
   "x64/${CONFIGURATION}/iggy_w64.dll"
 )
-copy_first_existing("mss64.dll"
-  "Minecraft.Client/Windows64/Miles/lib/redist64/mss64.dll"
-  "x64/${CONFIGURATION}/mss64.dll"
-)
 

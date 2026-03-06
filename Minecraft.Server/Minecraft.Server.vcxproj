@@ -83,7 +83,7 @@
       <SubSystem>Console</SubSystem>
       <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d11.lib;XInput9_1_0.lib;wsock32.lib;legacy_stdio_definitions.lib;..\Minecraft.World\x64_Debug\Minecraft.World.lib;..\Minecraft.Client\Windows64\Iggy\lib\iggy_w64.lib;..\Minecraft.Client\Windows64\Iggy\lib\iggyperfmon_w64.lib;..\Minecraft.Client\Windows64\Iggy\lib\iggyexpruntime_w64.lib;..\Minecraft.Client\Windows64\Miles\lib\mss64.lib;..\Minecraft.Client\Windows64\4JLibs\libs\4J_Input_d.lib;..\Minecraft.Client\Windows64\4JLibs\libs\4J_Storage_d.lib;..\Minecraft.Client\Windows64\4JLibs\libs\4J_Render_PC_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d11.lib;XInput9_1_0.lib;wsock32.lib;legacy_stdio_definitions.lib;..\Minecraft.World\x64_Debug\Minecraft.World.lib;..\Minecraft.Client\Windows64\Iggy\lib\iggy_w64.lib;..\Minecraft.Client\Windows64\Iggy\lib\iggyperfmon_w64.lib;..\Minecraft.Client\Windows64\Iggy\lib\iggyexpruntime_w64.lib;..\Minecraft.Client\Windows64\4JLibs\libs\4J_Input_d.lib;..\Minecraft.Client\Windows64\4JLibs\libs\4J_Storage_d.lib;..\Minecraft.Client\Windows64\4JLibs\libs\4J_Render_PC_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>powershell -ExecutionPolicy Bypass -File "$(ProjectDir)Windows64\postbuild_server.ps1" -OutDir "$(OutDir)." -ProjectRoot "$(ProjectDir).." -Configuration "$(Configuration)"</Command>
@@ -117,7 +117,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d11.lib;XInput9_1_0.lib;wsock32.lib;legacy_stdio_definitions.lib;..\Minecraft.World\x64_Release\Minecraft.World.lib;..\Minecraft.Client\Windows64\Iggy\lib\iggy_w64.lib;..\Minecraft.Client\Windows64\Iggy\lib\iggyperfmon_w64.lib;..\Minecraft.Client\Windows64\Iggy\lib\iggyexpruntime_w64.lib;..\Minecraft.Client\Windows64\Miles\lib\mss64.lib;..\Minecraft.Client\Windows64\4JLibs\libs\4J_Input.lib;..\Minecraft.Client\Windows64\4JLibs\libs\4J_Storage.lib;..\Minecraft.Client\Windows64\4JLibs\libs\4J_Render_PC.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d11.lib;XInput9_1_0.lib;wsock32.lib;legacy_stdio_definitions.lib;..\Minecraft.World\x64_Release\Minecraft.World.lib;..\Minecraft.Client\Windows64\Iggy\lib\iggy_w64.lib;..\Minecraft.Client\Windows64\Iggy\lib\iggyperfmon_w64.lib;..\Minecraft.Client\Windows64\Iggy\lib\iggyexpruntime_w64.lib;..\Minecraft.Client\Windows64\4JLibs\libs\4J_Input.lib;..\Minecraft.Client\Windows64\4JLibs\libs\4J_Storage.lib;..\Minecraft.Client\Windows64\4JLibs\libs\4J_Render_PC.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>powershell -ExecutionPolicy Bypass -File "$(ProjectDir)Windows64\postbuild_server.ps1" -OutDir "$(OutDir)." -ProjectRoot "$(ProjectDir).." -Configuration "$(Configuration)"</Command>
@@ -173,6 +173,7 @@
     <ClCompile Include="..\Minecraft.Client\Common\DLC\DLCSkinFile.cpp" />
     <ClCompile Include="..\Minecraft.Client\Common\DLC\DLCTextureFile.cpp" />
     <ClCompile Include="..\Minecraft.Client\Common\DLC\DLCUIDataFile.cpp" />
+    <ClCompile Include="..\Minecraft.Client\Common\Filesystem\Filesystem.cpp" />
     <ClCompile Include="..\Minecraft.Client\Common\GameRules\AddEnchantmentRuleDefinition.cpp" />
     <ClCompile Include="..\Minecraft.Client\Common\GameRules\AddItemRuleDefinition.cpp" />
     <ClCompile Include="..\Minecraft.Client\Common\GameRules\ApplySchematicRuleDefinition.cpp" />
@@ -627,6 +628,7 @@
     <ClCompile Include="..\Minecraft.Client\Windows64\Iggy\gdraw\gdraw_d3d11.cpp" />
     <ClCompile Include="..\Minecraft.Client\Windows64\KeyboardMouseInput.cpp" />
     <ClCompile Include="..\Minecraft.Client\Windows64\Leaderboards\WindowsLeaderboardManager.cpp" />
+    <ClCompile Include="..\Minecraft.Client\Windows64\PostProcesser.cpp" />
     <ClCompile Include="..\Minecraft.Client\Windows64\Windows64_App.cpp" />
     <ClCompile Include="..\Minecraft.Client\Windows64\Windows64_Minecraft.cpp" />
     <ClCompile Include="..\Minecraft.Client\Windows64\Windows64_UIController.cpp" />
