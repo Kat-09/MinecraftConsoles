@@ -184,9 +184,8 @@ public:
 	virtual UIControl* GetMainPanel();
 
 #ifdef _WINDOWS64
-	// Mouse click dispatch. Default implementation hit-tests C++ controls with
-	// "best match" logic (largest left-edge X) to handle overlapping Flash bounds,
-	// then calls the virtual handlePress. Override for custom behaviour (e.g. crafting).
+	// Mouse click dispatch. Hit-tests C++ controls and picks the smallest-area
+	// match, then calls handlePress. Override for custom behaviour (e.g. crafting).
 	virtual bool handleMouseClick(F32 x, F32 y);
 #endif
 

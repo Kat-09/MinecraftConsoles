@@ -469,12 +469,10 @@ bool UIScene::handleMouseClick(F32 x, F32 y)
 	vector<UIControl *> *controls = GetControls();
 	if (!controls) return false;
 
-	// Flash may report overlapping bounds for side-by-side controls (e.g.
-	// TextInputs with full 630px width in debug scenes). Among all controls
-	// that contain the click point, pick the one whose left edge (cx) is
-	// closest to the click X — i.e. largest cx that is still <= x.
+	// Hit-test controls and pick the smallest-area match to handle
+	// overlapping Flash bounds correctly without sacrificing precision.
 	int bestId = -1;
-	S32 bestCx = -1;
+	S32 bestArea = INT_MAX;
 	UIControl *bestCtrl = NULL;
 
 	for (size_t i = 0; i < controls->size(); ++i)
@@ -501,9 +499,10 @@ bool UIScene::handleMouseClick(F32 x, F32 y)
 
 		if (x >= cx && x <= cx + cw && y >= cy && y <= cy + ch)
 		{
-			if (cx > bestCx)
+			S32 area = cw * ch;
+			if (area < bestArea)
 			{
-				bestCx = cx;
+				bestArea = area;
 				bestId = ctrl->getId();
 				bestCtrl = ctrl;
 			}
