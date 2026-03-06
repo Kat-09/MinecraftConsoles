@@ -804,13 +804,16 @@ void UIController::tickInput()
 					eUILayer_Fullscreen,
 					eUILayer_Scene,
 				};
-				for (int l = 0; l < _countof(mouseLayers) && !pScene; ++l)
+				// Only check the fullscreen group and the primary (KBM) player's group.
+			// Other splitscreen players use controllers — mouse must not affect them.
+			const int mouseGroups[] = { (int)eUIGroup_Fullscreen, ProfileManager.GetPrimaryPad() + 1 };
+			for (int l = 0; l < _countof(mouseLayers) && !pScene; ++l)
+			{
+				for (int g = 0; g < _countof(mouseGroups) && !pScene; ++g)
 				{
-					for (int grp = 0; grp < eUIGroup_COUNT && !pScene; ++grp)
-					{
-						pScene = m_groups[grp]->GetTopScene(mouseLayers[l]);
-					}
+					pScene = m_groups[mouseGroups[g]]->GetTopScene(mouseLayers[l]);
 				}
+			}
 				if (pScene && pScene->getMovie())
 				{
 					int rawMouseX = g_KBMInput.GetMouseX();
@@ -823,7 +826,12 @@ void UIController::tickInput()
 					m_lastHoverMouseX = rawMouseX;
 					m_lastHoverMouseY = rawMouseY;
 
-					// Convert mouse to scene/movie coordinates
+					// Convert mouse window-pixel coords to Flash/SWF authoring coords.
+					// In split-screen the scene is rendered at a tile-origin offset
+					// and at a smaller display size, so we must:
+					//   1. Map window pixels → UIController screen space
+					//   2. Subtract the viewport tile origin
+					//   3. Scale from display dimensions to SWF authoring dimensions
 					F32 sceneMouseX = (F32)rawMouseX;
 					F32 sceneMouseY = (F32)rawMouseY;
 					{
@@ -835,8 +843,43 @@ void UIController::tickInput()
 							int winH = rc.bottom - rc.top;
 							if (winW > 0 && winH > 0)
 							{
-								sceneMouseX = sceneMouseX * ((F32)pScene->getRenderWidth() / (F32)winW);
-								sceneMouseY = sceneMouseY * ((F32)pScene->getRenderHeight() / (F32)winH);
+								// Step 1: window pixels → screen space
+								F32 screenX = sceneMouseX * (getScreenWidth() / (F32)winW);
+								F32 screenY = sceneMouseY * (getScreenHeight() / (F32)winH);
+
+								// Step 2 & 3: account for split-screen viewport
+								C4JRender::eViewportType vp = pScene->GetParentLayer()->getViewport();
+								S32 displayW = 0, displayH = 0;
+								getRenderDimensions(vp, displayW, displayH);
+
+								S32 originX = 0, originY = 0;
+								switch (vp)
+								{
+								case C4JRender::VIEWPORT_TYPE_SPLIT_TOP:
+									originX = (S32)(getScreenWidth() / 4); break;
+								case C4JRender::VIEWPORT_TYPE_SPLIT_BOTTOM:
+									originX = (S32)(getScreenWidth() / 4);
+									originY = (S32)(getScreenHeight() / 2); break;
+								case C4JRender::VIEWPORT_TYPE_SPLIT_LEFT:
+									originY = (S32)(getScreenHeight() / 4); break;
+								case C4JRender::VIEWPORT_TYPE_SPLIT_RIGHT:
+									originX = (S32)(getScreenWidth() / 2);
+									originY = (S32)(getScreenHeight() / 4); break;
+								case C4JRender::VIEWPORT_TYPE_QUADRANT_TOP_RIGHT:
+									originX = (S32)(getScreenWidth() / 2); break;
+								case C4JRender::VIEWPORT_TYPE_QUADRANT_BOTTOM_LEFT:
+									originY = (S32)(getScreenHeight() / 2); break;
+								case C4JRender::VIEWPORT_TYPE_QUADRANT_BOTTOM_RIGHT:
+									originX = (S32)(getScreenWidth() / 2);
+									originY = (S32)(getScreenHeight() / 2); break;
+								default: break; // FULLSCREEN and QUADRANT_TOP_LEFT: origin (0,0)
+								}
+
+								if (displayW > 0 && displayH > 0)
+								{
+									sceneMouseX = (screenX - originX) * ((F32)pScene->getRenderWidth() / (F32)displayW);
+									sceneMouseY = (screenY - originY) * ((F32)pScene->getRenderHeight() / (F32)displayH);
+								}
 							}
 						}
 					}

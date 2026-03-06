@@ -2325,16 +2325,21 @@ void Minecraft::tick(bool bFirst, bool bUpdateTextures)
 	}
 
 #ifdef _WINDOWS64
-	if ((screen != NULL || ui.GetMenuDisplayed(iPad)) && g_KBMInput.IsMouseGrabbed())
+	// Mouse grab/release only for the primary (KBM) player — splitscreen
+	// players use controllers and must never fight over the cursor state.
+	if (iPad == ProfileManager.GetPrimaryPad())
 	{
-		g_KBMInput.SetMouseGrabbed(false);
+		if ((screen != NULL || ui.GetMenuDisplayed(iPad)) && g_KBMInput.IsMouseGrabbed())
+		{
+			g_KBMInput.SetMouseGrabbed(false);
+		}
 	}
 #endif
 
 	if (screen == NULL && !ui.GetMenuDisplayed(iPad) )
 	{
 #ifdef _WINDOWS64
-		if (!g_KBMInput.IsMouseGrabbed() && g_KBMInput.IsWindowFocused())
+		if (iPad == ProfileManager.GetPrimaryPad() && !g_KBMInput.IsMouseGrabbed() && g_KBMInput.IsWindowFocused())
 		{
 			g_KBMInput.SetMouseGrabbed(true);
 		}

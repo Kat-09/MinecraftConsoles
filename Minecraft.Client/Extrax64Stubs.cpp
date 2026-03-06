@@ -233,7 +233,20 @@ void Win64_SetupRemoteQNetPlayer(IQNetPlayer * player, BYTE smallId, bool isHost
 
 static bool Win64_IsActivePlayer(IQNetPlayer* p, DWORD index);
 
-HRESULT IQNet::AddLocalPlayerByUserIndex(DWORD dwUserIndex) { return S_OK; }
+HRESULT IQNet::AddLocalPlayerByUserIndex(DWORD dwUserIndex) {
+	if (dwUserIndex >= MINECRAFT_NET_MAX_PLAYERS) return E_FAIL;
+	m_player[dwUserIndex].m_isRemote = false;
+	m_player[dwUserIndex].m_isHostPlayer = false;
+	// Give the joining player a distinct gamertag
+	extern wchar_t g_Win64UsernameW[17];
+	if (dwUserIndex == 0)
+		wcscpy_s(m_player[0].m_gamertag, 32, g_Win64UsernameW);
+	else
+		swprintf_s(m_player[dwUserIndex].m_gamertag, 32, L"%s(%d)", g_Win64UsernameW, dwUserIndex + 1);
+	if (dwUserIndex >= s_playerCount)
+		s_playerCount = dwUserIndex + 1;
+	return S_OK;
+}
 IQNetPlayer* IQNet::GetHostPlayer() { return &m_player[0]; }
 IQNetPlayer* IQNet::GetLocalPlayerByUserIndex(DWORD dwUserIndex)
 {
@@ -559,7 +572,7 @@ void				C_4JProfile::SetTrialTextStringTable(CXuiStringTable * pStringTable, int
 void				C_4JProfile::SetTrialAwardText(eAwardType AwardType, int iTitle, int iText) {}
 int					C_4JProfile::GetLockedProfile() { return 0; }
 void				C_4JProfile::SetLockedProfile(int iProf) {}
-bool				C_4JProfile::IsSignedIn(int iQuadrant) { return (iQuadrant == 0); }
+bool				C_4JProfile::IsSignedIn(int iQuadrant) { return InputManager.IsPadConnected(iQuadrant); }
 bool				C_4JProfile::IsSignedInLive(int iProf) { return true; }
 bool				C_4JProfile::IsGuest(int iQuadrant) { return false; }
 UINT				C_4JProfile::RequestSignInUI(bool bFromInvite, bool bLocalGame, bool bNoGuestsAllowed, bool bMultiplayerSignIn, bool bAddUser, int(*Func)(LPVOID, const bool, const int iPad), LPVOID lpParam, int iQuadrant) { return 0; }
@@ -570,13 +583,8 @@ bool				C_4JProfile::QuerySigninStatus(void) { return true; }
 void				C_4JProfile::GetXUID(int iPad, PlayerUID * pXuid, bool bOnlineXuid)
 {
 #ifdef _WINDOWS64
-	if (iPad != 0)
-	{
-		*pXuid = INVALID_XUID;
-		return;
-	}
 	if (IQNet::s_isHosting)
-		*pXuid = 0xe000d45248242f2e;
+		*pXuid = 0xe000d45248242f2e + iPad;
 	else
 		*pXuid = 0xe000d45248242f2e + WinsockNetLayer::GetLocalSmallId();
 #else

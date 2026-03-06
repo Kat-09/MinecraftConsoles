@@ -86,6 +86,13 @@ DWORD dwProfileSettingsA[NUM_PROFILE_VALUES]=
 
 BOOL g_bWidescreen = TRUE;
 
+// DO NOT auto-detect from the monitor (GetSystemMetrics etc.) — the game resolution
+// must stay 1920x1080. The precompiled 4J_Render lib, all Flash SWF assets, and the
+// split-screen viewport math (RenderManager.StateSetViewport, UIController::getRenderDimensions,
+// setupRenderPosition) all assume a 16:9 framebuffer. Using the native monitor resolution
+// breaks split-screen on ultrawide/non-16:9 displays: the UI renders offset and the
+// bottom portion of each viewport is left empty.
+// ApplyScreenMode() can still override these for debug/test resolutions via launch args.
 int g_iScreenWidth = 1920;
 int g_iScreenHeight = 1080;
 
@@ -1177,10 +1184,8 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 		if (pSlash) { *(pSlash + 1) = '\0'; SetCurrentDirectoryA(szExeDir); }
 	}
 
-	// Declare DPI awareness so GetSystemMetrics returns physical pixels
+	// Declare DPI awareness so pixel coordinates are consistent
 	SetProcessDPIAware();
-	g_iScreenWidth = GetSystemMetrics(SM_CXSCREEN);
-	g_iScreenHeight = GetSystemMetrics(SM_CYSCREEN);
 
 	// Load username from username.txt
     char exePath[MAX_PATH] = {};
