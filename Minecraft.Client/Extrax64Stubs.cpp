@@ -606,15 +606,11 @@ bool				C_4JProfile::QuerySigninStatus(void) { return true; }
 void				C_4JProfile::GetXUID(int iPad, PlayerUID * pXuid, bool bOnlineXuid)
 {
 #ifdef _WINDOWS64
-	// Split-screen local players (pad 1-3) need unique XUIDs derived from the
-	// legacy base so the save system and per-player data can tell them apart.
-	// Only pad 0 participates in networking with a "real" identity.
-	if (IQNet::s_isHosting)
-		*pXuid = Win64Xuid::GetLegacyEmbeddedHostXuid() + iPad;
-	else if (iPad == 0)
-		*pXuid = Win64Xuid::ResolvePersistentXuid();
-	else
-		*pXuid = Win64Xuid::GetLegacyEmbeddedBaseXuid() + iPad;
+	// Each pad gets a unique XUID based on the persistent uid.dat value.
+	// Pad 0 uses the base persistent XUID, pads 1-3 offset from it.
+	// Minecraft.cpp overrides pad 0 with legacy XUID when hosting for
+	// save compatibility, but that's handled there, not here.
+	*pXuid = Win64Xuid::ResolvePersistentXuid() + iPad;
 #else
 	* pXuid = 0xe000d45248242f2e + iPad;
 #endif
