@@ -19,6 +19,8 @@ namespace ServerRuntime
 		int serverPort;
 		/** `server-ip` */
 		std::string serverIp;
+		/** `lan-advertise` */
+		bool lanAdvertise;
 		/** `server-name` (max 16 chars at runtime) */
 		std::string serverName;
 		/** `max-players` */

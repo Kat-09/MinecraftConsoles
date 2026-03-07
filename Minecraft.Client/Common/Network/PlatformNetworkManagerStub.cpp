@@ -379,9 +379,23 @@ void CPlatformNetworkManagerStub::HostGame(int localUsersMask, bool bOnlineGame,
 
 	if (WinsockNetLayer::IsActive())
 	{
-		const wchar_t* hostName = IQNet::m_player[0].m_gamertag;
-		unsigned int settings = app.GetGameHostOption(eGameHostOption_All);
-		WinsockNetLayer::StartAdvertising(port, hostName, settings, 0, 0, MINECRAFT_NET_VERSION);
+		// For Dedicated Server, refer to `lan-advertise` in `server.properties`
+		bool enableLanAdvertising = true;
+		if (g_Win64DedicatedServer)
+		{
+			enableLanAdvertising = g_Win64DedicatedServerLanAdvertise;
+		}
+
+		if (enableLanAdvertising)
+		{
+			const wchar_t* hostName = IQNet::m_player[0].m_gamertag;
+			unsigned int settings = app.GetGameHostOption(eGameHostOption_All);
+			WinsockNetLayer::StartAdvertising(port, hostName, settings, 0, 0, MINECRAFT_NET_VERSION);
+		}
+		else
+		{
+			WinsockNetLayer::StopAdvertising();
+		}
 	}
 #endif
 //#endif

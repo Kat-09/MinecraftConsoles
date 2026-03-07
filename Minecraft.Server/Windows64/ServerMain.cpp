@@ -328,6 +328,11 @@ int main(int argc, char **argv)
 	g_Win64MultiplayerJoin = false;
 	g_Win64MultiplayerPort = config.port;
 	strncpy_s(g_Win64MultiplayerIP, sizeof(g_Win64MultiplayerIP), config.bindIP, _TRUNCATE);
+	g_Win64DedicatedServer = true;
+	g_Win64DedicatedServerPort = config.port;
+	strncpy_s(g_Win64DedicatedServerBindIP, sizeof(g_Win64DedicatedServerBindIP), config.bindIP, _TRUNCATE);
+	g_Win64DedicatedServerLanAdvertise = serverProperties.lanAdvertise;
+	LogInfof("startup", "LAN advertise: %s", serverProperties.lanAdvertise ? "enabled" : "disabled");
 
 	LogStartupStep("registering hidden window class");
 	HINSTANCE hInstance = GetModuleHandle(NULL);

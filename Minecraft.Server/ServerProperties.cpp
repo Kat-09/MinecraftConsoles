@@ -26,6 +26,7 @@ static const int kDefaultServerPort = 25565;
 static const int kDefaultMaxPlayers = 8;
 static const int kMaxDedicatedPlayers = 8;
 static const int kDefaultAutosaveIntervalSeconds = 60;
+static const char *kLanAdvertisePropertyKey = "lan-advertise";
 
 static const ServerPropertyDefault kServerPropertyDefaults[] =
 {
@@ -63,6 +64,7 @@ static const ServerPropertyDefault kServerPropertyDefaults[] =
 	{ "server-ip", "0.0.0.0" },
 	{ "server-name", "DedicatedServer" },
 	{ "server-port", "25565" },
+	{ "lan-advertise", "false" },
 	{ "spawn-animals", "true" },
 	{ "spawn-monsters", "true" },
 	{ "spawn-npcs", "true" },
@@ -677,6 +679,7 @@ ServerPropertiesConfig LoadServerPropertiesConfig()
 
 	config.serverPort = ReadNormalizedIntProperty(&merged, "server-port", kDefaultServerPort, 1, 65535, &shouldWrite);
 	config.serverIp = ReadNormalizedStringProperty(&merged, "server-ip", "0.0.0.0", 255, &shouldWrite);
+	config.lanAdvertise = ReadNormalizedBoolProperty(&merged, kLanAdvertisePropertyKey, false, &shouldWrite);
 	config.serverName = ReadNormalizedStringProperty(&merged, "server-name", "DedicatedServer", 16, &shouldWrite);
 	config.maxPlayers = ReadNormalizedIntProperty(&merged, "max-players", kDefaultMaxPlayers, 1, kMaxDedicatedPlayers, &shouldWrite);
 	config.seed = 0;
