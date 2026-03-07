@@ -647,9 +647,22 @@
     <ClCompile Include="..\Minecraft.Client\compat_shims.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Console\ServerCli.cpp" />
+    <ClCompile Include="Console\ServerCliInput.cpp" />
+    <ClCompile Include="Console\commands\CliCommandGamemode.cpp" />
+    <ClCompile Include="Console\commands\CliCommandHelp.cpp" />
+    <ClCompile Include="Console\commands\CliCommandList.cpp" />
+    <ClCompile Include="Console\commands\CliCommandStop.cpp" />
+    <ClCompile Include="Console\commands\CliCommandTp.cpp" />
+    <ClCompile Include="Console\ServerCliEngine.cpp" />
+    <ClCompile Include="Console\ServerCliParser.cpp" />
+    <ClCompile Include="Console\ServerCliRegistry.cpp" />
     <ClCompile Include="..\Minecraft.Client\glWrapper.cpp" />
     <ClCompile Include="ServerLogger.cpp" />
     <ClCompile Include="ServerProperties.cpp" />
+    <ClCompile Include="vendor\linenoise\linenoise.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="WorldManager.cpp" />
     <ClCompile Include="..\Minecraft.Client\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -659,8 +672,20 @@
     <ClCompile Include="Windows64\ServerMain.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Console\ServerCli.h" />
+    <ClInclude Include="Console\ServerCliInput.h" />
+    <ClInclude Include="Console\commands\CliCommandGamemode.h" />
+    <ClInclude Include="Console\commands\CliCommandHelp.h" />
+    <ClInclude Include="Console\commands\CliCommandList.h" />
+    <ClInclude Include="Console\commands\CliCommandStop.h" />
+    <ClInclude Include="Console\commands\CliCommandTp.h" />
+    <ClInclude Include="Console\commands\IServerCliCommand.h" />
+    <ClInclude Include="Console\ServerCliEngine.h" />
+    <ClInclude Include="Console\ServerCliParser.h" />
+    <ClInclude Include="Console\ServerCliRegistry.h" />
     <ClInclude Include="ServerLogger.h" />
     <ClInclude Include="ServerProperties.h" />
+    <ClInclude Include="vendor\linenoise\linenoise.h" />
     <ClInclude Include="WorldManager.h" />
   </ItemGroup>
   <ItemGroup>

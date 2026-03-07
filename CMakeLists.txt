@@ -91,6 +91,17 @@ target_link_libraries(MinecraftClient PRIVATE
 set(MINECRAFT_SERVER_SOURCES ${MINECRAFT_CLIENT_SOURCES})
 list(APPEND MINECRAFT_SERVER_SOURCES
   "${CMAKE_CURRENT_SOURCE_DIR}/Minecraft.Server/Windows64/ServerMain.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/Minecraft.Server/Console/ServerCli.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/Minecraft.Server/Console/ServerCliInput.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/Minecraft.Server/Console/ServerCliParser.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/Minecraft.Server/Console/ServerCliEngine.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/Minecraft.Server/Console/ServerCliRegistry.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/Minecraft.Server/Console/commands/CliCommandHelp.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/Minecraft.Server/Console/commands/CliCommandStop.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/Minecraft.Server/Console/commands/CliCommandList.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/Minecraft.Server/Console/commands/CliCommandTp.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/Minecraft.Server/Console/commands/CliCommandGamemode.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/Minecraft.Server/vendor/linenoise/linenoise.c"
 )
 
 add_executable(MinecraftServer ${MINECRAFT_SERVER_SOURCES})

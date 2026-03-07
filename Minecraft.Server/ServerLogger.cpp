@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
 #include "ServerLogger.h"
+#include "vendor\\linenoise\\linenoise.h"
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -86,6 +87,8 @@ static void WriteLogLine(EServerLogLevel level, const char *category, const char
 		return;
 	}
 
+	linenoiseExternalWriteBegin();
+
 	const char *safeCategory = NormalizeCategory(category);
 	const char *safeMessage = (message != NULL) ? message : "";
 
@@ -116,6 +119,8 @@ static void WriteLogLine(EServerLogLevel level, const char *category, const char
 	{
 		SetConsoleTextAttribute(stdoutHandle, originalInfo.wAttributes);
 	}
+
+	linenoiseExternalWriteEnd();
 }
 
 static void WriteLogLineV(EServerLogLevel level, const char *category, const char *format, va_list args)

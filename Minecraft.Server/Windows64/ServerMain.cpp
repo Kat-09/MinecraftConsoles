@@ -8,6 +8,7 @@
 #include "..\ServerLogger.h"
 #include "..\ServerProperties.h"
 #include "..\WorldManager.h"
+#include "..\Console\ServerCli.h"
 #include "Tesselator.h"
 #include "Windows64/4JLibs/inc/4J_Render.h"
 #include "Windows64/GameConfig/Minecraft.spa.h"
@@ -536,11 +537,14 @@ int main(int argc, char **argv)
 	}
 	DWORD nextAutosaveTick = GetTickCount() + autosaveIntervalMs;
 	bool autosaveRequested = false;
+	ServerRuntime::ServerCli serverCli;
+	serverCli.Start();
 
 	while (!g_shutdownRequested && !app.m_bShutdown)
 	{
 		TickCoreSystems();
 		HandleXuiActions();
+		serverCli.Poll();
 
 		if (autosaveRequested && app.GetXuiServerAction(kServerActionPad) == eXuiServerAction_Idle)
 		{
@@ -567,6 +571,7 @@ int main(int argc, char **argv)
 
 		Sleep(10);
 	}
+	serverCli.Stop();
 
 	LogStartupStep("stopping dedicated server");
 	MinecraftServer *server = MinecraftServer::getInstance();
