@@ -830,8 +830,9 @@ void ClientConnection::handleAddPlayer(shared_ptr<AddPlayerPacket> packet)
 		// Current Win64 path: identify QNet player by name and attach packet XUID.
 		if (matchedQNetPlayer == NULL)
 		{
-			for (BYTE smallId = 0; smallId < MINECRAFT_NET_MAX_PLAYERS; ++smallId)
+			for (int i = 0; i < MINECRAFT_NET_MAX_PLAYERS; ++i)
 			{
+				BYTE smallId = static_cast<BYTE>(i);
 				INetworkPlayer* np = g_NetworkManager.GetPlayerBySmallId(smallId);
 				if (np == NULL)
 					continue;
@@ -1441,6 +1442,9 @@ void ClientConnection::handleChat(shared_ptr<ChatPacket> packet)
 
 	switch(packet->m_messageType)
 	{
+	case ChatPacket::e_ChatCustom:
+		message = (packet->m_stringArgs.size() >= 1) ? packet->m_stringArgs[0] : L"";
+		break;
 	case ChatPacket::e_ChatBedOccupied:
 		message = app.GetString(IDS_TILE_BED_OCCUPIED);
 		break;

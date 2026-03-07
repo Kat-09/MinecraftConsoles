@@ -443,3 +443,6 @@ Minecraft.Client/Saves/
 tmp*/
 _server_asset_probe/
 server-data/
+# Visual Studio Per-User Config
+*.user
+/out
