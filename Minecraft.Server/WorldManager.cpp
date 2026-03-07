@@ -5,12 +5,16 @@
 #include "Minecraft.h"
 #include "MinecraftServer.h"
 #include "ServerLogger.h"
+#include "Common\\StringUtils.h"
 
 #include <stdio.h>
 #include <string.h>
 
 namespace ServerRuntime
 {
+using StringUtils::Utf8ToWide;
+using StringUtils::WideToUtf8;
+
 enum EWorldSaveLoadResult
 {
 	eWorldSaveLoad_Loaded,
@@ -525,3 +529,4 @@ bool WaitForWorldActionIdle(
 	return (app.GetXuiServerAction(actionPad) == eXuiServerAction_Idle);
 }
 }
+

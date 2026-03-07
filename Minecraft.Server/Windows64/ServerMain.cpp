@@ -5,6 +5,7 @@
 #include "Input.h"
 #include "Minecraft.h"
 #include "MinecraftServer.h"
+#include "..\Common\StringUtils.h"
 #include "..\ServerLogger.h"
 #include "..\ServerProperties.h"
 #include "..\WorldManager.h"
@@ -119,7 +120,7 @@ using ServerRuntime::SaveServerPropertiesConfig;
 using ServerRuntime::SetServerLogLevel;
 using ServerRuntime::ServerPropertiesConfig;
 using ServerRuntime::TryParseServerLogLevel;
-using ServerRuntime::WideToUtf8;
+using ServerRuntime::StringUtils::WideToUtf8;
 using ServerRuntime::BootstrapWorldForServer;
 using ServerRuntime::eWorldBootstrap_CreatedNew;
 using ServerRuntime::eWorldBootstrap_Failed;
@@ -609,3 +610,4 @@ int main(int argc, char **argv)
 
 	return 0;
 }
+

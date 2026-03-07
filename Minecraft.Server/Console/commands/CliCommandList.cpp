@@ -3,7 +3,7 @@
 #include "CliCommandList.h"
 
 #include "..\ServerCliEngine.h"
-#include "..\..\ServerLogger.h"
+#include "..\..\Common\StringUtils.h"
 #include "..\..\..\Minecraft.Client\MinecraftServer.h"
 #include "..\..\..\Minecraft.Client\PlayerList.h"
 
@@ -35,7 +35,7 @@ namespace ServerRuntime
 		}
 
 		PlayerList *players = server->getPlayers();
-		std::string names = WideToUtf8(players->getPlayerNames());
+		std::string names = StringUtils::WideToUtf8(players->getPlayerNames());
 		if (names.empty())
 		{
 			names = "(none)";
@@ -45,3 +45,4 @@ namespace ServerRuntime
 		return true;
 	}
 }
+

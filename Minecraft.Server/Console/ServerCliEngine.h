@@ -102,9 +102,6 @@ namespace ServerRuntime
 
 	private:
 		void RegisterDefaultCommands();
-		static std::string Normalize(const std::string &value);
-		static std::wstring ToWide(const std::string &value);
-		static std::string ToUtf8(const std::wstring &value);
 
 	private:
 		mutable std::mutex m_queueMutex;

@@ -24,9 +24,6 @@ namespace ServerRuntime
 	void SetServerLogLevel(EServerLogLevel level);
 	EServerLogLevel GetServerLogLevel();
 
-	std::string WideToUtf8(const std::wstring &value);
-	std::wstring Utf8ToWide(const char *value);
-
 	void LogDebug(const char *category, const char *message);
 	void LogInfo(const char *category, const char *message);
 	void LogWarn(const char *category, const char *message);

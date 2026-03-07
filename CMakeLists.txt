@@ -101,6 +101,7 @@ list(APPEND MINECRAFT_SERVER_SOURCES
   "${CMAKE_CURRENT_SOURCE_DIR}/Minecraft.Server/Console/commands/CliCommandList.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/Minecraft.Server/Console/commands/CliCommandTp.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/Minecraft.Server/Console/commands/CliCommandGamemode.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/Minecraft.Server/Common/StringUtils.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/Minecraft.Server/vendor/linenoise/linenoise.c"
 )
 
@@ -215,3 +216,4 @@ add_custom_command(TARGET MinecraftServer POST_BUILD
 )
 
 set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT MinecraftServer)
+

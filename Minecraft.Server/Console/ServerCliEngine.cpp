@@ -10,6 +10,7 @@
 #include "commands\CliCommandList.h"
 #include "commands\CliCommandStop.h"
 #include "commands\CliCommandTp.h"
+#include "..\Common\StringUtils.h"
 #include "..\ServerLogger.h"
 #include "..\..\Minecraft.Client\MinecraftServer.h"
 #include "..\..\Minecraft.Client\PlayerList.h"
@@ -17,7 +18,6 @@
 #include "..\..\Minecraft.World\LevelSettings.h"
 #include "..\..\Minecraft.World\StringHelpers.h"
 
-#include <ctype.h>
 #include <stdlib.h>
 #include <unordered_set>
 
@@ -68,36 +68,16 @@ namespace ServerRuntime
 		}
 	}
 
-	std::string ServerCliEngine::Normalize(const std::string &value)
-	{
-		std::string lowered = value;
-		for (size_t i = 0; i < lowered.size(); ++i)
-		{
-			lowered[i] = (char)tolower((unsigned char)lowered[i]);
-		}
-		return lowered;
-	}
-
-	std::wstring ServerCliEngine::ToWide(const std::string &value)
-	{
-		return convStringToWstring(value);
-	}
-
-	std::string ServerCliEngine::ToUtf8(const std::wstring &value)
-	{
-		return WideToUtf8(value);
-	}
-
 	bool ServerCliEngine::ExecuteCommandLine(const std::string &line)
 	{
 		// Normalize user input before parsing (trim + optional leading slash).
-		std::wstring wide = trimString(ToWide(line));
+		std::wstring wide = trimString(StringUtils::Utf8ToWide(line));
 		if (wide.empty())
 		{
 			return true;
 		}
 
-		std::string normalizedLine = ToUtf8(wide);
+		std::string normalizedLine = StringUtils::WideToUtf8(wide);
 		if (!normalizedLine.empty() && normalizedLine[0] == '/')
 		{
 			normalizedLine = normalizedLine.substr(1);
@@ -221,7 +201,7 @@ namespace ServerRuntime
 			std::shared_ptr<ServerPlayer> player = players->players[i];
 			if (player != NULL)
 			{
-				result.push_back(ToUtf8(player->getName()));
+				result.push_back(StringUtils::WideToUtf8(player->getName()));
 			}
 		}
 
@@ -242,7 +222,7 @@ namespace ServerRuntime
 			return nullptr;
 		}
 
-		std::wstring target = ToWide(name);
+		std::wstring target = StringUtils::Utf8ToWide(name);
 		for (size_t i = 0; i < players->players.size(); ++i)
 		{
 			std::shared_ptr<ServerPlayer> player = players->players[i];
@@ -258,10 +238,10 @@ namespace ServerRuntime
 	void ServerCliEngine::SuggestPlayers(const std::string &prefix, const std::string &linePrefix, std::vector<std::string> *out) const
 	{
 		std::vector<std::string> players = GetOnlinePlayerNamesUtf8();
-		std::string loweredPrefix = Normalize(prefix);
+		std::string loweredPrefix = StringUtils::ToLowerAscii(prefix);
 		for (size_t i = 0; i < players.size(); ++i)
 		{
-			std::string loweredName = Normalize(players[i]);
+			std::string loweredName = StringUtils::ToLowerAscii(players[i]);
 			if (loweredName.compare(0, loweredPrefix.size(), loweredPrefix) == 0)
 			{
 				out->push_back(linePrefix + players[i]);
@@ -272,11 +252,11 @@ namespace ServerRuntime
 	void ServerCliEngine::SuggestGamemodes(const std::string &prefix, const std::string &linePrefix, std::vector<std::string> *out) const
 	{
 		static const char *kModes[] = { "survival", "creative", "s", "c", "0", "1" };
-		std::string loweredPrefix = Normalize(prefix);
+		std::string loweredPrefix = StringUtils::ToLowerAscii(prefix);
 		for (size_t i = 0; i < sizeof(kModes) / sizeof(kModes[0]); ++i)
 		{
 			std::string candidate = kModes[i];
-			std::string loweredCandidate = Normalize(candidate);
+			std::string loweredCandidate = StringUtils::ToLowerAscii(candidate);
 			if (loweredCandidate.compare(0, loweredPrefix.size(), loweredPrefix) == 0)
 			{
 				out->push_back(linePrefix + candidate);
@@ -286,7 +266,7 @@ namespace ServerRuntime
 
 	GameType *ServerCliEngine::ParseGamemode(const std::string &token) const
 	{
-		std::string lowered = Normalize(token);
+		std::string lowered = StringUtils::ToLowerAscii(token);
 		if (lowered == "survival" || lowered == "s" || lowered == "0")
 		{
 			return GameType::SURVIVAL;
@@ -312,3 +292,4 @@ namespace ServerRuntime
 		return *m_registry;
 	}
 }
+

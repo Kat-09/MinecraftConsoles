@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">
@@ -657,6 +657,7 @@
     <ClCompile Include="Console\ServerCliEngine.cpp" />
     <ClCompile Include="Console\ServerCliParser.cpp" />
     <ClCompile Include="Console\ServerCliRegistry.cpp" />
+    <ClCompile Include="Common\StringUtils.cpp" />
     <ClCompile Include="..\Minecraft.Client\glWrapper.cpp" />
     <ClCompile Include="ServerLogger.cpp" />
     <ClCompile Include="ServerProperties.cpp" />
@@ -683,6 +684,7 @@
     <ClInclude Include="Console\ServerCliEngine.h" />
     <ClInclude Include="Console\ServerCliParser.h" />
     <ClInclude Include="Console\ServerCliRegistry.h" />
+    <ClInclude Include="Common\StringUtils.h" />
     <ClInclude Include="ServerLogger.h" />
     <ClInclude Include="ServerProperties.h" />
     <ClInclude Include="vendor\linenoise\linenoise.h" />
@@ -705,3 +707,4 @@
     <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.targets" />
   </ImportGroup>
 </Project>
+

@@ -52,9 +52,6 @@ namespace ServerRuntime
 		const std::vector<std::unique_ptr<IServerCliCommand>> &Commands() const;
 
 	private:
-		static std::string Normalize(const std::string &value);
-
-	private:
 		std::vector<std::unique_ptr<IServerCliCommand>> m_commands;
 		std::unordered_map<std::string, IServerCliCommand *> m_lookup;
 	};

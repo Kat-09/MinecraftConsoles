@@ -10,6 +10,9 @@
     <Filter Include="Server\Console\Commands">
       <UniqueIdentifier>{7C28D123-0DA3-4B17-84C0-E326F5A75740}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Server\Common">
+      <UniqueIdentifier>{BC6FD58B-1A40-45FE-B8D9-1A087C25126D}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Server\Vendor">
       <UniqueIdentifier>{3E4D5A41-CAB8-4A10-82B5-8B2AE2E25CB2}</UniqueIdentifier>
     </Filter>
@@ -35,6 +38,9 @@
     </ClCompile>
     <ClCompile Include="Console\ServerCliRegistry.cpp">
       <Filter>Server\Console</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\StringUtils.cpp">
+      <Filter>Server\Common</Filter>
     </ClCompile>
     <ClCompile Include="vendor\linenoise\linenoise.c">
       <Filter>Server\Vendor</Filter>
@@ -566,6 +572,9 @@
     <ClInclude Include="Console\ServerCliRegistry.h">
       <Filter>Server\Console</Filter>
     </ClInclude>
+    <ClInclude Include="Common\StringUtils.h">
+      <Filter>Server\Common</Filter>
+    </ClInclude>
     <ClInclude Include="ServerLogger.h">
       <Filter>Server</Filter>
     </ClInclude>
@@ -605,3 +614,4 @@
     <MASM Include="..\Minecraft.Client\iob_shim.asm" />
   </ItemGroup>
 </Project>
+

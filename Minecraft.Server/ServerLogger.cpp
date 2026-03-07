@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
 #include "ServerLogger.h"
+#include "Common\\StringUtils.h"
 #include "vendor\\linenoise\\linenoise.h"
 
 #include <stdio.h>
@@ -186,53 +187,6 @@ EServerLogLevel GetServerLogLevel()
 	return (EServerLogLevel)g_minLogLevel;
 }
 
-std::string WideToUtf8(const std::wstring &value)
-{
-	if (value.empty())
-	{
-		return std::string();
-	}
-
-	int charCount = WideCharToMultiByte(CP_UTF8, 0, value.c_str(), (int)value.length(), NULL, 0, NULL, NULL);
-	if (charCount <= 0)
-	{
-		return std::string();
-	}
-
-	std::string utf8;
-	utf8.resize(charCount);
-	WideCharToMultiByte(CP_UTF8, 0, value.c_str(), (int)value.length(), &utf8[0], charCount, NULL, NULL);
-	return utf8;
-}
-
-std::wstring Utf8ToWide(const char *value)
-{
-	if (value == NULL || value[0] == 0)
-	{
-		return std::wstring();
-	}
-
-	int wideCount = MultiByteToWideChar(CP_UTF8, 0, value, -1, NULL, 0);
-	if (wideCount <= 0)
-	{
-		wideCount = MultiByteToWideChar(CP_ACP, 0, value, -1, NULL, 0);
-		if (wideCount <= 0)
-		{
-			return std::wstring();
-		}
-
-		std::wstring wide;
-		wide.resize(wideCount - 1);
-		MultiByteToWideChar(CP_ACP, 0, value, -1, &wide[0], wideCount);
-		return wide;
-	}
-
-	std::wstring wide;
-	wide.resize(wideCount - 1);
-	MultiByteToWideChar(CP_UTF8, 0, value, -1, &wide[0], wideCount);
-	return wide;
-}
-
 void LogDebug(const char *category, const char *message)
 {
 	WriteLogLine(eServerLogLevel_Debug, category, message);
@@ -297,7 +251,8 @@ void LogWorldIO(const char *message)
 
 void LogWorldName(const char *prefix, const std::wstring &name)
 {
-	std::string utf8 = WideToUtf8(name);
+	std::string utf8 = StringUtils::WideToUtf8(name);
 	LogInfof("world-io", "%s: %s", (prefix != NULL) ? prefix : "name", utf8.c_str());
 }
 }
+

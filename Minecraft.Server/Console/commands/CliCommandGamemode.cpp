@@ -4,7 +4,7 @@
 
 #include "..\ServerCliEngine.h"
 #include "..\ServerCliParser.h"
-#include "..\..\ServerLogger.h"
+#include "..\..\Common\StringUtils.h"
 #include "..\..\..\Minecraft.Client\MinecraftServer.h"
 #include "..\..\..\Minecraft.Client\PlayerList.h"
 #include "..\..\..\Minecraft.Client\ServerPlayer.h"
@@ -77,7 +77,9 @@ namespace ServerRuntime
 
 		target->setGameMode(mode);
 		target->fallDistance = 0.0f;
-		engine->LogInfo("Set " + WideToUtf8(target->getName()) + " gamemode to " + WideToUtf8(mode->getName()) + ".");
+		engine->LogInfo(
+			"Set " + StringUtils::WideToUtf8(target->getName()) + " gamemode to " +
+			StringUtils::WideToUtf8(mode->getName()) + ".");
 		return true;
 	}
 
@@ -93,3 +95,4 @@ namespace ServerRuntime
 		}
 	}
 }
+

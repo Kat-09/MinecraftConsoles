@@ -3,6 +3,7 @@
 #include "ServerProperties.h"
 
 #include "ServerLogger.h"
+#include "Common\\StringUtils.h"
 
 #include <cctype>
 #include <fstream>
@@ -13,6 +14,11 @@
 
 namespace ServerRuntime
 {
+using StringUtils::ToLowerAscii;
+using StringUtils::TrimAscii;
+using StringUtils::Utf8ToWide;
+using StringUtils::WideToUtf8;
+
 struct ServerPropertyDefault
 {
 	const char *key;
@@ -71,34 +77,6 @@ static const ServerPropertyDefault kServerPropertyDefaults[] =
 	{ "tnt", "true" },
 	{ "trust-players", "true" }
 };
-
-static std::string TrimAscii(const std::string &value)
-{
-	size_t start = 0;
-	while (start < value.length() && std::isspace((unsigned char)value[start]))
-	{
-		++start;
-	}
-
-	size_t end = value.length();
-	while (end > start && std::isspace((unsigned char)value[end - 1]))
-	{
-		--end;
-	}
-
-	return value.substr(start, end - start);
-}
-
-static std::string ToLowerAscii(const std::string &value)
-{
-	std::string lowered = value;
-	for (size_t i = 0; i < lowered.length(); ++i)
-	{
-		unsigned char ch = (unsigned char)lowered[i];
-		lowered[i] = (char)std::tolower(ch);
-	}
-	return lowered;
-}
 
 static std::string BoolToString(bool value)
 {
@@ -778,3 +756,4 @@ bool SaveServerPropertiesConfig(const ServerPropertiesConfig &config)
 	return WriteServerPropertiesFile(kServerPropertiesPath, merged);
 }
 }
+
