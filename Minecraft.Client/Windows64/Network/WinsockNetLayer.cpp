@@ -106,6 +106,15 @@ void WinsockNetLayer::Shutdown()
 		s_hostConnectionSocket = INVALID_SOCKET;
 	}
 
+	// Stop accept loop first so no new RecvThread can be created while shutting down.
+	if (s_acceptThread != NULL)
+	{
+		WaitForSingleObject(s_acceptThread, 2000);
+		CloseHandle(s_acceptThread);
+		s_acceptThread = NULL;
+	}
+
+	std::vector<HANDLE> recvThreads;
 	EnterCriticalSection(&s_connectionsLock);
 	for (size_t i = 0; i < s_connections.size(); i++)
 	{
@@ -113,17 +122,26 @@ void WinsockNetLayer::Shutdown()
 		if (s_connections[i].tcpSocket != INVALID_SOCKET)
 		{
 			closesocket(s_connections[i].tcpSocket);
+			s_connections[i].tcpSocket = INVALID_SOCKET;
+		}
+		if (s_connections[i].recvThread != NULL)
+		{
+			recvThreads.push_back(s_connections[i].recvThread);
+			s_connections[i].recvThread = NULL;
 		}
 	}
-	s_connections.clear();
 	LeaveCriticalSection(&s_connectionsLock);
 
-	if (s_acceptThread != NULL)
+	// Ensure all host-side receive threads have exited before destroying locks.
+	for (size_t i = 0; i < recvThreads.size(); i++)
 	{
-		WaitForSingleObject(s_acceptThread, 2000);
-		CloseHandle(s_acceptThread);
-		s_acceptThread = NULL;
+		WaitForSingleObject(recvThreads[i], 2000);
+		CloseHandle(recvThreads[i]);
 	}
+
+	EnterCriticalSection(&s_connectionsLock);
+	s_connections.clear();
+	LeaveCriticalSection(&s_connectionsLock);
 
 	if (s_clientRecvThread != NULL)
 	{
@@ -134,14 +152,20 @@ void WinsockNetLayer::Shutdown()
 
 	if (s_initialized)
 	{
+		EnterCriticalSection(&s_disconnectLock);
+		s_disconnectedSmallIds.clear();
+		LeaveCriticalSection(&s_disconnectLock);
+
+		EnterCriticalSection(&s_freeSmallIdLock);
+		s_freeSmallIds.clear();
+		LeaveCriticalSection(&s_freeSmallIdLock);
+
 		DeleteCriticalSection(&s_sendLock);
 		DeleteCriticalSection(&s_connectionsLock);
 		DeleteCriticalSection(&s_advertiseLock);
 		DeleteCriticalSection(&s_discoveryLock);
 		DeleteCriticalSection(&s_disconnectLock);
-		s_disconnectedSmallIds.clear();
 		DeleteCriticalSection(&s_freeSmallIdLock);
-		s_freeSmallIds.clear();
 		WSACleanup();
 		s_initialized = false;
 	}
