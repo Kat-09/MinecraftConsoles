@@ -1601,6 +1601,7 @@ void UIController::getRenderDimensions(C4JRender::eViewportType viewport, S32 &w
 {
 	F32 originX, originY, viewW, viewH;
 	GetViewportRect(getScreenWidth(), getScreenHeight(), viewport, originX, originY, viewW, viewH);
+
 	if(viewport == C4JRender::VIEWPORT_TYPE_FULLSCREEN)
 	{
 		S32 offsetX, offsetY;
@@ -1847,8 +1848,11 @@ void RADLINK UIController::TextureSubstitutionDestroyCallback ( void * user_call
 
 	ui.destroySubstitutionTexture(user_callback_data, handle);
 
-	Textures *t = Minecraft::GetInstance()->textures;
-	t->releaseTexture( id );
+	Minecraft* mc = Minecraft::GetInstance();
+	if (mc && mc->textures)
+	{
+		mc->textures->releaseTexture( id );
+	}
 }
 
 void UIController::registerSubstitutionTexture(const wstring &textureName, PBYTE pbData, DWORD dwLength)

@@ -243,10 +243,16 @@ void CPlatformNetworkManagerStub::DoWork()
 				if (IQNet::s_playerCount > 1)
 					IQNet::s_playerCount--;
 			}
-			// Always return smallId to the free pool so it can be reused (game may have already cleared the slot).
-			WinsockNetLayer::PushFreeSmallId(disconnectedSmallId);
-			// Clear O(1) socket lookup so GetSocketForSmallId stays fast (s_connections never shrinks).
-			WinsockNetLayer::ClearSocketForSmallId(disconnectedSmallId);
+			// NOTE: Do NOT call PushFreeSmallId here. The old PlayerConnection's
+			// write thread may still be alive (it dies in PlayerList::tick when
+			// m_smallIdsToClose is processed). If we recycle the smallId now,
+			// AcceptThread can reuse it for a new connection, and the old write
+			// thread's getPlayer() lookup will resolve to the NEW player, sending
+			// stale game packets to the new client's TCP socket — corrupting its
+			// login handshake (bad packet id crash). PushFreeSmallId and
+			// ClearSocketForSmallId are called from PlayerList::tick after the
+			// old Connection threads are dead.
+			//
 			// Clear chunk visibility flags for this system so rejoin gets fresh chunk state.
 			SystemFlagRemoveBySmallId((int)disconnectedSmallId);
 		}
@@ -300,6 +306,29 @@ bool CPlatformNetworkManagerStub::AddLocalPlayerByUserIndex( int userIndex )
 
 bool CPlatformNetworkManagerStub::RemoveLocalPlayerByUserIndex( int userIndex )
 {
+#ifdef _WINDOWS64
+	if (userIndex > 0 && userIndex < XUSER_MAX_COUNT && !m_pIQNet->IsHost())
+	{
+		IQNetPlayer* qp = &IQNet::m_player[userIndex];
+
+		// Notify the network layer before clearing the slot
+		if (qp->GetCustomDataValue() != 0)
+		{
+			NotifyPlayerLeaving(qp);
+		}
+
+		// Close the split-screen TCP connection and reset WinsockNetLayer state
+		WinsockNetLayer::CloseSplitScreenConnection(userIndex);
+
+		// Clear the IQNet slot so it can be reused on rejoin
+		qp->m_smallId = 0;
+		qp->m_isRemote = false;
+		qp->m_isHostPlayer = false;
+		qp->m_resolvedXuid = INVALID_XUID;
+		qp->m_gamertag[0] = 0;
+		qp->SetCustomDataValue(0);
+	}
+#endif
 	return true;
 }
 
