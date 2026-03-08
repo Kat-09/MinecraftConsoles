@@ -24,6 +24,9 @@
     <ClCompile Include="ServerLogger.cpp">
       <Filter>Server</Filter>
     </ClCompile>
+    <ClCompile Include="ServerLogManager.cpp">
+      <Filter>Server</Filter>
+    </ClCompile>
     <ClCompile Include="ServerProperties.cpp">
       <Filter>Server</Filter>
     </ClCompile>
@@ -597,6 +600,9 @@
       <Filter>Server\Common</Filter>
     </ClInclude>
     <ClInclude Include="ServerLogger.h">
+      <Filter>Server</Filter>
+    </ClInclude>
+    <ClInclude Include="ServerLogManager.h">
       <Filter>Server</Filter>
     </ClInclude>
     <ClInclude Include="ServerProperties.h">

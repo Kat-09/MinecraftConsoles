@@ -14,6 +14,10 @@
 #include "..\Minecraft.World\net.minecraft.world.item.h"
 #include "..\Minecraft.World\SharedConstants.h"
 #include "Settings.h"
+#if defined(_WINDOWS64) && defined(MINECRAFT_SERVER_BUILD)
+#include "..\Minecraft.Server\ServerLogManager.h"
+#include "..\Minecraft.World\Socket.h"
+#endif
 // #ifdef __PS3__
 // #include "PS3\Network\NetworkPlayerSony.h"
 // #endif
@@ -22,6 +26,25 @@ Random *PendingConnection::random = new Random();
 
 #ifdef _WINDOWS64
 bool g_bRejectDuplicateNames = true;
+#endif
+
+#if defined(_WINDOWS64) && defined(MINECRAFT_SERVER_BUILD)
+namespace
+{
+	static unsigned char GetPendingConnectionSmallId(Connection *connection)
+	{
+		if (connection != NULL)
+		{
+			Socket *socket = connection->getSocket();
+			if (socket != NULL)
+			{
+				return socket->getSmallId();
+			}
+		}
+
+		return 0;
+	}
+}
 #endif
 
 PendingConnection::PendingConnection(MinecraftServer *server, Socket *socket, const wstring& id)
@@ -196,10 +219,16 @@ void PendingConnection::handleLogin(shared_ptr<LoginPacket> packet)
 	}
 	else if (bannedXuid)
 	{
+#if defined(_WINDOWS64) && defined(MINECRAFT_SERVER_BUILD)
+		ServerRuntime::ServerLogManager::OnRejectedPlayerLogin(GetPendingConnectionSmallId(connection), name, ServerRuntime::ServerLogManager::eLoginRejectReason_BannedXuid);
+#endif
 		disconnect(DisconnectPacket::eDisconnect_Banned);
 	}
 	else if (duplicateXuid)
 	{
+#if defined(_WINDOWS64) && defined(MINECRAFT_SERVER_BUILD)
+		ServerRuntime::ServerLogManager::OnRejectedPlayerLogin(GetPendingConnectionSmallId(connection), name, ServerRuntime::ServerLogManager::eLoginRejectReason_DuplicateXuid);
+#endif
 		// if same XUID already in use by another player so disconnect this one.
 		app.DebugPrintf("Rejecting duplicate xuid for name: %ls\n", name.c_str());
 		disconnect(DisconnectPacket::eDisconnect_Banned);
@@ -219,6 +248,9 @@ void PendingConnection::handleLogin(shared_ptr<LoginPacket> packet)
 		}
 		if (nameTaken)
 		{
+#if defined(_WINDOWS64) && defined(MINECRAFT_SERVER_BUILD)
+			ServerRuntime::ServerLogManager::OnRejectedPlayerLogin(GetPendingConnectionSmallId(connection), name, ServerRuntime::ServerLogManager::eLoginRejectReason_DuplicateName);
+#endif
 			app.DebugPrintf("Rejecting duplicate name: %ls\n", name.c_str());
 			disconnect(DisconnectPacket::eDisconnect_Banned);
 		}
@@ -276,6 +308,9 @@ void PendingConnection::handleAcceptedLogin(shared_ptr<LoginPacket> packet)
 	shared_ptr<ServerPlayer> playerEntity = server->getPlayers()->getPlayerForLogin(this, name, playerXuid,packet->m_onlineXuid);
 	if (playerEntity != NULL)
 	{
+#if defined(_WINDOWS64) && defined(MINECRAFT_SERVER_BUILD)
+		ServerRuntime::ServerLogManager::OnAcceptedPlayerLogin(GetPendingConnectionSmallId(connection), name);
+#endif
 		server->getPlayers()->placeNewPlayer(connection, playerEntity, packet);
 		connection = NULL;	// We've moved responsibility for this over to the new PlayerConnection, NULL so we don't delete our reference to it here in our dtor
 	}

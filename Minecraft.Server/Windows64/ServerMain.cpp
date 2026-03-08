@@ -8,6 +8,7 @@
 #include "..\Access\Access.h"
 #include "..\Common\StringUtils.h"
 #include "..\ServerLogger.h"
+#include "..\ServerLogManager.h"
 #include "..\ServerProperties.h"
 #include "..\WorldManager.h"
 #include "..\Console\ServerCli.h"
@@ -369,6 +370,8 @@ int main(int argc, char **argv)
 	g_Win64DedicatedServerPort = config.port;
 	strncpy_s(g_Win64DedicatedServerBindIP, sizeof(g_Win64DedicatedServerBindIP), config.bindIP, _TRUNCATE);
 	g_Win64DedicatedServerLanAdvertise = serverProperties.lanAdvertise;
+	LogStartupStep("initializing server log manager");
+	ServerRuntime::ServerLogManager::Initialize();
 	LogStartupStep("initializing dedicated access control");
 	if (!ServerRuntime::Access::Initialize("."))
 	{
@@ -653,6 +656,7 @@ int main(int argc, char **argv)
 
 	WinsockNetLayer::Shutdown();
 	g_NetworkManager.Terminate();
+	ServerRuntime::ServerLogManager::Shutdown();
 	CleanupDevice();
 	
 

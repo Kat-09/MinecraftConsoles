@@ -34,8 +34,12 @@
 // 4J Added
 #include "..\Minecraft.World\net.minecraft.world.item.crafting.h"
 #include "Options.h"
+#if defined(_WINDOWS64) && defined(MINECRAFT_SERVER_BUILD)
+#include "..\Minecraft.Server\ServerLogManager.h"
+#endif
 
 Random PlayerConnection::random;
+
 
 PlayerConnection::PlayerConnection(MinecraftServer *server, Connection *connection, shared_ptr<ServerPlayer> player)
 {
@@ -66,6 +70,13 @@ PlayerConnection::PlayerConnection(MinecraftServer *server, Connection *connecti
 	m_offlineXUID = INVALID_XUID;
 	m_onlineXUID = INVALID_XUID;
 	m_bHasClientTickedOnce = false;
+	m_logSmallId = 0;
+
+	// Cache the first valid transport smallId because disconnect teardown can clear it before the server logger runs.
+	if (this->connection != NULL && this->connection->getSocket() != NULL)
+	{
+		m_logSmallId = this->connection->getSocket()->getSmallId();
+	}
 
 	setShowOnMaps(app.GetGameHostOption(eGameHostOption_Gamertags)!=0?true:false);
 }
@@ -74,6 +85,17 @@ PlayerConnection::~PlayerConnection()
 {
 	delete connection;
 	DeleteCriticalSection(&done_cs);
+}
+
+unsigned char PlayerConnection::getLogSmallId()
+{
+	// Fall back to the live socket only while the cached value is still empty.
+	if (m_logSmallId == 0 && connection != NULL && connection->getSocket() != NULL)
+	{
+		m_logSmallId = connection->getSocket()->getSmallId();
+	}
+
+	return m_logSmallId;
 }
 
 void PlayerConnection::tick()
@@ -118,6 +140,13 @@ void PlayerConnection::disconnect(DisconnectPacket::eDisconnectReason reason)
 		return;
 	}
 
+#if defined(_WINDOWS64) && defined(MINECRAFT_SERVER_BUILD)
+	ServerRuntime::ServerLogManager::OnPlayerDisconnected(
+		getLogSmallId(),
+		(player != NULL) ? player->name : std::wstring(),
+		reason,
+		true);
+#endif
 	app.DebugPrintf("PlayerConnection disconect reason: %d\n", reason );
 	player->disconnect();
 
@@ -538,7 +567,18 @@ void PlayerConnection::handleUseItem(shared_ptr<UseItemPacket> packet)
 void PlayerConnection::onDisconnect(DisconnectPacket::eDisconnectReason reason, void *reasonObjects)
 {
 	EnterCriticalSection(&done_cs);
-	if( done ) return;
+	if( done )
+	{
+		LeaveCriticalSection(&done_cs);
+		return;
+	}
+#if defined(_WINDOWS64) && defined(MINECRAFT_SERVER_BUILD)
+	ServerRuntime::ServerLogManager::OnPlayerDisconnected(
+		getLogSmallId(),
+		(player != NULL) ? player->name : std::wstring(),
+		reason,
+		false);
+#endif
 	//    logger.info(player.name + " lost connection: " + reason);
 	// 4J-PB - removed, since it needs to be localised in the language the client is in
 	//server->players->broadcastAll( shared_ptr<ChatPacket>( new ChatPacket(L"�e" + player->name + L" left the game.") ) );
