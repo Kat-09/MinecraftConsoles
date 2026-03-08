@@ -4,9 +4,9 @@
 
 #include "ServerLogger.h"
 #include "Common\\StringUtils.h"
+#include "Common\\FileUtils.h"
 
 #include <cctype>
-#include <fstream>
 #include <map>
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,6 +16,7 @@ namespace ServerRuntime
 {
 using StringUtils::ToLowerAscii;
 using StringUtils::TrimAscii;
+using StringUtils::StripUtf8Bom;
 using StringUtils::Utf8ToWide;
 using StringUtils::WideToUtf8;
 
@@ -288,29 +289,48 @@ static bool ReadServerPropertiesFile(const char *filePath, std::unordered_map<st
 		return false;
 	}
 
-	std::ifstream inFile(filePath, std::ios::in | std::ios::binary);
-	if (!inFile.is_open())
+	std::string text;
+	if (filePath == NULL || !FileUtils::ReadTextFile(filePath, &text))
 	{
 		return false;
 	}
 
+	text = StripUtf8Bom(text);
+
 	int parsedCount = 0;
-	std::string line;
-	while (std::getline(inFile, line))
+	for (size_t start = 0; start <= text.length();)
 	{
-		if (!line.empty() && line[line.length() - 1] == '\r')
+		size_t end = text.find_first_of("\r\n", start);
+		size_t nextStart = text.length() + 1;
+		if (end != std::string::npos)
 		{
-			line.erase(line.length() - 1);
+			nextStart = end + 1;
+			if (text[end] == '\r' && nextStart < text.length() && text[nextStart] == '\n')
+			{
+				++nextStart;
+			}
+		}
+
+		std::string line;
+		if (end == std::string::npos)
+		{
+			line = text.substr(start);
+		}
+		else
+		{
+			line = text.substr(start, end - start);
 		}
 
 		std::string trimmedLine = TrimAscii(line);
 		if (trimmedLine.empty())
 		{
+			start = nextStart;
 			continue;
 		}
 
 		if (trimmedLine[0] == '#' || trimmedLine[0] == '!')
 		{
+			start = nextStart;
 			continue;
 		}
 
@@ -332,18 +352,21 @@ static bool ReadServerPropertiesFile(const char *filePath, std::unordered_map<st
 
 		if (sepPos == std::string::npos)
 		{
+			start = nextStart;
 			continue;
 		}
 
 		std::string key = TrimAscii(trimmedLine.substr(0, sepPos));
 		if (key.empty())
 		{
+			start = nextStart;
 			continue;
 		}
 
 		std::string value = TrimAscii(trimmedLine.substr(sepPos + 1));
 		(*properties)[key] = value;
 		++parsedCount;
+		start = nextStart;
 	}
 
 	if (outParsedCount != NULL)
@@ -363,23 +386,25 @@ static bool ReadServerPropertiesFile(const char *filePath, std::unordered_map<st
  */
 static bool WriteServerPropertiesFile(const char *filePath, const std::unordered_map<std::string, std::string> &properties)
 {
-	FILE *outFile = fopen(filePath, "wb");
-	if (outFile == NULL)
+	if (filePath == NULL)
 	{
 		return false;
 	}
 
-	fprintf(outFile, "# Minecraft server properties\n");
-	fprintf(outFile, "# Auto-generated and normalized when missing\n");
+	std::string text;
+	text += "# Minecraft server properties\n";
+	text += "# Auto-generated and normalized when missing\n";
 
 	std::map<std::string, std::string> sortedProperties(properties.begin(), properties.end());
 	for (std::map<std::string, std::string>::const_iterator it = sortedProperties.begin(); it != sortedProperties.end(); ++it)
 	{
-		fprintf(outFile, "%s=%s\n", it->first.c_str(), it->second.c_str());
+		text += it->first;
+		text += "=";
+		text += it->second;
+		text += "\n";
 	}
 
-	fclose(outFile);
-	return true;
+	return FileUtils::WriteTextFileAtomic(filePath, text);
 }
 
 static bool ReadNormalizedBoolProperty(
