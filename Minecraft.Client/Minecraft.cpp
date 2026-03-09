@@ -3706,7 +3706,9 @@ void Minecraft::tick(bool bFirst, bool bUpdateTextures)
 					app.EnableDebugOverlay(options->renderDebug,iPad);
 #else
 					// 4J Stu - The xbox uses a completely different way of navigating to this scene
-					ui.NavigateToScene(0, eUIScene_DebugOverlay, nullptr, eUILayer_Debug);
+					// Always open in the fullscreen group so the overlay spans the full window
+					// regardless of split-screen viewport configuration.
+					ui.NavigateToScene(0, eUIScene_DebugOverlay, nullptr, eUILayer_Debug, eUIGroup_Fullscreen);
 #endif
 #endif
 				}
