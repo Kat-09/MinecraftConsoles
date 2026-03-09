@@ -1629,7 +1629,7 @@ void Minecraft::run_middle()
 						s_prevXButtons[i] = xCurButtons;
 					}
 					bool startJustPressed = s_startPressLatch[i] > 0;
-					bool tryJoin = !pause && !ui.IsIgnorePlayerJoinMenuDisplayed(ProfileManager.GetPrimaryPad()) && g_NetworkManager.SessionHasSpace() && xCurButtons != 0;
+					bool tryJoin = !pause && !ui.IsIgnorePlayerJoinMenuDisplayed(ProfileManager.GetPrimaryPad()) && g_NetworkManager.SessionHasSpace() && xCurButtons != 0 && g_KBMInput.IsWindowFocused();
 #else
 					bool tryJoin = !pause && !ui.IsIgnorePlayerJoinMenuDisplayed(ProfileManager.GetPrimaryPad()) && g_NetworkManager.SessionHasSpace() && RenderManager.IsHiDef() && InputManager.ButtonPressed(i);
 #endif
