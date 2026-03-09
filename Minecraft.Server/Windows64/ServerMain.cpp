@@ -51,6 +51,7 @@ extern IDXGISwapChain* g_pSwapChain;
 extern ID3D11RenderTargetView* g_pRenderTargetView;
 extern ID3D11DepthStencilView* g_pDepthStencilView;
 extern DWORD dwProfileSettingsA[];
+extern ConsoleUIController ui;
 
 static const int kProfileValueCount = 5;
 static const int kProfileSettingCount = 4;
