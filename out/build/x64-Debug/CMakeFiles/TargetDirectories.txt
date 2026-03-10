@@ -1,0 +1,4 @@
+Z:/Git/out/build/x64-Debug/CMakeFiles/MinecraftWorld.dir
+Z:/Git/out/build/x64-Debug/CMakeFiles/MinecraftClient.dir
+Z:/Git/out/build/x64-Debug/CMakeFiles/edit_cache.dir
+Z:/Git/out/build/x64-Debug/CMakeFiles/rebuild_cache.dir
