@@ -19,6 +19,9 @@
 #include "..\Minecraft.World\net.minecraft.network.packet.h"
 #include "..\Minecraft.World\net.minecraft.network.h"
 #include "Windows64\Windows64_NameXuid.h"
+#ifdef _WINDOWS64
+#include "Windows64\Network\WinsockNetLayer.h"
+#endif
 #include "..\Minecraft.World\Pos.h"
 #include "..\Minecraft.World\ProgressListener.h"
 #include "..\Minecraft.World\HellRandomLevelSource.h"
@@ -235,7 +238,6 @@ bool PlayerList::placeNewPlayer(Connection *connection, shared_ptr<ServerPlayer>
 	addPlayerToReceiving( player );
 
 	int maxPlayersForPacket = getMaxPlayers() > 255 ? 255 : getMaxPlayers();
-
 	playerConnection->send( shared_ptr<LoginPacket>( new LoginPacket(L"", player->entityId, level->getLevelData()->getGenerator(), level->getSeed(), player->gameMode->getGameModeForPlayer()->getId(),
 		(byte)level->dimension->id, (byte)level->getMaxBuildHeight(), (byte)maxPlayersForPacket,
 		level->difficulty, TelemetryManager->GetMultiplayerInstanceID(), (BYTE)playerIndex, level->useNewSeaLevel(), player->getAllPlayerGamePrivileges(),
@@ -971,6 +973,14 @@ void PlayerList::tick()
 		{
 			player->connection->disconnect( DisconnectPacket::eDisconnect_Closed );
 		}
+
+#ifdef _WINDOWS64
+		// The old Connection's read/write threads are now dead (disconnect waits
+		// for them). Safe to recycle the smallId — no stale write thread can
+		// resolve getPlayer() to a new connection that reuses this slot.
+		WinsockNetLayer::PushFreeSmallId(smallId);
+		WinsockNetLayer::ClearSocketForSmallId(smallId);
+#endif
 	}
 	LeaveCriticalSection(&m_closePlayersCS);
 
@@ -1607,6 +1617,13 @@ void  PlayerList::closePlayerConnectionBySmallId(BYTE networkSmallId)
 {
 	EnterCriticalSection(&m_closePlayersCS);
 	m_smallIdsToClose.push_back(networkSmallId);
+	LeaveCriticalSection(&m_closePlayersCS);
+}
+
+void PlayerList::queueSmallIdForRecycle(BYTE smallId)
+{
+	EnterCriticalSection(&m_closePlayersCS);
+	m_smallIdsToClose.push_back(smallId);
 	LeaveCriticalSection(&m_closePlayersCS);
 }
 
