@@ -17,6 +17,7 @@
 #include "Durango\DurangoExtras\xcompress.h"
 #elif defined _WINDOWS64
 #include "Windows64\Sentient\SentientManager.h"
+#include "..\..\Windows64_NameXuid.h"
 #include "StatsCounter.h"
 #include "Windows64\Social\SocialManager.h"
 #include "Windows64\Sentient\DynamicConfigurations.h"
@@ -626,12 +627,10 @@ void				C_4JProfile::GetXUID(int iPad, PlayerUID * pXuid, bool bOnlineXuid)
 	// Each pad gets a unique XUID derived from the persistent uid.dat value.
 	// Pad 0 uses the base XUID directly. Pads 1-3 get a deterministic hash
 	// of (base + pad) to produce fully independent IDs with no overlap risk.
-	*pXuid = Win64Xuid::DeriveXuidForPad(Win64Xuid::ResolvePersistentXuid(), iPad);
-#else
 	* pXuid = 0xe000d45248242f2e + iPad;
 #endif
 }
-BOOL				C_4JProfile::AreXUIDSEqual(PlayerUID xuid1, PlayerUID xuid2) { return xuid1 == xuid2; }
+BOOL				C_4JProfile::AreXUIDSEqual(PlayerUID xuid1, PlayerUID xuid2) { return false; }
 BOOL				C_4JProfile::XUIDIsGuest(PlayerUID xuid) { return false; }
 bool				C_4JProfile::AllowedToPlayMultiplayer(int iProf) { return true; }
 

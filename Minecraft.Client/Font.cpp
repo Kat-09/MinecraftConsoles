@@ -146,48 +146,10 @@ void Font::renderStyleLine(float x0, float y0, float x1, float y1)
 	t->end();
 }
 
-void Font::addCharacterQuad(wchar_t c)
-{
-	float xOff = c % m_cols * m_charWidth;
-	float yOff = c / m_cols * m_charHeight; // was m_charWidth — wrong when glyphs aren't square
-	float width = charWidths[c] - .01f;
-	float height = m_charHeight - .01f;
-	float fontWidth = m_cols * m_charWidth;
-	float fontHeight = m_rows * m_charHeight;
-	const float shear = m_italic ? (height * 0.25f) : 0.0f;
-	float x0 = xPos, x1 = xPos + width + shear;
-	float y0 = yPos, y1 = yPos + height;
-
-	Tesselator *t = Tesselator::getInstance();
-	t->tex(xOff / fontWidth, (yOff + 7.99f) / fontHeight);
-	t->vertex(x0, y1, 0.0f);
-	t->tex((xOff + width) / fontWidth, (yOff + 7.99f) / fontHeight);
-	t->vertex(x1, y1, 0.0f);
-	t->tex((xOff + width) / fontWidth, yOff / fontHeight);
-	t->vertex(x1, y0, 0.0f);
-	t->tex(xOff / fontWidth, yOff / fontHeight);
-	t->vertex(x0, y0, 0.0f);
-
-	if (m_bold)
-	{
-		float dx = 1.0f;
-		t->tex(xOff / fontWidth, (yOff + 7.99f) / fontHeight);
-		t->vertex(x0 + dx, y1, 0.0f);
-		t->tex((xOff + width) / fontWidth, (yOff + 7.99f) / fontHeight);
-		t->vertex(x1 + dx, y1, 0.0f);
-		t->tex((xOff + width) / fontWidth, yOff / fontHeight);
-		t->vertex(x1 + dx, y0, 0.0f);
-		t->tex(xOff / fontWidth, yOff / fontHeight);
-		t->vertex(x0 + dx, y0, 0.0f);
-	}
-
-	xPos += static_cast<float>(charWidths[c]);
-}
-
 void Font::renderCharacter(wchar_t c)
 {
 	float xOff = c % m_cols * m_charWidth;
-	float yOff = c / m_cols * m_charHeight; // was m_charWidth — wrong when glyphs aren't square
+	float yOff = c / m_cols * m_charWidth;
 
 	float width = charWidths[c] - .01f;
 	float height = m_charHeight - .01f;

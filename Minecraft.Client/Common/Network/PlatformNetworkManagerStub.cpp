@@ -317,7 +317,6 @@ bool CPlatformNetworkManagerStub::RemoveLocalPlayerByUserIndex( int userIndex )
 		qp->m_smallId = 0;
 		qp->m_isRemote = false;
 		qp->m_isHostPlayer = false;
-		qp->m_resolvedXuid = INVALID_XUID;
 		qp->m_gamertag[0] = 0;
 		qp->SetCustomDataValue(0);
 	}

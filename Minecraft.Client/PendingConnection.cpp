@@ -163,7 +163,20 @@ void PendingConnection::handleLogin(shared_ptr<LoginPacket> packet)
 	//if (true)// 4J removed !server->onlineMode)
 	bool sentDisconnect = false;
 
-	
+	PlayerUID loginXuid = packet->m_offlineXuid;
+	if (loginXuid == INVALID_XUID) loginXuid = packet->m_onlineXuid;
+
+	bool duplicateXuid = false;
+	if (loginXuid != INVALID_XUID && server->getPlayers()->getPlayer(loginXuid) != nullptr)
+	{
+		duplicateXuid = true;
+	}
+	else if (packet->m_onlineXuid != INVALID_XUID &&
+		packet->m_onlineXuid != loginXuid &&
+		server->getPlayers()->getPlayer(packet->m_onlineXuid) != nullptr)
+	{
+		duplicateXuid = true;
+	}
 
 	if( sentDisconnect )
 	{
