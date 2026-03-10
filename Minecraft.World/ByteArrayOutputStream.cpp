@@ -20,7 +20,7 @@ ByteArrayOutputStream::ByteArrayOutputStream(unsigned int size)
 
 ByteArrayOutputStream::~ByteArrayOutputStream()
 {
-	if (buf.data != nullptr)
+	if (buf.data != NULL)
 		delete[] buf.data;
 }
 
@@ -33,7 +33,7 @@ void ByteArrayOutputStream::write(unsigned int b)
 	if( count + 1 >=  buf.length )
 		buf.resize( buf.length * 2 );
 
-	buf[count] = static_cast<byte>(b);
+	buf[count] = (byte) b;
 	count++;
 }
 

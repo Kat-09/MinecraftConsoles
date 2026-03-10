@@ -13,9 +13,9 @@ struct IntKeyHash
 	{
 		int h = k;
         h += ~(h << 9);
-        h ^=  (static_cast<unsigned int>(h) >> 14);
+        h ^=  (((unsigned int)h) >> 14);
         h +=  (h << 4);
-        h ^=  (static_cast<unsigned int>(h) >> 10);
+        h ^=  (((unsigned int)h) >> 10);
 		return h;
 	}
 };

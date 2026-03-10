@@ -4,8 +4,15 @@
 //
 #pragma once
 
+#ifdef __PS3__
+#else
+#endif
+
+#if ( defined _XBOX || defined _WINDOWS64  || defined _DURANGO )
+typedef unsigned __int64 __uint64;
+#endif
+
 #ifdef _WINDOWS64
-#define _HAS_STD_BYTE 0					// solve (std::)'byte' ambiguity with windows headers
 #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
 // Windows Header Files:
 #include <windows.h>
@@ -14,8 +21,6 @@
 // TODO: reference additional headers your program requires here
 #include <d3d11.h>
 #endif
-
-#include <cstdint>
 
 #ifdef _DURANGO
 #include <xdk.h>
@@ -128,7 +133,7 @@ typedef XUID GameSessionUID;
 #include "compression.h"
 #include "PerformanceTimer.h"
 
-
+/*
 #ifdef _FINAL_BUILD
 #define printf BREAKTHECOMPILE
 #define wprintf BREAKTHECOMPILE
@@ -137,7 +142,7 @@ typedef XUID GameSessionUID;
 #define OutputDebugStringA BREAKTHECOMPILE
 #define OutputDebugStringW BREAKTHECOMPILE
 #endif
-
+*/
 
 void MemSect(int sect);
 

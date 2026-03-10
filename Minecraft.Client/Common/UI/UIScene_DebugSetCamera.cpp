@@ -17,7 +17,7 @@ UIScene_DebugSetCamera::UIScene_DebugSetCamera(int iPad, void *initData, UILayer
 	currentPosition->player = playerNo;
 
 	Minecraft *pMinecraft = Minecraft::GetInstance();
-	if (pMinecraft != nullptr)
+	if (pMinecraft != NULL)
 	{
 		Vec3 *vec = pMinecraft->localplayers[playerNo]->getPos(1.0);
 
@@ -77,7 +77,7 @@ UIControl_TextInput* UIScene_DebugSetCamera::getTextInputForControl(eControls ct
 	}
 }
 
-void UIScene_DebugSetCamera::getDirectEditInputs(vector<UIControl_TextInput*> &inputs)
+void UIScene_DebugSetCamera::getDirectEditInputs(vector<UIControl_TextInput*>& inputs)
 {
 	inputs.push_back(&m_textInputX);
 	inputs.push_back(&m_textInputY);
@@ -86,7 +86,7 @@ void UIScene_DebugSetCamera::getDirectEditInputs(vector<UIControl_TextInput*> &i
 	inputs.push_back(&m_textInputElevation);
 }
 
-void UIScene_DebugSetCamera::onDirectEditFinished(UIControl_TextInput *input, UIControl_TextInput::EDirectEditResult result)
+void UIScene_DebugSetCamera::onDirectEditFinished(UIControl_TextInput* input, UIControl_TextInput::EDirectEditResult result)
 {
 	wstring value = input->getEditBuffer();
 	double val = 0;
@@ -101,7 +101,7 @@ void UIScene_DebugSetCamera::onDirectEditFinished(UIControl_TextInput *input, UI
 
 bool UIScene_DebugSetCamera::handleMouseClick(F32 x, F32 y)
 {
-	UIScene::handleMouseClick(x, y);
+	
 	return true; // always consume to prevent Iggy re-entry on empty space
 }
 #endif
@@ -143,11 +143,11 @@ void UIScene_DebugSetCamera::handlePress(F64 controlId, F64 childId)
 #ifdef _WINDOWS64
 	if (isDirectEditBlocking()) return;
 #endif
-	switch(static_cast<int>(controlId))
+	switch((int)controlId)
 	{
 	case eControl_Teleport:
 		app.SetXuiServerAction(	ProfileManager.GetPrimaryPad(),
-			eXuiServerAction_SetCameraLocation,
+			eXuiServerAction_SetCameraLocation, 
 			(void *)currentPosition);
 		break;
 	case eControl_CamX:
@@ -155,7 +155,8 @@ void UIScene_DebugSetCamera::handlePress(F64 controlId, F64 childId)
 	case eControl_CamZ:
 	case eControl_YRot:
 	case eControl_Elevation:
-		m_keyboardCallbackControl = static_cast<eControls>(static_cast<int>(controlId));
+		m_keyboardCallbackControl = (eControls)((int)controlId);	
+		m_keyboardCallbackControl = (eControls)((int)controlId);
 #ifdef _WINDOWS64
 		if (g_KBMInput.IsKBMActive())
 		{
@@ -165,15 +166,14 @@ void UIScene_DebugSetCamera::handlePress(F64 controlId, F64 childId)
 		else
 		{
 			UIKeyboardInitData kbData;
-			kbData.title       = L"Enter value";
+			kbData.title = L"Enter value";
 			kbData.defaultText = L"";
-			kbData.maxChars    = 25;
-			kbData.callback    = &UIScene_DebugSetCamera::KeyboardCompleteCallback;
-			kbData.lpParam     = this;
+			kbData.maxChars = 25;
+			kbData.callback = &UIScene_DebugSetCamera::KeyboardCompleteCallback;
+			kbData.lpParam = this;
 			ui.NavigateToScene(m_iPad, eUIScene_Keyboard, &kbData, eUILayer_Fullscreen, eUIGroup_Fullscreen);
 		}
 #else
->>>>>>> origin/main
 		InputManager.RequestKeyboard(L"Enter something",L"",(DWORD)0,25,&UIScene_DebugSetCamera::KeyboardCompleteCallback,this,C_4JInput::EKeyboardMode_Default);
 #endif
 		break;
@@ -182,7 +182,7 @@ void UIScene_DebugSetCamera::handlePress(F64 controlId, F64 childId)
 
 void UIScene_DebugSetCamera::handleCheckboxToggled(F64 controlId, bool selected)
 {
-	switch(static_cast<int>(controlId))
+	switch((int)controlId)
 	{
 	case eControl_LockPlayer:
 		app.SetFreezePlayers(selected);
@@ -192,19 +192,18 @@ void UIScene_DebugSetCamera::handleCheckboxToggled(F64 controlId, bool selected)
 
 int UIScene_DebugSetCamera::KeyboardCompleteCallback(LPVOID lpParam,bool bRes)
 {
-	UIScene_DebugSetCamera *pClass=static_cast<UIScene_DebugSetCamera *>(lpParam);
+	UIScene_DebugSetCamera *pClass=(UIScene_DebugSetCamera *)lpParam;
 	uint16_t pchText[2048];
 	ZeroMemory(pchText, 2048 * sizeof(uint16_t));
 #ifdef _WINDOWS64
 	Win64_GetKeyboardText(pchText, 2048);
 #else
->>>>>>> origin/main
 	InputManager.GetText(pchText);
 #endif
 
 	if(pchText[0]!=0)
 	{
-		wstring value = reinterpret_cast<wchar_t*>(pchText);
+		wstring value = (wchar_t *)pchText;
 		double val = 0; 
 		if(!value.empty()) val = _fromString<double>( value );
 		switch(pClass->m_keyboardCallbackControl)

@@ -5,7 +5,7 @@
 
 LevelChunk *MemoryChunkStorage::load(Level *level, int x, int z) //throws IOException 
 {
-	return nullptr;
+	return NULL;
 }
 
 void MemoryChunkStorage::save(Level *level, LevelChunk *levelChunk) //throws IOException

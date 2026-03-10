@@ -16,7 +16,7 @@ int SQRNetworkManager::GetSendQueueSizeBytes()
 	for(int i = 0; i < playerCount; ++i)
 	{
 		SQRNetworkPlayer *player = GetPlayerByIndex( i );
-		if( player != nullptr )
+		if( player != NULL )
 		{
 			queueSize += player->GetTotalSendQueueBytes();
 		}
@@ -31,7 +31,7 @@ int SQRNetworkManager::GetSendQueueSizeMessages()
 	for(int i = 0; i < playerCount; ++i)
 	{
 		SQRNetworkPlayer *player = GetPlayerByIndex( i );
-		if( player != nullptr )
+		if( player != NULL )
 		{
 			queueSize += player->GetTotalSendQueueMessages();
 		}

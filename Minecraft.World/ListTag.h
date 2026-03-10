@@ -18,7 +18,7 @@ public:
 		else type = 1;
 
 		dos->writeByte(type);
-		dos->writeInt(static_cast<int>(list.size()));
+		dos->writeInt((int)list.size());
 
 		for ( auto& it : list )
 			it->write(dos);
@@ -83,12 +83,12 @@ public:
 
 	T *get(int index)
 	{
-		return static_cast<T *>(list[index]);
+		return (T *) list[index];
 	}
 
 	int size()
 	{
-		return static_cast<int>(list.size());
+		return (int)list.size();
 	}
 
 	virtual ~ListTag()
@@ -105,7 +105,7 @@ public:
 		res->type = type;
 		for ( auto& it : list )
 		{
-			T *copy = static_cast<T *>(it->copy());
+			T *copy = (T *) it->copy();
 			res->list.push_back(copy);
 		}
 		return res;
@@ -115,7 +115,7 @@ public:
 	{
 		if (Tag::equals(obj))
 		{
-			ListTag *o = static_cast<ListTag *>(obj);
+			ListTag *o = (ListTag *) obj;
 			if (type == o->type)
 			{
 				bool equal = false;

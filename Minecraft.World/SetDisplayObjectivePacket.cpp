@@ -13,7 +13,7 @@ SetDisplayObjectivePacket::SetDisplayObjectivePacket(int slot, Objective *object
 {
 	this->slot = slot;
 
-	if (objective == nullptr)
+	if (objective == NULL)
 	{
 		objectiveName = L"";
 	}

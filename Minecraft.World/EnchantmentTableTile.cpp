@@ -14,8 +14,8 @@ EnchantmentTableTile::EnchantmentTableTile(int id) : BaseEntityTile(id, Material
 	updateDefaultShape();
 	setLightBlock(0);
 
-	iconTop = nullptr;
-	iconBottom = nullptr;
+	iconTop = NULL;
+	iconBottom = NULL;
 }
 
 // 4J Added override
@@ -69,7 +69,7 @@ Icon *EnchantmentTableTile::getTexture(int face, int data)
 
 shared_ptr<TileEntity> EnchantmentTableTile::newTileEntity(Level *level)
 {
-	return std::make_shared<EnchantmentTableEntity>();
+	return shared_ptr<TileEntity>(new EnchantmentTableEntity());
 }
 
 bool EnchantmentTableTile::use(Level *level, int x, int y, int z, shared_ptr<Player> player, int clickedFace, float clickX, float clickY, float clickZ, bool soundOnly/*=false*/) // 4J added soundOnly param

@@ -9,14 +9,14 @@
 StructureStart::StructureStart()
 {
 	chunkX = chunkZ = 0;
-	boundingBox = nullptr;		// 4J added initialiser
+	boundingBox = NULL;		// 4J added initialiser
 }
 
 StructureStart::StructureStart(int x, int z)
 {
 	this->chunkX = x;
 	this->chunkZ = z;
-	boundingBox = nullptr;
+	boundingBox = NULL;
 }
 
 StructureStart::~StructureStart()

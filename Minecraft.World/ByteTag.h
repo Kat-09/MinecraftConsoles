@@ -23,7 +23,7 @@ public:
 	{
 		if (Tag::equals(obj))
 		{
-			ByteTag *o = static_cast<ByteTag *>(obj);
+			ByteTag *o = (ByteTag *) obj;
 			return data == o->data;
 		}
 		return false;

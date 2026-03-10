@@ -22,8 +22,8 @@ TextureMap::TextureMap(int type, const wstring &name, const wstring &path, Buffe
 	this->missingTexture = missingTexture;
 
 	// 4J Initialisers
-	missingPosition = nullptr;
-	stitchResult = nullptr;
+	missingPosition = NULL;
+	stitchResult = NULL;
 
 	m_mipMap = mipmap;
 }
@@ -37,7 +37,7 @@ void TextureMap::stitch()
 		//for (Tile tile : Tile.tiles)
 		for(unsigned int i = 0; i < Tile::TILE_NUM_COUNT; ++i)
 		{
-			if (Tile::tiles[i] != nullptr)
+			if (Tile::tiles[i] != NULL)
 			{
 				Tile::tiles[i]->registerIcons(this);
 			}
@@ -51,7 +51,7 @@ void TextureMap::stitch()
 	for(unsigned int i = 0; i < Item::ITEM_NUM_COUNT; ++i)
 	{
 		Item *item = Item::items[i];
-		if (item != nullptr && item->getIconType() == iconType)
+		if (item != NULL && item->getIconType() == iconType)
 		{
 			item->registerIcons(this);
 		}
@@ -89,7 +89,7 @@ void TextureMap::stitch()
 		// TODO: [EB] Put the frames into a proper object, not this inside out hack
 		vector<Texture *> *frames = TextureManager::getInstance()->createTextures(filename, m_mipMap);
 
-		if (frames == nullptr || frames->empty())
+		if (frames == NULL || frames->empty())
 		{
 			continue; // Couldn't load a texture, skip it
 		}
@@ -124,7 +124,7 @@ void TextureMap::stitch()
 
 		vector<Texture *> *frames = textures.find(textureHolder)->second;
 
-		StitchedTexture *stored = nullptr;
+		StitchedTexture *stored = NULL;
 
         auto itTex = texturesToRegister.find(textureName);
         if(itTex != texturesToRegister.end() ) stored = itTex->second;
@@ -188,7 +188,7 @@ void TextureMap::stitch()
 StitchedTexture *TextureMap::getTexture(const wstring &name)
 {
 	StitchedTexture *result = texturesByName.find(name)->second;
-	if (result == nullptr) result = missingPosition;
+	if (result == NULL) result = missingPosition;
 	return result;
 }
 
@@ -212,7 +212,7 @@ Icon *TextureMap::registerIcon(const wstring &name)
 {
 	if (name.empty())
 	{
-		app.DebugPrintf("Don't register nullptr\n");
+		app.DebugPrintf("Don't register NULL\n");
 #ifndef _CONTENT_PACKAGE
 		__debugbreak();
 #endif
@@ -220,11 +220,11 @@ Icon *TextureMap::registerIcon(const wstring &name)
 	}
 
 	// TODO: [EB]: Why do we allow multiple registrations?
-	StitchedTexture *result = nullptr;
+	StitchedTexture *result = NULL;
     auto it = texturesToRegister.find(name);
     if(it != texturesToRegister.end()) result = it->second;
 
-	if (result == nullptr)
+	if (result == NULL)
 	{
 		result = StitchedTexture::create(name);
 		texturesToRegister.insert( stringStitchedTextureMap::value_type(name, result) );

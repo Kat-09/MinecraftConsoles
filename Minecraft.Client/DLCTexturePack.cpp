@@ -9,7 +9,6 @@
 #include "Common\DLC\DLCLocalisationFile.h"
 #include "..\Minecraft.World\StringHelpers.h"
 #include "StringTable.h"
-#include "Common/UI/UI.h"
 #include "Common\DLC\DLCAudioFile.h"
 
 #if defined _XBOX || defined _WINDOWS64
@@ -17,27 +16,27 @@
 #include "Xbox\XML\xmlFilesCallback.h"
 #endif
 
-DLCTexturePack::DLCTexturePack(DWORD id, DLCPack *pack, TexturePack *fallback) : AbstractTexturePack(id, nullptr, pack->getName(), fallback)
+DLCTexturePack::DLCTexturePack(DWORD id, DLCPack *pack, TexturePack *fallback) : AbstractTexturePack(id, NULL, pack->getName(), fallback)
 {
 	m_dlcInfoPack = pack;
-	m_dlcDataPack = nullptr;
+	m_dlcDataPack = NULL;
 	bUILoaded = false;
 	m_bLoadingData = false;
 	m_bHasLoadedData = false;
-	m_archiveFile = nullptr;
+	m_archiveFile = NULL;
 	if (app.getLevelGenerationOptions()) app.getLevelGenerationOptions()->setLoadedData();
 	m_bUsingDefaultColourTable = true;
 
-	m_stringTable = nullptr;
+	m_stringTable = NULL;
 
 #ifdef _XBOX
-	m_pStreamedWaveBank=nullptr;
-	m_pSoundBank=nullptr;
+	m_pStreamedWaveBank=NULL;
+	m_pSoundBank=NULL;
 #endif
 
 	if(m_dlcInfoPack->doesPackContainFile(DLCManager::e_DLCType_LocalisationData, L"languages.loc"))
 	{
-		DLCLocalisationFile *localisationFile = static_cast<DLCLocalisationFile *>(m_dlcInfoPack->getFile(DLCManager::e_DLCType_LocalisationData, L"languages.loc"));
+		DLCLocalisationFile *localisationFile = (DLCLocalisationFile *)m_dlcInfoPack->getFile(DLCManager::e_DLCType_LocalisationData, L"languages.loc");
 		m_stringTable = localisationFile->getStringTable();
 	}
 
@@ -52,7 +51,7 @@ void DLCTexturePack::loadIcon()
 {
 	if(m_dlcInfoPack->doesPackContainFile(DLCManager::e_DLCType_Texture, L"icon.png"))
 	{
-		DLCTextureFile *textureFile = static_cast<DLCTextureFile *>(m_dlcInfoPack->getFile(DLCManager::e_DLCType_Texture, L"icon.png"));
+		DLCTextureFile *textureFile = (DLCTextureFile *)m_dlcInfoPack->getFile(DLCManager::e_DLCType_Texture, L"icon.png");
 		m_iconData = textureFile->getData(m_iconSize);
 	}
 	else
@@ -65,7 +64,7 @@ void DLCTexturePack::loadComparison()
 {
 	if(m_dlcInfoPack->doesPackContainFile(DLCManager::e_DLCType_Texture, L"comparison.png"))
 	{
-		DLCTextureFile *textureFile = static_cast<DLCTextureFile *>(m_dlcInfoPack->getFile(DLCManager::e_DLCType_Texture, L"comparison.png"));
+		DLCTextureFile *textureFile = (DLCTextureFile *)m_dlcInfoPack->getFile(DLCManager::e_DLCType_Texture, L"comparison.png");
 		m_comparisonData = textureFile->getData(m_comparisonSize);
 	}
 }
@@ -76,7 +75,7 @@ void DLCTexturePack::loadName()
 
 	if(m_dlcInfoPack->GetPackID()&1024)
 	{
-		if(m_stringTable != nullptr)
+		if(m_stringTable != NULL)
 		{
 			texname = m_stringTable->getString(L"IDS_DISPLAY_NAME");
 			m_wsWorldName=m_stringTable->getString(L"IDS_WORLD_NAME");
@@ -84,7 +83,7 @@ void DLCTexturePack::loadName()
 	}
 	else
 	{	
-		if(m_stringTable != nullptr)
+		if(m_stringTable != NULL)
 		{
 			texname = m_stringTable->getString(L"IDS_DISPLAY_NAME");
 		}
@@ -96,7 +95,7 @@ void DLCTexturePack::loadDescription()
 {
 	desc1 = L"";
 
-	if(m_stringTable != nullptr)
+	if(m_stringTable != NULL)
 	{
 		desc1 = m_stringTable->getString(L"IDS_TP_DESCRIPTION");
 	}
@@ -116,15 +115,15 @@ InputStream *DLCTexturePack::getResourceImplementation(const wstring &name) //th
 	// 4J Stu - We should never call this function
 #ifndef _CONTENT_PACKAGE
 	__debugbreak();
-	if(hasFile(name)) return nullptr;
+	if(hasFile(name)) return NULL;
 #endif
-	return nullptr; //resource;
+	return NULL; //resource;
 }
 
 bool DLCTexturePack::hasFile(const wstring &name)
 {
 	bool hasFile = false;
-	if(m_dlcDataPack != nullptr) hasFile = m_dlcDataPack->doesPackContainFile(DLCManager::e_DLCType_Texture, name);
+	if(m_dlcDataPack != NULL) hasFile = m_dlcDataPack->doesPackContainFile(DLCManager::e_DLCType_Texture, name);
 	return hasFile;
 }
 
@@ -165,23 +164,23 @@ DLCPack * DLCTexturePack::getDLCPack()
 void DLCTexturePack::loadColourTable()
 {
 	// Load the game colours
-	if(m_dlcDataPack != nullptr && m_dlcDataPack->doesPackContainFile(DLCManager::e_DLCType_ColourTable, L"colours.col"))
+	if(m_dlcDataPack != NULL && m_dlcDataPack->doesPackContainFile(DLCManager::e_DLCType_ColourTable, L"colours.col"))
 	{
-		DLCColourTableFile *colourFile = static_cast<DLCColourTableFile *>(m_dlcDataPack->getFile(DLCManager::e_DLCType_ColourTable, L"colours.col"));
+		DLCColourTableFile *colourFile = (DLCColourTableFile *)m_dlcDataPack->getFile(DLCManager::e_DLCType_ColourTable, L"colours.col");
 		m_colourTable = colourFile->getColourTable();
 		m_bUsingDefaultColourTable = false;
 	}
 	else
 	{
 		// 4J Stu - We can delete the default colour table, but not the one from the DLCColourTableFile
-		if(!m_bUsingDefaultColourTable) m_colourTable = nullptr;
+		if(!m_bUsingDefaultColourTable) m_colourTable = NULL;
 		loadDefaultColourTable();
 		m_bUsingDefaultColourTable = true;
 	}
 
 	// Load the text colours
 #ifdef _XBOX
-	if(m_dlcDataPack != nullptr && m_dlcDataPack->doesPackContainFile(DLCManager::e_DLCType_UIData, L"TexturePack.xzp"))
+	if(m_dlcDataPack != NULL && m_dlcDataPack->doesPackContainFile(DLCManager::e_DLCType_UIData, L"TexturePack.xzp"))
 	{
 		DLCUIDataFile *dataFile = (DLCUIDataFile *)m_dlcDataPack->getFile(DLCManager::e_DLCType_UIData, L"TexturePack.xzp");
 
@@ -206,7 +205,7 @@ void DLCTexturePack::loadColourTable()
 
 		swprintf(szResourceLocator, LOCATOR_SIZE,L"memory://%08X,%04X#xuiscene_colourtable.xur",pbData, dwSize);
 		HXUIOBJ hScene;
-		HRESULT hr = XuiSceneCreate(szResourceLocator,szResourceLocator, nullptr, &hScene);
+		HRESULT hr = XuiSceneCreate(szResourceLocator,szResourceLocator, NULL, &hScene);
 
 		if(HRESULT_SUCCEEDED(hr))
 		{
@@ -275,7 +274,7 @@ wstring DLCTexturePack::getFilePath(DWORD packId, wstring filename, bool bAddDat
 
 int DLCTexturePack::packMounted(LPVOID pParam,int iPad,DWORD dwErr,DWORD dwLicenceMask)
 {
-	DLCTexturePack *texturePack = static_cast<DLCTexturePack *>(pParam);
+	DLCTexturePack *texturePack = (DLCTexturePack *)pParam;
 	texturePack->m_bLoadingData = false;
 	if(dwErr!=ERROR_SUCCESS)
 	{
@@ -295,11 +294,11 @@ int DLCTexturePack::packMounted(LPVOID pParam,int iPad,DWORD dwErr,DWORD dwLicen
 			if(!app.m_dlcManager.readDLCDataFile(dwFilesProcessed, getFilePath(texturePack->m_dlcInfoPack->GetPackID(), dataFilePath),texturePack->m_dlcDataPack))
 			{
 				delete texturePack->m_dlcDataPack;
-				texturePack->m_dlcDataPack = nullptr;
+				texturePack->m_dlcDataPack = NULL;
 			}
 
 			// Load the UI data
-			if(texturePack->m_dlcDataPack != nullptr)
+			if(texturePack->m_dlcDataPack != NULL)
 			{
 #ifdef _XBOX
 				File xzpPath(getFilePath(texturePack->m_dlcInfoPack->GetPackID(), wstring(L"TexturePack.xzp") ) );
@@ -311,10 +310,10 @@ int DLCTexturePack::packMounted(LPVOID pParam,int iPad,DWORD dwErr,DWORD dwLicen
 						pchFilename, // file name
 						GENERIC_READ, // access mode
 						0, // share mode // TODO 4J Stu - Will we need to share file? Probably not but...
-						nullptr, // Unused
+						NULL, // Unused
 						OPEN_EXISTING , // how to create // TODO 4J Stu - Assuming that the file already exists if we are opening to read from it
 						FILE_FLAG_SEQUENTIAL_SCAN, // file attributes
-						nullptr // Unsupported
+						NULL // Unsupported
 						);
 
 					if( fileHandle != INVALID_HANDLE_VALUE )
@@ -322,7 +321,7 @@ int DLCTexturePack::packMounted(LPVOID pParam,int iPad,DWORD dwErr,DWORD dwLicen
 						DWORD dwFileSize = xzpPath.length();
 						DWORD bytesRead;
 						PBYTE pbData =  (PBYTE) new BYTE[dwFileSize];
-						BOOL success = ReadFile(fileHandle,pbData,dwFileSize,&bytesRead,nullptr);
+						BOOL success = ReadFile(fileHandle,pbData,dwFileSize,&bytesRead,NULL);
 						CloseHandle(fileHandle);
 						if(success)
 						{
@@ -343,12 +342,12 @@ int DLCTexturePack::packMounted(LPVOID pParam,int iPad,DWORD dwErr,DWORD dwLicen
 				*/
 				DLCPack *pack = texturePack->m_dlcInfoPack->GetParentPack();
 				LevelGenerationOptions *levelGen = app.getLevelGenerationOptions();
-				if (levelGen != nullptr && !levelGen->hasLoadedData())
+				if (levelGen != NULL && !levelGen->hasLoadedData())
 				{
 					int gameRulesCount = pack->getDLCItemsCount(DLCManager::e_DLCType_GameRulesHeader);
 					for(int i = 0; i < gameRulesCount; ++i)
 					{
-						DLCGameRulesHeader *dlcFile = static_cast<DLCGameRulesHeader *>(pack->getFile(DLCManager::e_DLCType_GameRulesHeader, i));
+						DLCGameRulesHeader *dlcFile = (DLCGameRulesHeader *) pack->getFile(DLCManager::e_DLCType_GameRulesHeader, i);
 					
 						if (!dlcFile->getGrfPath().empty())
 						{
@@ -362,10 +361,10 @@ int DLCTexturePack::packMounted(LPVOID pParam,int iPad,DWORD dwErr,DWORD dwLicen
 									pchFilename, // file name
 									GENERIC_READ, // access mode
 									0, // share mode // TODO 4J Stu - Will we need to share file? Probably not but...
-									nullptr, // Unused
+									NULL, // Unused
 									OPEN_EXISTING , // how to create // TODO 4J Stu - Assuming that the file already exists if we are opening to read from it
 									FILE_FLAG_SEQUENTIAL_SCAN, // file attributes
-									nullptr // Unsupported
+									NULL // Unsupported
 									);
 #else
 								const char *pchFilename=wstringtofilename(grf.getPath());
@@ -373,10 +372,10 @@ int DLCTexturePack::packMounted(LPVOID pParam,int iPad,DWORD dwErr,DWORD dwLicen
 									pchFilename, // file name
 									GENERIC_READ, // access mode
 									0, // share mode // TODO 4J Stu - Will we need to share file? Probably not but...
-									nullptr, // Unused
+									NULL, // Unused
 									OPEN_EXISTING , // how to create // TODO 4J Stu - Assuming that the file already exists if we are opening to read from it
 									FILE_FLAG_SEQUENTIAL_SCAN, // file attributes
-									nullptr // Unsupported
+									NULL // Unsupported
 									);
 #endif
 
@@ -385,7 +384,7 @@ int DLCTexturePack::packMounted(LPVOID pParam,int iPad,DWORD dwErr,DWORD dwLicen
 									DWORD dwFileSize = grf.length();
 									DWORD bytesRead;
 									PBYTE pbData =  (PBYTE) new BYTE[dwFileSize];
-									BOOL bSuccess = ReadFile(fileHandle,pbData,dwFileSize,&bytesRead,nullptr);
+									BOOL bSuccess = ReadFile(fileHandle,pbData,dwFileSize,&bytesRead,NULL);
 									if(bSuccess==FALSE)
 									{
 										app.FatalLoadError();
@@ -414,10 +413,10 @@ int DLCTexturePack::packMounted(LPVOID pParam,int iPad,DWORD dwErr,DWORD dwLicen
 								pchFilename, // file name
 								GENERIC_READ, // access mode
 								0, // share mode // TODO 4J Stu - Will we need to share file? Probably not but...
-								nullptr, // Unused
+								NULL, // Unused
 								OPEN_EXISTING , // how to create // TODO 4J Stu - Assuming that the file already exists if we are opening to read from it
 								FILE_FLAG_SEQUENTIAL_SCAN, // file attributes
-								nullptr // Unsupported
+								NULL // Unsupported
 								);
 #else
 							const char *pchFilename=wstringtofilename(grf.getPath());
@@ -425,18 +424,18 @@ int DLCTexturePack::packMounted(LPVOID pParam,int iPad,DWORD dwErr,DWORD dwLicen
 								pchFilename, // file name
 								GENERIC_READ, // access mode
 								0, // share mode // TODO 4J Stu - Will we need to share file? Probably not but...
-								nullptr, // Unused
+								NULL, // Unused
 								OPEN_EXISTING , // how to create // TODO 4J Stu - Assuming that the file already exists if we are opening to read from it
 								FILE_FLAG_SEQUENTIAL_SCAN, // file attributes
-								nullptr // Unsupported
+								NULL // Unsupported
 								);
 #endif
 
 							if( fileHandle != INVALID_HANDLE_VALUE )
 							{
-								DWORD bytesRead,dwFileSize = GetFileSize(fileHandle,nullptr);
+								DWORD bytesRead,dwFileSize = GetFileSize(fileHandle,NULL);
 								PBYTE pbData =  (PBYTE) new BYTE[dwFileSize];
-								BOOL bSuccess = ReadFile(fileHandle,pbData,dwFileSize,&bytesRead,nullptr);
+								BOOL bSuccess = ReadFile(fileHandle,pbData,dwFileSize,&bytesRead,NULL);
 								if(bSuccess==FALSE)
 								{
 									app.FatalLoadError();
@@ -470,7 +469,7 @@ int DLCTexturePack::packMounted(LPVOID pParam,int iPad,DWORD dwErr,DWORD dwLicen
 				//DLCPack *pack = texturePack->m_dlcInfoPack->GetParentPack();
 				if(pack->getDLCItemsCount(DLCManager::e_DLCType_Audio)>0)
 				{
-					DLCAudioFile *dlcFile = static_cast<DLCAudioFile *>(pack->getFile(DLCManager::e_DLCType_Audio, 0));
+					DLCAudioFile *dlcFile = (DLCAudioFile *) pack->getFile(DLCManager::e_DLCType_Audio, 0);
 					texturePack->setHasAudio(true);
 					// init the streaming sound ids for this texture pack
 					int iOverworldStart, iNetherStart, iEndStart;
@@ -514,7 +513,7 @@ void DLCTexturePack::loadUI()
 //L"memory://0123ABCD,21A3#skin_default.xur"
 
 	// Load new skin
-	if(m_dlcDataPack != nullptr && m_dlcDataPack->doesPackContainFile(DLCManager::e_DLCType_UIData, L"TexturePack.xzp"))
+	if(m_dlcDataPack != NULL && m_dlcDataPack->doesPackContainFile(DLCManager::e_DLCType_UIData, L"TexturePack.xzp"))
 	{
 		DLCUIDataFile *dataFile = (DLCUIDataFile *)m_dlcDataPack->getFile(DLCManager::e_DLCType_UIData, L"TexturePack.xzp");
 
@@ -528,7 +527,7 @@ void DLCTexturePack::loadUI()
 		XuiFreeVisuals(L"");
 
 
-		HRESULT hr = app.LoadSkin(szResourceLocator,nullptr);//L"TexturePack");
+		HRESULT hr = app.LoadSkin(szResourceLocator,NULL);//L"TexturePack");
 		if(HRESULT_SUCCEEDED(hr))
 		{
 			bUILoaded = true;
@@ -578,7 +577,7 @@ void DLCTexturePack::unloadUI()
 	AbstractTexturePack::unloadUI();
 
 	app.m_dlcManager.removePack(m_dlcDataPack);
-	m_dlcDataPack = nullptr;
+	m_dlcDataPack = NULL;
 	delete m_archiveFile;
 	m_bHasLoadedData = false;
 
@@ -588,9 +587,9 @@ void DLCTexturePack::unloadUI()
 wstring DLCTexturePack::getXuiRootPath()
 {
 	wstring path = L"";
-	if(m_dlcDataPack != nullptr && m_dlcDataPack->doesPackContainFile(DLCManager::e_DLCType_UIData, L"TexturePack.xzp"))
+	if(m_dlcDataPack != NULL && m_dlcDataPack->doesPackContainFile(DLCManager::e_DLCType_UIData, L"TexturePack.xzp"))
 	{
-		DLCUIDataFile *dataFile = static_cast<DLCUIDataFile *>(m_dlcDataPack->getFile(DLCManager::e_DLCType_UIData, L"TexturePack.xzp"));
+		DLCUIDataFile *dataFile = (DLCUIDataFile *)m_dlcDataPack->getFile(DLCManager::e_DLCType_UIData, L"TexturePack.xzp");
 
 		DWORD dwSize = 0;
 		PBYTE pbData = dataFile->getData(dwSize);

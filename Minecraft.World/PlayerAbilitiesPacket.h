@@ -44,6 +44,6 @@ public:
 	bool isInvalidatedBy(shared_ptr<Packet> packet);
 
 public:
-	static shared_ptr<Packet> create() { return std::make_shared<PlayerAbilitiesPacket>(); }
+	static shared_ptr<Packet> create() { return shared_ptr<Packet>(new PlayerAbilitiesPacket()); }
 	virtual int getId() { return 202; }
 };

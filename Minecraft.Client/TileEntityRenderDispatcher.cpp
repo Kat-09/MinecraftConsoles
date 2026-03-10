@@ -15,7 +15,7 @@
 #include "EnderChestRenderer.h"
 #include "BeaconRenderer.h"
 
-TileEntityRenderDispatcher *TileEntityRenderDispatcher::instance = nullptr;
+TileEntityRenderDispatcher *TileEntityRenderDispatcher::instance = NULL;
 double TileEntityRenderDispatcher::xOff = 0;
 double TileEntityRenderDispatcher::yOff = 0;
 double TileEntityRenderDispatcher::zOff = 0;
@@ -28,9 +28,9 @@ void TileEntityRenderDispatcher::staticCtor()
 TileEntityRenderDispatcher::TileEntityRenderDispatcher()
 {
 	// 4J -a dded
-	font = nullptr;
-	textures = nullptr;
-	level = nullptr;
+	font = NULL;
+	textures = NULL;
+	level = NULL;
 	cameraEntity = nullptr;
 	playerRotY = 0.0f;
 	playerRotX = 0.0f;;
@@ -45,7 +45,7 @@ TileEntityRenderDispatcher::TileEntityRenderDispatcher()
 	renderers[eTYPE_ENCHANTMENTTABLEENTITY] = new EnchantTableRenderer();
 	renderers[eTYPE_THEENDPORTALTILEENTITY] = new TheEndPortalRenderer();
 	renderers[eTYPE_SKULLTILEENTITY] = new SkullTileRenderer();
-	renderers[eTYPE_FURNACETILEENTITY] = nullptr;
+	renderers[eTYPE_FURNACETILEENTITY] = NULL;
 	renderers[eTYPE_BEACONTILEENTITY] = new BeaconRenderer();
 	glDisable(GL_LIGHTING);
 
@@ -57,13 +57,13 @@ TileEntityRenderDispatcher::TileEntityRenderDispatcher()
 
 TileEntityRenderer *TileEntityRenderDispatcher::getRenderer(eINSTANCEOF e)
 {
-	TileEntityRenderer *r = nullptr;
+	TileEntityRenderer *r = NULL;
 	//TileEntityRenderer *r = renderers[e];
     auto it = renderers.find(e); // 4J Stu - The .at and [] accessors insert elements if they don't exist
 
     if( it == renderers.end() )
 	{
-		return nullptr;
+		return NULL;
 	}
 
 /* 4J - not doing this hierarchical search anymore. We need to explicitly add renderers for any eINSTANCEOF type that we want to be able to render
@@ -83,12 +83,12 @@ TileEntityRenderer *TileEntityRenderDispatcher::getRenderer(eINSTANCEOF e)
 
 bool TileEntityRenderDispatcher::hasRenderer(shared_ptr<TileEntity> e)
 {
-	return getRenderer(e) != nullptr;
+	return getRenderer(e) != NULL;
 }
 
 TileEntityRenderer *TileEntityRenderDispatcher::getRenderer(shared_ptr<TileEntity> e)
 {
-	if (e == nullptr) return nullptr;
+	if (e == NULL) return NULL;
 	return getRenderer(e->GetType());
 }
 
@@ -135,7 +135,7 @@ void TileEntityRenderDispatcher::render(shared_ptr<TileEntity> e, float a, bool 
 void TileEntityRenderDispatcher::render(shared_ptr<TileEntity> entity, double x, double y, double z, float a, bool setColor/*=true*/, float alpha, bool useCompiled)
 {
 	TileEntityRenderer *renderer = getRenderer(entity);
-	if (renderer != nullptr)
+	if (renderer != NULL)
 	{
 		renderer->render(entity, x, y, z, a, setColor, alpha, useCompiled);
 	}

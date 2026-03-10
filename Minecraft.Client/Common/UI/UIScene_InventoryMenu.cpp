@@ -23,17 +23,17 @@ UIScene_InventoryMenu::UIScene_InventoryMenu(int iPad, void *_initData, UILayer 
 	// Setup all the Iggy references we need for this scene
 	initialiseMovie();
 
-	InventoryScreenInput *initData = static_cast<InventoryScreenInput *>(_initData);
+	InventoryScreenInput *initData = (InventoryScreenInput *)_initData;
 
 	Minecraft *pMinecraft = Minecraft::GetInstance();
-	if( pMinecraft->localgameModes[initData->iPad] != nullptr )
+	if( pMinecraft->localgameModes[initData->iPad] != NULL )
 	{
-		TutorialMode *gameMode = static_cast<TutorialMode *>(pMinecraft->localgameModes[initData->iPad]);
+		TutorialMode *gameMode = (TutorialMode *)pMinecraft->localgameModes[initData->iPad];
 		m_previousTutorialState = gameMode->getTutorial()->getCurrentState();
 		gameMode->getTutorial()->changeTutorialState(e_Tutorial_State_Inventory_Menu, this);
 	}
 
-	InventoryMenu *menu = static_cast<InventoryMenu *>(initData->player->inventoryMenu);
+	InventoryMenu *menu = (InventoryMenu *)initData->player->inventoryMenu;
 
 	initData->player->awardStat(GenericStats::openInventory(),GenericStats::param_openInventory());
 
@@ -182,7 +182,7 @@ void UIScene_InventoryMenu::setSectionSelectedSlot(ESceneSection eSection, int x
 
 	int index = (y * cols) + x;
 
-	UIControl_SlotList *slotList = nullptr;
+	UIControl_SlotList *slotList = NULL;
 	switch( eSection )
 	{
 	case eSectionInventoryArmor:
@@ -201,7 +201,7 @@ void UIScene_InventoryMenu::setSectionSelectedSlot(ESceneSection eSection, int x
 
 UIControl *UIScene_InventoryMenu::getSection(ESceneSection eSection)
 {
-	UIControl *control = nullptr;
+	UIControl *control = NULL;
 	switch( eSection )
 	{
 	case eSectionInventoryArmor:
@@ -220,7 +220,7 @@ UIControl *UIScene_InventoryMenu::getSection(ESceneSection eSection)
 void UIScene_InventoryMenu::customDraw(IggyCustomDrawCallbackRegion *region)
 {
 	Minecraft *pMinecraft = Minecraft::GetInstance();
-	if(pMinecraft->localplayers[m_iPad] == nullptr || pMinecraft->localgameModes[m_iPad] == nullptr) return;
+	if(pMinecraft->localplayers[m_iPad] == NULL || pMinecraft->localgameModes[m_iPad] == NULL) return;
 
 	if(wcscmp((wchar_t *)region->name,L"player")==0)
 	{
@@ -253,7 +253,7 @@ void UIScene_InventoryMenu::updateEffectsDisplay()
 	Minecraft *pMinecraft = Minecraft::GetInstance();
 	shared_ptr<MultiplayerLocalPlayer> player = pMinecraft->localplayers[m_iPad];
 
-	if(player == nullptr) return;
+	if(player == NULL) return;
 
 	vector<MobEffectInstance *> *activeEffects = player->getActiveEffects();
 

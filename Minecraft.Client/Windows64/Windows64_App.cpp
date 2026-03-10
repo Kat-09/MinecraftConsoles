@@ -52,8 +52,8 @@ void CConsoleMinecraftApp::GetSaveThumbnail(PBYTE *pbData,DWORD *pdwSize)
 	}
 	else
 	{
-		// No capture happened (e.g. first save on world creation) leave thumbnail as nullptr
-		if (pbData)  *pbData  = nullptr;
+		// No capture happened (e.g. first save on world creation) leave thumbnail as NULL
+		if (pbData)  *pbData  = NULL;
 		if (pdwSize) *pdwSize = 0;
 	}
 }
@@ -69,7 +69,7 @@ void CConsoleMinecraftApp::TemporaryCreateGameStart()
 {
 	////////////////////////////////////////////////////////////////////////////////////////////// From CScene_Main::OnInit
 
-	app.setLevelGenerationOptions(nullptr);
+	app.setLevelGenerationOptions(NULL);
 
 	// From CScene_Main::RunPlayGame
 	Minecraft *pMinecraft=Minecraft::GetInstance();
@@ -95,11 +95,11 @@ void CConsoleMinecraftApp::TemporaryCreateGameStart()
 	StorageManager.SetSaveTitle(wWorldName.c_str());
 
 	bool isFlat = false;
-	int64_t seedValue = 0; // BiomeSource::findSeed(isFlat?LevelType::lvl_flat:LevelType::lvl_normal);	// 4J - was (new Random())->nextLong() - now trying to actually find a seed to suit our requirements
+	__int64 seedValue = 0; // BiomeSource::findSeed(isFlat?LevelType::lvl_flat:LevelType::lvl_normal);	// 4J - was (new Random())->nextLong() - now trying to actually find a seed to suit our requirements
 
 	NetworkGameInitData *param = new NetworkGameInitData();
 	param->seed = seedValue;
-	param->saveData = nullptr;
+	param->saveData = NULL;
 
 	app.SetGameHostOption(eGameHostOption_Difficulty,0);
 	app.SetGameHostOption(eGameHostOption_FriendsOfFriends,0);
@@ -125,7 +125,7 @@ void CConsoleMinecraftApp::TemporaryCreateGameStart()
 
 	LoadingInputParams *loadingParams = new LoadingInputParams();
 	loadingParams->func = &CGameNetworkManager::RunNetworkGameThreadProc;
-	loadingParams->lpParam = static_cast<LPVOID>(param);
+	loadingParams->lpParam = (LPVOID)param;
 
 	// Reset the autosave time
 	app.SetAutosaveTimerTime();

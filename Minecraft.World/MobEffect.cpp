@@ -46,7 +46,7 @@ MobEffect *MobEffect::reserved_31;
 
 void MobEffect::staticCtor()
 {
-	voidEffect = nullptr;
+	voidEffect = NULL;
 	movementSpeed =		(new MobEffect(1, false, eMinecraftColour_Effect_MovementSpeed))			->setDescriptionId(IDS_POTION_MOVESPEED)		->setPostfixDescriptionId(IDS_POTION_MOVESPEED_POSTFIX)->setIcon(MobEffect::e_MobEffectIcon_Speed)->addAttributeModifier(SharedMonsterAttributes::MOVEMENT_SPEED, eModifierId_POTION_MOVESPEED, 0.2f, AttributeModifier::OPERATION_MULTIPLY_TOTAL); //setIcon(0, 0);
 	movementSlowdown =	(new MobEffect(2, true, eMinecraftColour_Effect_MovementSlowDown))			->setDescriptionId(IDS_POTION_MOVESLOWDOWN)		->setPostfixDescriptionId(IDS_POTION_MOVESLOWDOWN_POSTFIX)->setIcon(MobEffect::e_MobEffectIcon_Slowness)->addAttributeModifier(SharedMonsterAttributes::MOVEMENT_SPEED, eModifierId_POTION_MOVESLOWDOWN, -0.15f, AttributeModifier::OPERATION_MULTIPLY_TOTAL); //->setIcon(1, 0);
 	digSpeed =			(new MobEffect(3, false, eMinecraftColour_Effect_DigSpeed))					->setDescriptionId(IDS_POTION_DIGSPEED)			->setPostfixDescriptionId(IDS_POTION_DIGSPEED_POSTFIX)->setDurationModifier(1.5)->setIcon(MobEffect::e_MobEffectIcon_Haste); //->setIcon(2, 0);
@@ -70,14 +70,14 @@ void MobEffect::staticCtor()
 	healthBoost =		(new HealthBoostMobEffect(21, false, eMinecraftColour_Effect_HealthBoost))	->setDescriptionId(IDS_POTION_HEALTHBOOST)		->setPostfixDescriptionId(IDS_POTION_HEALTHBOOST_POSTFIX)->setIcon(MobEffect::e_MobEffectIcon_HealthBoost)->addAttributeModifier(SharedMonsterAttributes::MAX_HEALTH, eModifierId_POTION_HEALTHBOOST, 4, AttributeModifier::OPERATION_ADDITION);
 	absorption =		(new AbsoptionMobEffect(22, false, eMinecraftColour_Effect_Absoprtion))		->setDescriptionId(IDS_POTION_ABSORPTION)		->setPostfixDescriptionId(IDS_POTION_ABSORPTION_POSTFIX)->setIcon(MobEffect::e_MobEffectIcon_Absorption);
 	saturation =		(new InstantenousMobEffect(23, false, eMinecraftColour_Effect_Saturation))	->setDescriptionId(IDS_POTION_SATURATION)		->setPostfixDescriptionId(IDS_POTION_SATURATION_POSTFIX);
-	reserved_24 = nullptr;
-	reserved_25 = nullptr;
-	reserved_26 = nullptr;
-	reserved_27 = nullptr;
-	reserved_28 = nullptr;
-	reserved_29 = nullptr;
-	reserved_30 = nullptr;
-	reserved_31 = nullptr;
+	reserved_24 = NULL;
+	reserved_25 = NULL;
+	reserved_26 = NULL;
+	reserved_27 = NULL;
+	reserved_28 = NULL;
+	reserved_29 = NULL;
+	reserved_30 = NULL;
+	reserved_31 = NULL;
 }
 
 MobEffect::MobEffect(int id, bool isHarmful, eMinecraftColour color) : id(id), _isHarmful(isHarmful), color(color)
@@ -173,13 +173,13 @@ void MobEffect::applyInstantenousEffect(shared_ptr<LivingEntity> source, shared_
 {
 	if ((id == heal->id && !mob->isInvertedHealAndHarm()) || (id == harm->id && mob->isInvertedHealAndHarm()))
 	{
-		int amount = static_cast<int>(scale * (double)(4 << amplification) + .5);
+		int amount = (int) (scale * (double) (4 << amplification) + .5);
 		mob->heal(amount);
 	}
 	else if ((id == harm->id && !mob->isInvertedHealAndHarm()) || (id == heal->id && mob->isInvertedHealAndHarm()))
 	{
-		int amount = static_cast<int>(scale * (double)(6 << amplification) + .5);
-		if (source == nullptr)
+		int amount = (int) (scale * (double) (6 << amplification) + .5);
+		if (source == NULL)
 		{
 			mob->hurt(DamageSource::magic, amount);
 		}
@@ -359,7 +359,7 @@ void MobEffect::removeAttributeModifiers(shared_ptr<LivingEntity> entity, BaseAt
 	{
 		AttributeInstance *attribute = attributes->getInstance(it.first);
 
-		if (attribute != nullptr)
+		if (attribute != NULL)
 		{
 			attribute->removeModifier(it.second);
 		}
@@ -372,7 +372,7 @@ void MobEffect::addAttributeModifiers(shared_ptr<LivingEntity> entity, BaseAttri
 	{
 		AttributeInstance *attribute = attributes->getInstance(it.first);
 
-		if (attribute != nullptr)
+		if (attribute != NULL)
 		{
 			AttributeModifier *original = it.second;
 			attribute->removeModifier(original);

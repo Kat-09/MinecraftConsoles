@@ -40,7 +40,7 @@ DamageSource *DamageSource::arrow(shared_ptr<Arrow> arrow, shared_ptr<Entity> ow
 
 DamageSource *DamageSource::fireball(shared_ptr<Fireball> fireball, shared_ptr<Entity> owner)
 {
-	if (owner == nullptr)
+	if (owner == NULL)
 	{
 		return (new IndirectEntityDamageSource(ChatPacket::e_ChatDeathOnFire, ChatPacket::e_ChatDeathOnFire, fireball, fireball))->setIsFire()->setProjectile();
 	}
@@ -64,7 +64,7 @@ DamageSource *DamageSource::thorns(shared_ptr<Entity> source)
 
 DamageSource *DamageSource::explosion(Explosion *explosion)
 {
-	if ( (explosion != nullptr) && (explosion->getSourceMob() != nullptr) )
+	if ( (explosion != NULL) && (explosion->getSourceMob() != NULL) )
 	{
 		return (new EntityDamageSource(ChatPacket::e_ChatDeathExplosionPlayer, ChatPacket::e_ChatDeathExplosionPlayer, explosion->getSourceMob()))->setScalesWithDifficulty()->setExplosion();
 	}
@@ -191,13 +191,13 @@ DamageSource *DamageSource::setMagic()
 shared_ptr<ChatPacket> DamageSource::getDeathMessagePacket(shared_ptr<LivingEntity> player)
 {
 	shared_ptr<LivingEntity> source = player->getKillCredit();
-	if(source != nullptr)
+	if(source != NULL)
 	{
-		return std::make_shared<ChatPacket>(player->getNetworkName(), m_msgWithItemId != ChatPacket::e_ChatCustom ? m_msgWithItemId : m_msgId, source->GetType(), source->getNetworkName());
+		return shared_ptr<ChatPacket>( new ChatPacket(player->getNetworkName(), m_msgWithItemId != ChatPacket::e_ChatCustom ? m_msgWithItemId : m_msgId, source->GetType(), source->getNetworkName() ) );
 	}
 	else
 	{
-		return std::make_shared<ChatPacket>(player->getNetworkName(), m_msgId);
+		return shared_ptr<ChatPacket>( new ChatPacket(player->getNetworkName(), m_msgId ) );
 	}
 }
 

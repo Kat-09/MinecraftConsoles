@@ -52,18 +52,18 @@ bool ShapedRecipy::matches(shared_ptr<CraftingContainer> craftSlots, int xOffs, 
 		for (int y = 0; y < 3; y++) {
 			int xs = x - xOffs;
 			int ys = y - yOffs;
-			ItemInstance *expected = nullptr;
+			ItemInstance *expected = NULL;
 			if (xs >= 0 && ys >= 0 && xs < width && ys < height) 
 			{
 				if (xFlip) expected = recipeItems[(width - xs - 1) + ys * width];
 				else expected = recipeItems[xs + ys * width];
 			}
 			shared_ptr<ItemInstance> item = craftSlots->getItem(x, y);
-			if (item == nullptr && expected == nullptr) 
+			if (item == NULL && expected == NULL) 
 			{
 				continue;
 			}
-			if ((item == nullptr && expected != nullptr) || (item != nullptr && expected == nullptr)) 
+			if ((item == NULL && expected != NULL) || (item != NULL && expected == NULL)) 
 			{
 				return false;
 			}
@@ -84,15 +84,15 @@ shared_ptr<ItemInstance> ShapedRecipy::assemble(shared_ptr<CraftingContainer> cr
 {
 	shared_ptr<ItemInstance> result = getResultItem()->copy();
 
-	if (_keepTag && craftSlots != nullptr)
+	if (_keepTag && craftSlots != NULL)
 	{
 		for (int i = 0; i < craftSlots->getContainerSize(); i++)
 		{
 			shared_ptr<ItemInstance> item = craftSlots->getItem(i);
 
-			if (item != nullptr && item->hasTag())
+			if (item != NULL && item->hasTag())
 			{
-				result->setTag(static_cast<CompoundTag *>(item->tag->copy()));
+				result->setTag((CompoundTag *) item->tag->copy());
 			}
 		}
 	}
@@ -106,7 +106,7 @@ int ShapedRecipy::size()
 }
 
 // 4J-PB
-bool ShapedRecipy::reqs(int iRecipe) 
+bool ShapedRecipy::requires(int iRecipe) 
 {
 	app.DebugPrintf("ShapedRecipy %d\n",iRecipe);
 	int iCount=0;
@@ -117,7 +117,7 @@ bool ShapedRecipy::reqs(int iRecipe)
 			if (x < width && y < height) 
 			{
 				ItemInstance *expected = recipeItems[x+y*width];
-				if (expected!=nullptr) 
+				if (expected!=NULL) 
 				{			
 					//printf("\tIngredient %d is %d\n",iCount++,expected->id);
 				}
@@ -130,7 +130,7 @@ bool ShapedRecipy::reqs(int iRecipe)
 	return false;
 }
 
-void ShapedRecipy::reqs(INGREDIENTS_REQUIRED *pIngReq) 
+void ShapedRecipy::requires(INGREDIENTS_REQUIRED *pIngReq) 
 {
 	//printf("ShapedRecipy %d\n",iRecipe);
 
@@ -159,7 +159,7 @@ void ShapedRecipy::reqs(INGREDIENTS_REQUIRED *pIngReq)
 			{
 				ItemInstance *expected = recipeItems[x+y*width];
 
-				if (expected!=nullptr) 
+				if (expected!=NULL) 
 				{			
 					int iAuxVal = expected->getAuxValue();
 					TempIngReq.uiGridA[x+y*3]=expected->id | iAuxVal<<24;

@@ -83,7 +83,7 @@ void UIControl_TexturePackList::selectSlot(int id)
 void UIControl_TexturePackList::clearSlots()
 {
 	IggyDataValue result;
-	IggyResult out = IggyPlayerCallMethodRS ( m_parentScene->getMovie() , &result, getIggyValuePath(), m_clearSlotsFunc ,0 , nullptr );
+	IggyResult out = IggyPlayerCallMethodRS ( m_parentScene->getMovie() , &result, getIggyValuePath(), m_clearSlotsFunc ,0 , NULL );
 }
 
 void UIControl_TexturePackList::setEnabled(bool enable)
@@ -125,7 +125,7 @@ bool UIControl_TexturePackList::CanTouchTrigger(S32 iX, S32 iY)
 	S32 bCanTouchTrigger = false;
 	if(result.type == IGGY_DATATYPE_boolean)
 	{
-		bCanTouchTrigger = static_cast<bool>(result.boolval);
+		bCanTouchTrigger = (bool)result.boolval;
 	}
 	return bCanTouchTrigger;
 }
@@ -133,12 +133,12 @@ bool UIControl_TexturePackList::CanTouchTrigger(S32 iX, S32 iY)
 S32 UIControl_TexturePackList::GetRealHeight()
 {
 	IggyDataValue result;
-	IggyResult out = IggyPlayerCallMethodRS ( m_parentScene->getMovie() , &result, getIggyValuePath() , m_funcGetRealHeight, 0 , nullptr );
+	IggyResult out = IggyPlayerCallMethodRS ( m_parentScene->getMovie() , &result, getIggyValuePath() , m_funcGetRealHeight, 0 , NULL );
 
 	S32 iRealHeight = m_height;
 	if(result.type == IGGY_DATATYPE_number)
 	{
-		iRealHeight = static_cast<S32>(result.number);
+		iRealHeight = (S32)result.number;
 	}
 	return iRealHeight;
 }

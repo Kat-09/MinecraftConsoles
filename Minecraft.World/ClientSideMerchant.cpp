@@ -7,8 +7,8 @@ ClientSideMerchant::ClientSideMerchant(shared_ptr<Player> source, const wstring 
 {
 	this->source = source;
 	// 4J Stu - Need to do this after creating as a shared_ptr
-	container = nullptr; //new MerchantContainer(source, this);
-	currentOffers = nullptr;
+	container = NULL; //new MerchantContainer(source, this);
+	currentOffers = NULL;
 	m_name = name;
 }
 

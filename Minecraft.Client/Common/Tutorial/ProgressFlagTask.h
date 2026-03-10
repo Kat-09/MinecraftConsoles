@@ -17,7 +17,7 @@ private:
 	EProgressFlagType m_type;
 public:
 	ProgressFlagTask(char *flags, char mask, EProgressFlagType type, Tutorial *tutorial ) :
-	TutorialTask(tutorial, -1, false, nullptr ),
+	TutorialTask(tutorial, -1, false, NULL ),
 		flags( flags ), m_mask( mask ), m_type( type )
 	{}
 

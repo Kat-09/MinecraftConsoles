@@ -22,7 +22,7 @@ UIScene_CraftingMenu::UIScene_CraftingMenu(int iPad, void *_initData, UILayer *p
 #endif
 	m_bIgnoreKeyPresses = false;
 
-	CraftingPanelScreenInput* initData = static_cast<CraftingPanelScreenInput *>(_initData);
+	CraftingPanelScreenInput* initData = (CraftingPanelScreenInput*)_initData;
 	m_iContainerType=initData->iContainerType;
 	m_pPlayer=initData->player;
 	m_bSplitscreen=initData->bSplitscreen;
@@ -117,9 +117,9 @@ UIScene_CraftingMenu::UIScene_CraftingMenu(int iPad, void *_initData, UILayer *p
 	// Update the tutorial state
 	Minecraft *pMinecraft = Minecraft::GetInstance();
 
-	if( pMinecraft->localgameModes[m_iPad] != nullptr )
+	if( pMinecraft->localgameModes[m_iPad] != NULL )
 	{
-		TutorialMode *gameMode = static_cast<TutorialMode *>(pMinecraft->localgameModes[m_iPad]);
+		TutorialMode *gameMode = (TutorialMode *)pMinecraft->localgameModes[m_iPad];
 		m_previousTutorialState = gameMode->getTutorial()->getCurrentState();
 		if(m_iContainerType==RECIPE_TYPE_2x2)
 		{
@@ -198,14 +198,14 @@ void UIScene_CraftingMenu::handleDestroy()
 {
 	Minecraft *pMinecraft = Minecraft::GetInstance();
 
-	if( pMinecraft->localgameModes[m_iPad] != nullptr )
+	if( pMinecraft->localgameModes[m_iPad] != NULL )
 	{
-		TutorialMode *gameMode = static_cast<TutorialMode *>(pMinecraft->localgameModes[m_iPad]);
-		if(gameMode != nullptr) gameMode->getTutorial()->changeTutorialState(m_previousTutorialState);
+		TutorialMode *gameMode = (TutorialMode *)pMinecraft->localgameModes[m_iPad];
+		if(gameMode != NULL) gameMode->getTutorial()->changeTutorialState(m_previousTutorialState);
 	}
 
 	// We need to make sure that we call closeContainer() anytime this menu is closed, even if it is forced to close by some other reason (like the player dying)	
-	if(Minecraft::GetInstance()->localplayers[m_iPad] != nullptr && Minecraft::GetInstance()->localplayers[m_iPad]->containerMenu->containerId == m_menu->containerId)
+	if(Minecraft::GetInstance()->localplayers[m_iPad] != NULL && Minecraft::GetInstance()->localplayers[m_iPad]->containerMenu->containerId == m_menu->containerId)
 	{
 		Minecraft::GetInstance()->localplayers[m_iPad]->closeContainer();
 	}
@@ -270,6 +270,7 @@ UIControl* UIScene_CraftingMenu::GetMainPanel()
 #endif
 
 #ifdef __PSVITA__
+
 void UIScene_CraftingMenu::handleTouchInput(unsigned int iPad, S32 x, S32 y, int iId, bool bPressed, bool bRepeat, bool bReleased)
 {
 	// perform action on release
@@ -399,7 +400,7 @@ bool UIScene_CraftingMenu::handleMouseClick(F32 x, F32 y)
 	if (!m_hSlotBoundsValid || m_hSlotSpacing <= 0)
 		return false;
 
-	// Tab click â€” tabs sit directly above the H slot row. We derive their
+	// Tab click — tabs sit directly above the H slot row. We derive their
 	// bounds from the H slot positions cached in customDraw, since the Vita
 	// TouchPanel controls are full-screen overlays with unusable bounds.
 	int maxTabs = (m_iContainerType == RECIPE_TYPE_3x3) ? m_iMaxGroup3x3 : m_iMaxGroup2x2;
@@ -432,7 +433,7 @@ bool UIScene_CraftingMenu::handleMouseClick(F32 x, F32 y)
 		return true;
 	}
 
-	// H slot click â€” select or craft
+	// H slot click — select or craft
 	F32 rowWidth = m_hSlotSpacing * m_iCraftablesMaxHSlotC;
 	if (x >= m_hSlotX0 && x < m_hSlotX0 + rowWidth &&
 		y >= m_hSlotY0 && y < m_hSlotY1)
@@ -446,7 +447,7 @@ bool UIScene_CraftingMenu::handleMouseClick(F32 x, F32 y)
 
 			if (iNewSlot == m_iCurrentSlotHIndex)
 			{
-				// Click on already-selected slot â€” craft the item
+				// Click on already-selected slot — craft the item
 				handleKeyDown(m_iPad, ACTION_MENU_A, false);
 			}
 			else
@@ -525,14 +526,14 @@ void UIScene_CraftingMenu::handleReload()
 void UIScene_CraftingMenu::customDraw(IggyCustomDrawCallbackRegion *region)
 {
 	Minecraft *pMinecraft = Minecraft::GetInstance();
-	if(pMinecraft->localplayers[m_iPad] == nullptr || pMinecraft->localgameModes[m_iPad] == nullptr) return;
+	if(pMinecraft->localplayers[m_iPad] == NULL || pMinecraft->localgameModes[m_iPad] == NULL) return;
 
 	shared_ptr<ItemInstance> item = nullptr;
 	int slotId = -1;
 	float alpha = 1.0f;
 	bool decorations = true;
 	bool inventoryItem = false;
-	swscanf(static_cast<wchar_t *>(region->name),L"slot_%d",&slotId);
+	swscanf((wchar_t*)region->name,L"slot_%d",&slotId);
 	if (slotId == -1)
 	{
 		app.DebugPrintf("This is not the control we are looking for\n");
@@ -557,16 +558,6 @@ void UIScene_CraftingMenu::customDraw(IggyCustomDrawCallbackRegion *region)
 	{
 		decorations = false;
 		int iIndex = slotId - CRAFTING_V_SLOT_START;
-		if(m_vSlotsInfo[iIndex].show)
-		{
-			item = m_vSlotsInfo[iIndex].item;
-			alpha = static_cast<float>(m_vSlotsInfo[iIndex].alpha)/31.0f;
-		}
-	}
-	else if(slotId >= CRAFTING_H_SLOT_START && slotId < (CRAFTING_H_SLOT_START + m_iCraftablesMaxHSlotC) )
-	{
-		decorations = false;
-		int iIndex = slotId - CRAFTING_H_SLOT_START;
 #ifdef _WINDOWS64
 		// Cache H slot SWF-space positions from the custom draw transform matrix
 		if (iIndex == 0 || iIndex == 1)
@@ -593,10 +584,20 @@ void UIScene_CraftingMenu::customDraw(IggyCustomDrawCallbackRegion *region)
 			}
 		}
 #endif
+		if(m_vSlotsInfo[iIndex].show)
+		{
+			item = m_vSlotsInfo[iIndex].item;
+			alpha = ((float)m_vSlotsInfo[iIndex].alpha)/31.0f;
+		}
+	}
+	else if(slotId >= CRAFTING_H_SLOT_START && slotId < (CRAFTING_H_SLOT_START + m_iCraftablesMaxHSlotC) )
+	{
+		decorations = false;
+		int iIndex = slotId - CRAFTING_H_SLOT_START;
 		if(m_hSlotsInfo[iIndex].show)
 		{
 			item = m_hSlotsInfo[iIndex].item;
-			alpha = static_cast<float>(m_hSlotsInfo[iIndex].alpha)/31.0f;
+			alpha = ((float)m_hSlotsInfo[iIndex].alpha)/31.0f;
 		}
 	}
 	else if(slotId >= CRAFTING_INGREDIENTS_LAYOUT_START && slotId < (CRAFTING_INGREDIENTS_LAYOUT_START + m_iIngredientsMaxSlotC) )
@@ -605,7 +606,7 @@ void UIScene_CraftingMenu::customDraw(IggyCustomDrawCallbackRegion *region)
 		if(m_ingredientsSlotsInfo[iIndex].show)
 		{
 			item = m_ingredientsSlotsInfo[iIndex].item;
-			alpha = static_cast<float>(m_ingredientsSlotsInfo[iIndex].alpha)/31.0f;
+			alpha = ((float)m_ingredientsSlotsInfo[iIndex].alpha)/31.0f;
 		}
 	}
 	else if(slotId >= CRAFTING_INGREDIENTS_DESCRIPTION_START && slotId < (CRAFTING_INGREDIENTS_DESCRIPTION_START + 4) )
@@ -614,7 +615,7 @@ void UIScene_CraftingMenu::customDraw(IggyCustomDrawCallbackRegion *region)
 		if(m_ingredientsInfo[iIndex].show)
 		{
 			item = m_ingredientsInfo[iIndex].item;
-			alpha = static_cast<float>(m_ingredientsInfo[iIndex].alpha)/31.0f;
+			alpha = ((float)m_ingredientsInfo[iIndex].alpha)/31.0f;
 		}
 	}
 	else if(slotId == CRAFTING_OUTPUT_SLOT_START )
@@ -622,11 +623,11 @@ void UIScene_CraftingMenu::customDraw(IggyCustomDrawCallbackRegion *region)
 		if(m_craftingOutputSlotInfo.show)
 		{
 			item = m_craftingOutputSlotInfo.item;
-			alpha = static_cast<float>(m_craftingOutputSlotInfo.alpha)/31.0f;
+			alpha = ((float)m_craftingOutputSlotInfo.alpha)/31.0f;
 		}
 	}
 
-	if(item != nullptr)
+	if(item != NULL)
 	{
 		if(!inventoryItem)
 		{
@@ -742,7 +743,7 @@ void UIScene_CraftingMenu::setCraftingOutputSlotItem(int iPad, shared_ptr<ItemIn
 {
 	m_craftingOutputSlotInfo.item = item;
 	m_craftingOutputSlotInfo.alpha = 31;
-	m_craftingOutputSlotInfo.show = item != nullptr;
+	m_craftingOutputSlotInfo.show = item != NULL;
 }
 
 void UIScene_CraftingMenu::setCraftingOutputSlotRedBox(bool show)
@@ -754,7 +755,7 @@ void UIScene_CraftingMenu::setIngredientSlotItem(int iPad, int index, shared_ptr
 {
 	m_ingredientsSlotsInfo[index].item = item;
 	m_ingredientsSlotsInfo[index].alpha = 31;
-	m_ingredientsSlotsInfo[index].show = item != nullptr;
+	m_ingredientsSlotsInfo[index].show = item != NULL;
 }
 
 void UIScene_CraftingMenu::setIngredientSlotRedBox(int index, bool show)
@@ -766,7 +767,7 @@ void UIScene_CraftingMenu::setIngredientDescriptionItem(int iPad, int index, sha
 {
 	m_ingredientsInfo[index].item = item;
 	m_ingredientsInfo[index].alpha = 31;
-	m_ingredientsInfo[index].show = item != nullptr;
+	m_ingredientsInfo[index].show = item != NULL;
 
 	IggyDataValue result;
 	IggyDataValue value[2];

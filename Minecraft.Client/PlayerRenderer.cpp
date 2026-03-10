@@ -39,12 +39,12 @@ static unsigned int nametagColorForIndex(int index)
 		float r = 0.f, g = 0.f, b = 0.f;
 		switch (i % 6)
 		{
-			case 0: r = 1.f; g = t;   b = 0.f; break;
-			case 1: r = q;   g = 1.f; b = 0.f; break;
-			case 2: r = 0.f; g = 1.f; b = t;   break;
-			case 3: r = 0.f; g = q;   b = 1.f; break;
-			case 4: r = t;   g = 0.f; b = 1.f; break;
-			default: r = 1.f; g = 0.f; b = q; break;
+		case 0: r = 1.f; g = t;   b = 0.f; break;
+		case 1: r = q;   g = 1.f; b = 0.f; break;
+		case 2: r = 0.f; g = 1.f; b = t;   break;
+		case 3: r = 0.f; g = q;   b = 1.f; break;
+		case 4: r = t;   g = 0.f; b = 1.f; break;
+		default: r = 1.f; g = 0.f; b = q; break;
 		}
 		int ri = (int)(r * 255.f) & 0xff, gi = (int)(g * 255.f) & 0xff, bi = (int)(b * 255.f) & 0xff;
 		return 0xff000000u | (ri << 16) | (gi << 8) | bi;
@@ -57,7 +57,7 @@ ResourceLocation PlayerRenderer::DEFAULT_LOCATION = ResourceLocation(TN_MOB_CHAR
 
 PlayerRenderer::PlayerRenderer() : LivingEntityRenderer( new HumanoidModel(0), 0.5f )
 {
-    humanoidModel = static_cast<HumanoidModel *>(model);
+    humanoidModel = (HumanoidModel *) model;
 
     armorParts1 = new HumanoidModel(1.0f);
     armorParts2 = new HumanoidModel(0.5f);
@@ -83,7 +83,7 @@ int PlayerRenderer::prepareArmor(shared_ptr<LivingEntity> _player, int layer, fl
 	}
 
     shared_ptr<ItemInstance> itemInstance = player->inventory->getArmor(3 - layer);
-    if (itemInstance != nullptr)
+    if (itemInstance != NULL)
 	{
         Item *item = itemInstance->getItem();
         if (dynamic_cast<ArmorItem *>(item))
@@ -102,17 +102,17 @@ int PlayerRenderer::prepareArmor(shared_ptr<LivingEntity> _player, int layer, fl
             armor->leg1->visible = layer == 2 || layer == 3;
 
             setArmor(armor);
-			if (armor != nullptr) armor->attackTime = model->attackTime;
-			if (armor != nullptr) armor->riding = model->riding;
-			if (armor != nullptr) armor->young = model->young;
+			if (armor != NULL) armor->attackTime = model->attackTime;
+			if (armor != NULL) armor->riding = model->riding;
+			if (armor != NULL) armor->young = model->young;
 
 			float brightness = SharedConstants::TEXTURE_LIGHTING ? 1 : player->getBrightness(a);
 			if (armorItem->getMaterial() == ArmorItem::ArmorMaterial::CLOTH)
 			{
 				int color = armorItem->getColor(itemInstance);
-				float red = static_cast<float>((color >> 16) & 0xFF) / 0xFF;
-				float green = static_cast<float>((color >> 8) & 0xFF) / 0xFF;
-				float blue = static_cast<float>(color & 0xFF) / 0xFF;
+				float red = (float) ((color >> 16) & 0xFF) / 0xFF;
+				float green = (float) ((color >> 8) & 0xFF) / 0xFF;
+				float blue = (float) (color & 0xFF) / 0xFF;
 				glColor3f(brightness * red, brightness * green, brightness * blue);
 
 				if (itemInstance->isEnchanted()) return 0x1f;
@@ -137,13 +137,13 @@ void PlayerRenderer::prepareSecondPassArmor(shared_ptr<LivingEntity> _player, in
 	// 4J - dynamic cast required because we aren't using templates/generics in our version
 	shared_ptr<Player> player = dynamic_pointer_cast<Player>(_player);
 	shared_ptr<ItemInstance> itemInstance = player->inventory->getArmor(3 - layer);
-	if (itemInstance != nullptr)
+	if (itemInstance != NULL)
 	{
 		Item *item = itemInstance->getItem();
 		if (dynamic_cast<ArmorItem *>(item))
 		{
             ArmorItem *armorItem = dynamic_cast<ArmorItem *>(item);
-			bindTexture(HumanoidMobRenderer::getArmorLocation(static_cast<ArmorItem *>(item), layer, true));
+			bindTexture(HumanoidMobRenderer::getArmorLocation((ArmorItem *)item, layer, true));
 
 			float brightness = SharedConstants::TEXTURE_LIGHTING ? 1 : player->getBrightness(a);
 			glColor3f(brightness, brightness, brightness);
@@ -153,20 +153,14 @@ void PlayerRenderer::prepareSecondPassArmor(shared_ptr<LivingEntity> _player, in
 
 void PlayerRenderer::render(shared_ptr<Entity> _mob, double x, double y, double z, float rot, float a)
 {
-	if (_mob == nullptr)
-	{
-		return;
-	}
-
 	// 4J - dynamic cast required because we aren't using templates/generics in our version
 	shared_ptr<Player> mob = dynamic_pointer_cast<Player>(_mob);
 
-	if(mob == nullptr) return;
 	if(mob->hasInvisiblePrivilege()) return;
 
     shared_ptr<ItemInstance> item = mob->inventory->getSelected();
-    armorParts1->holdingRightHand = armorParts2->holdingRightHand = humanoidModel->holdingRightHand = item != nullptr ? 1 : 0;
-	if (item != nullptr)
+    armorParts1->holdingRightHand = armorParts2->holdingRightHand = humanoidModel->holdingRightHand = item != NULL ? 1 : 0;
+	if (item != NULL)
 	{
 		if (mob->getUseItemDuration() > 0)
 		{
@@ -182,7 +176,7 @@ void PlayerRenderer::render(shared_ptr<Entity> _mob, double x, double y, double 
 		}
 	}
 	// 4J added, for 3rd person view of eating
-	if( item != nullptr && mob->getUseItemDuration() > 0 && item->getUseAnimation() == UseAnim_eat )
+	if( item != NULL && mob->getUseItemDuration() > 0 && item->getUseAnimation() == UseAnim_eat )
 	{
 		// These factors are largely lifted from ItemInHandRenderer to try and keep the 3rd person eating animation as similar as possible
         float t = (mob->getUseItemDuration() - a + 1);
@@ -266,7 +260,7 @@ void PlayerRenderer::additionalRendering(shared_ptr<LivingEntity> _mob, float a)
 	shared_ptr<Player> mob = dynamic_pointer_cast<Player>(_mob);
 
     shared_ptr<ItemInstance> headGear = mob->inventory->getArmor(3);
-    if (headGear != nullptr)
+    if (headGear != NULL)
 	{
 		// don't render the pumpkin for the skins
 		unsigned int uiAnimOverrideBitmask = mob->getSkinAnimOverrideBitmask( mob->getCustomSkin());
@@ -306,7 +300,7 @@ void PlayerRenderer::additionalRendering(shared_ptr<LivingEntity> _mob, float a)
     }
 
 	// need to add a custom texture for deadmau5
-	if (mob != nullptr && app.isXuidDeadmau5( mob->getXuid() ) && bindTexture(mob->customTextureUrl, L"" ))
+	if (mob != NULL && app.isXuidDeadmau5( mob->getXuid() ) && bindTexture(mob->customTextureUrl, L"" ))
 	{
         for (int i = 0; i < 2; i++)
 		{
@@ -345,11 +339,11 @@ void PlayerRenderer::additionalRendering(shared_ptr<LivingEntity> _mob, float a)
         double xa = Mth::sin(yr * PI / 180);
         double za = -Mth::cos(yr * PI / 180);
 
-        float flap = static_cast<float>(yd) * 10;
+        float flap = (float) yd * 10;
         if (flap < -6) flap = -6;
         if (flap > 32) flap = 32;
-        float lean = static_cast<float>(xd * xa + zd * za) * 100;
-        float lean2 = static_cast<float>(xd * za - zd * xa) * 100;
+        float lean = (float) (xd * xa + zd * za) * 100;
+        float lean2 = (float) (xd * za - zd * xa) * 100;
         if (lean < 0) lean = 0;
 
         float pow = mob->oBob + (mob->bob - mob->oBob) * a;
@@ -374,15 +368,15 @@ void PlayerRenderer::additionalRendering(shared_ptr<LivingEntity> _mob, float a)
 
     shared_ptr<ItemInstance> item = mob->inventory->getSelected();
 
-    if (item != nullptr)
+    if (item != NULL)
 	{
         glPushMatrix();
         humanoidModel->arm0->translateTo(1 / 16.0f);
         glTranslatef(-1 / 16.0f, 7 / 16.0f, 1 / 16.0f);
 
-        if (mob->fishing != nullptr)
+        if (mob->fishing != NULL)
 		{
-            item = std::make_shared<ItemInstance>(Item::stick);
+            item = shared_ptr<ItemInstance>( new ItemInstance(Item::stick) );
         }
 
 		UseAnim anim = UseAnim_none;//null;
@@ -478,7 +472,7 @@ void PlayerRenderer::renderNameTags(shared_ptr<LivingEntity> player, double x, d
         Scoreboard *scoreboard = player->getScoreboard();
         Objective *objective = scoreboard->getDisplayObjective(Scoreboard::DISPLAY_SLOT_BELOW_NAME);
 
-        if (objective != nullptr)
+        if (objective != NULL)
 		{
             Score *score = scoreboard->getPlayerScore(player->getAName(), objective);
 
@@ -564,7 +558,7 @@ void PlayerRenderer::renderShadow(shared_ptr<Entity> e, double x, double y, doub
 	if(app.GetGameHostOption(eGameHostOption_HostCanBeInvisible) > 0)
 	{
 		shared_ptr<Player> player = dynamic_pointer_cast<Player>(e);
-		if(player != nullptr && player->hasInvisiblePrivilege()) return;
+		if(player != NULL && player->hasInvisiblePrivilege()) return;
 	}
 	EntityRenderer::renderShadow(e,x,y,z,pow,a);
 }
@@ -579,5 +573,5 @@ void PlayerRenderer::bindTexture(shared_ptr<Entity> entity)
 ResourceLocation *PlayerRenderer::getTextureLocation(shared_ptr<Entity> entity)
 {
 	shared_ptr<Player> player = dynamic_pointer_cast<Player>(entity);
-	return new ResourceLocation(static_cast<_TEXTURE_NAME>(player->getTexture()));
+	return new ResourceLocation((_TEXTURE_NAME)player->getTexture());
 }

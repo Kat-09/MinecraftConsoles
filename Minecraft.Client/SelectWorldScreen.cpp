@@ -16,11 +16,11 @@ SelectWorldScreen::SelectWorldScreen(Screen *lastScreen)
     title = L"Select world";
     done = false;
 	selectedWorld = 0;
-	worldSelectionList = nullptr;
+	worldSelectionList = NULL;
 	isDeleting = false;
-	deleteButton = nullptr;
-    selectButton = nullptr;
-    renameButton = nullptr;
+	deleteButton = NULL;
+    selectButton = NULL;
+    renameButton = NULL;
 
 	this->lastScreen = lastScreen;
 }
@@ -115,14 +115,14 @@ void SelectWorldScreen::buttonClicked(Button *button)
 		else
 		{
             // create demo world
-            minecraft->setScreen(nullptr);
+            minecraft->setScreen(NULL);
             if (done) return;
             done = true;
 // 4J Stu - Not used, so commenting to stop the build failing
 #if 0
             minecraft->gameMode = new DemoMode(minecraft);
             minecraft->selectLevel(CreateWorldScreen::findAvailableFolderName(minecraft->getLevelSource(), L"Demo"), L"Demo World", 0L);
-            minecraft->setScreen(nullptr);
+            minecraft->setScreen(NULL);
 #endif
         }
     }
@@ -142,20 +142,20 @@ void SelectWorldScreen::buttonClicked(Button *button)
 
 void SelectWorldScreen::worldSelected(int id)
 {
-    minecraft->setScreen(nullptr);
+    minecraft->setScreen(NULL);
     if (done) return;
     done = true;
-    minecraft->gameMode = nullptr; //new SurvivalMode(minecraft);
+    minecraft->gameMode = NULL; //new SurvivalMode(minecraft);
 
     wstring worldFolderName = getWorldId(id);
-    if (worldFolderName == L"")	// 4J - was nullptr comparison
+    if (worldFolderName == L"")	// 4J - was NULL comparison
 	{
         worldFolderName = L"World" + std::to_wstring(id);
     }
 // 4J Stu - Not used, so commenting to stop the build failing
 #if 0
     minecraft->selectLevel(worldFolderName, getWorldName(id), 0);
-    minecraft->setScreen(nullptr);
+    minecraft->setScreen(NULL);
 #endif
 }
 
@@ -235,7 +235,7 @@ SelectWorldScreen::WorldSelectionList::WorldSelectionList(SelectWorldScreen *sws
 
 int SelectWorldScreen::WorldSelectionList::getNumberOfItems()
 {
-	return static_cast<int>(this->parent->levelList->size());
+	return (int)this->parent->levelList->size();
 }
 
 void SelectWorldScreen::WorldSelectionList::selectItem(int item, bool doubleClick)
@@ -259,7 +259,7 @@ bool SelectWorldScreen::WorldSelectionList::isSelectedItem(int item)
 
 int SelectWorldScreen::WorldSelectionList::getMaxPosition()
 {
-	return static_cast<int>(parent->levelList->size()) * 36;
+	return (int)parent->levelList->size() * 36;
 }
 
 void SelectWorldScreen::WorldSelectionList::renderBackground()
@@ -294,7 +294,7 @@ void SelectWorldScreen::WorldSelectionList::renderItem(int i, int x, int y, int 
 	swprintf(buffer,20,L"%d/%d/%d %d:%02d",time.wDay, time.wMonth, time.wYear, time.wHour, time.wMinute); // 4J - TODO Localise this
     id = id + L" (" + buffer;
 
-    int64_t size = levelSummary->getSizeOnDisk();
+    __int64 size = levelSummary->getSizeOnDisk();
     id = id + L", " + std::to_wstring(static_cast<float>(size / 1024 * 100 / 1024 / 100.0f)) + L" MB)";
     wstring info;
 

@@ -23,7 +23,7 @@ void PistonMovingPiece::onPlace(Level *level, int x, int y, int z)
 void PistonMovingPiece::onRemove(Level *level, int x, int y, int z, int id, int data)
 {
 	shared_ptr<TileEntity> tileEntity = level->getTileEntity(x, y, z);
-	if (tileEntity != nullptr && dynamic_pointer_cast<PistonPieceEntity>(tileEntity) != nullptr)
+	if (tileEntity != NULL && dynamic_pointer_cast<PistonPieceEntity>(tileEntity) != NULL)
 	{
 		dynamic_pointer_cast<PistonPieceEntity>(tileEntity)->finalTick();
 	}
@@ -62,7 +62,7 @@ bool PistonMovingPiece::use(Level *level, int x, int y, int z, shared_ptr<Player
 {
 	if( soundOnly) return false;
 	// this is a special case in order to help removing invisible, unbreakable, blocks in the world
-	if (!level->isClientSide && level->getTileEntity(x, y, z) == nullptr)
+	if (!level->isClientSide && level->getTileEntity(x, y, z) == NULL)
 	{
 		// this block is no longer valid
 		level->removeTile(x, y, z);
@@ -81,7 +81,7 @@ void PistonMovingPiece::spawnResources(Level *level, int x, int y, int z, int da
 	if (level->isClientSide) return;
 
 	shared_ptr<PistonPieceEntity> entity = getEntity(level, x, y, z);
-	if (entity == nullptr)
+	if (entity == NULL)
 	{
 		return;
 	}
@@ -93,21 +93,21 @@ void PistonMovingPiece::neighborChanged(Level *level, int x, int y, int z, int t
 {
 	if (!level->isClientSide)
 	{
-		level->getTileEntity(x, y, z) == nullptr;
+		level->getTileEntity(x, y, z) == NULL;
 	}
 }
 
 shared_ptr<TileEntity> PistonMovingPiece::newMovingPieceEntity(int block, int data, int facing, bool extending, bool isSourcePiston)
 {
-	return std::make_shared<PistonPieceEntity>(block, data, facing, extending, isSourcePiston);
+	return shared_ptr<TileEntity>(new PistonPieceEntity(block, data, facing, extending, isSourcePiston));
 }
 
 AABB *PistonMovingPiece::getAABB(Level *level, int x, int y, int z)
 {
 	shared_ptr<PistonPieceEntity> entity = getEntity(level, x, y, z);
-	if (entity == nullptr)
+	if (entity == NULL)
 	{
-		return nullptr;
+		return NULL;
 	}
 
 	// move the aabb depending on the animation
@@ -122,11 +122,11 @@ AABB *PistonMovingPiece::getAABB(Level *level, int x, int y, int z)
 void PistonMovingPiece::updateShape(LevelSource *level, int x, int y, int z, int forceData, shared_ptr<TileEntity> forceEntity) // 4J added forceData, forceEntity param
 {
 	shared_ptr<PistonPieceEntity> entity = dynamic_pointer_cast<PistonPieceEntity>(forceEntity);
-	if( entity == nullptr ) entity = getEntity(level, x, y, z);
-	if (entity != nullptr)
+	if( entity == NULL ) entity = getEntity(level, x, y, z);
+	if (entity != NULL)
 	{
 		Tile *tile = Tile::tiles[entity->getId()];
-		if (tile == nullptr || tile == this)
+		if (tile == NULL || tile == this)
 		{
 			return;
 		}
@@ -138,7 +138,7 @@ void PistonMovingPiece::updateShape(LevelSource *level, int x, int y, int z, int
 			progress = 1.0f - progress;
 		}
 		int facing = entity->getFacing();
-		ThreadStorage *tls = static_cast<ThreadStorage *>(TlsGetValue(Tile::tlsIdxShape));
+		ThreadStorage *tls = (ThreadStorage *)TlsGetValue(Tile::tlsIdxShape);
 		tls->xx0 = tile->getShapeX0() - Facing::STEP_X[facing] * progress;
 		tls->yy0 = tile->getShapeY0() - Facing::STEP_Y[facing] * progress;
 		tls->zz0 = tile->getShapeZ0() - Facing::STEP_Z[facing] * progress;
@@ -152,13 +152,13 @@ AABB *PistonMovingPiece::getAABB(Level *level, int x, int y, int z, int tile, fl
 {
 	if (tile == 0 || tile == id)
 	{
-		return nullptr;
+		return NULL;
 	}
 	AABB *aabb = Tile::tiles[tile]->getAABB(level, x, y, z);
 
-	if (aabb == nullptr)
+	if (aabb == NULL)
 	{
-		return nullptr;
+		return NULL;
 	}
 
 	// move the aabb depending on the animation
@@ -192,7 +192,7 @@ AABB *PistonMovingPiece::getAABB(Level *level, int x, int y, int z, int tile, fl
 shared_ptr<PistonPieceEntity> PistonMovingPiece::getEntity(LevelSource *level, int x, int y, int z)
 {
 	shared_ptr<TileEntity> tileEntity = level->getTileEntity(x, y, z);
-	if (tileEntity != nullptr && dynamic_pointer_cast<PistonPieceEntity>(tileEntity) != nullptr)
+	if (tileEntity != NULL && dynamic_pointer_cast<PistonPieceEntity>(tileEntity) != NULL)
 	{
 		return  dynamic_pointer_cast<PistonPieceEntity>(tileEntity);
 	}

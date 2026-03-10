@@ -48,8 +48,8 @@ UIScene_EULA::UIScene_EULA(int iPad, void *initData, UILayer *parentLayer) : UIS
 #endif
 
 	vector<wstring> paragraphs;
-	size_t lastIndex = 0;
-	for (	size_t index = EULA.find(L"\r\n", lastIndex, 2);
+	int lastIndex = 0;
+	for (	int index = EULA.find(L"\r\n", lastIndex, 2);
 			index != wstring::npos; 
 			index = EULA.find(L"\r\n", lastIndex, 2)
 		)
@@ -132,7 +132,7 @@ void UIScene_EULA::handleInput(int iPad, int key, bool repeat, bool pressed, boo
 
 void UIScene_EULA::handlePress(F64 controlId, F64 childId)
 {
-	switch(static_cast<int>(controlId))
+	switch((int)controlId)
 	{
 	case eControl_Confirm:
 		//CD - Added for audio

@@ -41,7 +41,6 @@ private:
     int lastSlot;
 public:
 	void tick();
-	void reset();
     void itemPlaced();
     void itemUsed();
 };

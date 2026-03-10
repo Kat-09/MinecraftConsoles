@@ -40,9 +40,15 @@
 #include "PS3\PS3Extras\ShutdownManager.h"
 #include "PlayerChunkMap.h"
 
+#ifdef _WINDOWS64
+#include "../../Windows64_Launcher.h"
+
+extern float g_sleepPercentage;
+#endif
+
 WeighedTreasureArray ServerLevel::RANDOM_BONUS_ITEMS;
 
-C4JThread* ServerLevel::m_updateThread = nullptr;
+C4JThread* ServerLevel::m_updateThread = NULL;
 C4JThread::EventArray* ServerLevel::m_updateTrigger;
 CRITICAL_SECTION ServerLevel::m_updateCS[3];
 
@@ -63,7 +69,7 @@ void ServerLevel::staticCtor()
 	InitializeCriticalSection(&m_updateCS[1]);
 	InitializeCriticalSection(&m_updateCS[2]);
 
-	m_updateThread = new C4JThread(runUpdate, nullptr, "Tile update");
+	m_updateThread = new C4JThread(runUpdate, NULL, "Tile update");
 	m_updateThread->SetProcessor(CPU_CORE_TILE_UPDATE);
 #ifdef __ORBIS__
 	m_updateThread->SetPriority(THREAD_PRIORITY_BELOW_NORMAL);	// On Orbis, this core is also used for Matching 2, and that priority of that seems to be always at default no matter what we set it to. Prioritise this below Matching 2.
@@ -123,7 +129,7 @@ ServerLevel::ServerLevel(MinecraftServer *server, shared_ptr<LevelStorage>levelS
 	scoreboard = new ServerScoreboard(server);
 
 	//shared_ptr<ScoreboardSaveData> scoreboardSaveData = dynamic_pointer_cast<ScoreboardSaveData>( savedDataStorage->get(typeid(ScoreboardSaveData), ScoreboardSaveData::FILE_ID) );
-	//if (scoreboardSaveData == nullptr)
+	//if (scoreboardSaveData == NULL)
 	//{
 	//	scoreboardSaveData = shared_ptr<ScoreboardSaveData>( new ScoreboardSaveData() );
 	//	savedDataStorage->set(ScoreboardSaveData::FILE_ID, scoreboardSaveData);
@@ -207,7 +213,7 @@ void ServerLevel::tick()
 		if (getGameRules()->getBoolean(GameRules::RULE_DAYLIGHT))
 		{
 			// skip time until new day
-			int64_t newTime = levelData->getDayTime() + TICKS_PER_DAY;
+			__int64 newTime = levelData->getDayTime() + TICKS_PER_DAY;
 
 			// 4J : WESTY : Changed so that time update goes through stats tracking update code.
 			//levelData->setTime(newTime - (newTime % TICKS_PER_DAY));
@@ -248,7 +254,7 @@ void ServerLevel::tick()
 
 	//4J - temporarily disabling saves as they are causing gameplay to generally stutter quite a lot
 
-	int64_t time = levelData->getGameTime() + 1;
+	__int64 time = levelData->getGameTime() + 1;
 	// 4J Stu - Putting this back in, but I have reduced the number of chunks that save when not forced
 #ifdef _LARGE_WORLDS
 	if (time % (saveInterval) == (dimension->id + 1))
@@ -256,8 +262,9 @@ void ServerLevel::tick()
 	if (time % (saveInterval) == (dimension->id * dimension->id * (saveInterval/2)))
 #endif
 	{
+		//app.DebugPrintf("Incremental save\n");
 		PIXBeginNamedEvent(0,"Incremental save");
-		save(false, nullptr);
+		save(false, NULL);
 		PIXEndNamedEvent();
 	}
 
@@ -312,9 +319,9 @@ void ServerLevel::tick()
 Biome::MobSpawnerData *ServerLevel::getRandomMobSpawnAt(MobCategory *mobCategory, int x, int y, int z)
 {
 	vector<Biome::MobSpawnerData *> *mobList = getChunkSource()->getMobsAt(mobCategory, x, y, z);
-	if (mobList == nullptr || mobList->empty()) return nullptr;
+	if (mobList == NULL || mobList->empty()) return NULL;
 
-	return static_cast<Biome::MobSpawnerData *>(WeighedRandom::getRandomItem(random, (vector<WeighedRandomItem *> *)mobList));
+	return (Biome::MobSpawnerData *) WeighedRandom::getRandomItem(random, (vector<WeighedRandomItem *> *)mobList);
 }
 
 void ServerLevel::updateSleepingPlayerList()
@@ -432,7 +439,7 @@ void ServerLevel::tickTiles()
 		if( hasChunkAt(x,y,z) )
 		{
 			int id = getTile(x,y,z);
-			if (Tile::tiles[id] != nullptr && Tile::tiles[id]->isTicking())
+			if (Tile::tiles[id] != NULL && Tile::tiles[id]->isTicking())
 			{
 				/*if(id == 2) ++grassTicks;
 				else if(id == 11) ++lavaTicks;
@@ -496,7 +503,7 @@ void ServerLevel::tickTiles()
 
 			if (isRainingAt(x, y, z))
 			{
-				addGlobalEntity(std::make_shared<LightningBolt>(this, x, y, z));
+				addGlobalEntity( shared_ptr<LightningBolt>( new LightningBolt(this, x, y, z) ) );
 			}
 		}
 
@@ -639,8 +646,8 @@ void ServerLevel::resetEmptyTime()
 bool ServerLevel::tickPendingTicks(bool force)
 {
 	EnterCriticalSection(&m_tickNextTickCS);
-	int count = static_cast<int>(tickNextTickList.size());
-	int count2 = static_cast<int>(tickNextTickSet.size());
+	int count = (int)tickNextTickList.size();
+	int count2 = (int)tickNextTickSet.size();
 	if (count != tickNextTickSet.size())
 	{
 		// TODO 4J Stu - Add new exception types
@@ -684,8 +691,8 @@ bool ServerLevel::tickPendingTicks(bool force)
 
 	toBeTicked.clear();
 
-	int count3 = static_cast<int>(tickNextTickList.size());
-	int count4 = static_cast<int>(tickNextTickSet.size());
+	int count3 = (int)tickNextTickList.size();
+	int count4 = (int)tickNextTickSet.size();
 
 	bool retval = tickNextTickList.size() != 0;
 	LeaveCriticalSection(&m_tickNextTickCS);
@@ -775,7 +782,7 @@ void ServerLevel::tick(shared_ptr<Entity> e, bool actual)
 	{
 		e->remove();
 	}
-	if (!server->isNpcsEnabled() && (dynamic_pointer_cast<Npc>(e) != nullptr))
+	if (!server->isNpcsEnabled() && (dynamic_pointer_cast<Npc>(e) != NULL))
 	{
 		e->remove();
 	}
@@ -859,7 +866,7 @@ void ServerLevel::setInitialSpawn(LevelSettings *levelSettings)
 	int minXZ = - (dimension->getXZSize() * 16 ) / 2;
 	int maxXZ = (dimension->getXZSize() * 16 ) / 2 - 1;
 
-	if (findBiome != nullptr)
+	if (findBiome != NULL)
 	{
 		xSpawn = findBiome->x;
 		zSpawn = findBiome->z;
@@ -913,7 +920,7 @@ void ServerLevel::generateBonusItemsNearSpawn()
 			if( getTile( x, y, z ) == Tile::chest_Id )
 			{
 				shared_ptr<ChestTileEntity> chest = dynamic_pointer_cast<ChestTileEntity>(getTileEntity(x, y, z));
-				if (chest != nullptr)
+				if (chest != NULL)
 				{
 					if( chest->isBonusChest )
 					{
@@ -959,7 +966,7 @@ void ServerLevel::save(bool force, ProgressListener *progressListener, bool bAut
 	if(StorageManager.GetSaveDisabled()) return;
 
 
-	if (progressListener != nullptr)
+	if (progressListener != NULL)
 	{
 		if(bAutosave)
 		{
@@ -975,7 +982,7 @@ void ServerLevel::save(bool force, ProgressListener *progressListener, bool bAut
 	saveLevelData();
 	PIXEndNamedEvent();
 
-	if (progressListener != nullptr) progressListener->progressStage(IDS_PROGRESS_SAVING_CHUNKS);
+	if (progressListener != NULL) progressListener->progressStage(IDS_PROGRESS_SAVING_CHUNKS);
 
 #if defined(_XBOX_ONE) || defined(__ORBIS__)
 	// Our autosave is a minimal save. All the chunks are saves by the constant save process
@@ -1008,7 +1015,7 @@ void ServerLevel::save(bool force, ProgressListener *progressListener, bool bAut
 
 	//if( force && !isClientSide )
 	//{
-	//	if (progressListener != nullptr) progressListener->progressStage(IDS_PROGRESS_SAVING_TO_DISC);
+	//	if (progressListener != NULL) progressListener->progressStage(IDS_PROGRESS_SAVING_TO_DISC);
 	//	levelStorage->flushSaveFile();
 	//}
 }
@@ -1023,7 +1030,7 @@ void ServerLevel::saveToDisc(ProgressListener *progressListener, bool autosave)
 	if(!Minecraft::GetInstance()->skins->isUsingDefaultSkin())
 	{
 		TexturePack *tPack = Minecraft::GetInstance()->skins->getSelected();
-		DLCTexturePack *pDLCTexPack=static_cast<DLCTexturePack *>(tPack);
+		DLCTexturePack *pDLCTexPack=(DLCTexturePack *)tPack;
 
 		DLCPack * pDLCPack=pDLCTexPack->getDLCInfoParentPack();
 
@@ -1033,7 +1040,7 @@ void ServerLevel::saveToDisc(ProgressListener *progressListener, bool autosave)
 		}
 	}
 
-	if (progressListener != nullptr) progressListener->progressStage(IDS_PROGRESS_SAVING_TO_DISC);
+	if (progressListener != NULL) progressListener->progressStage(IDS_PROGRESS_SAVING_TO_DISC);
 	levelStorage->flushSaveFile(autosave);
 }
 
@@ -1084,7 +1091,7 @@ bool ServerLevel::addGlobalEntity(shared_ptr<Entity> e)
 {
 	if (Level::addGlobalEntity(e))
 	{
-		server->getPlayers()->broadcast(e->x, e->y, e->z, 512, dimension->id, std::make_shared<AddGlobalEntityPacket>(e));
+		server->getPlayers()->broadcast(e->x, e->y, e->z, 512, dimension->id, shared_ptr<AddGlobalEntityPacket>( new AddGlobalEntityPacket(e) ) );
 		return true;
 	}
 	return false;
@@ -1092,7 +1099,7 @@ bool ServerLevel::addGlobalEntity(shared_ptr<Entity> e)
 
 void ServerLevel::broadcastEntityEvent(shared_ptr<Entity> e, byte event)
 {
-	shared_ptr<Packet> p = std::make_shared<EntityEventPacket>(e->entityId, event);
+	shared_ptr<Packet> p = shared_ptr<EntityEventPacket>( new EntityEventPacket(e->entityId, event) );
 	server->getLevel(dimension->id)->getTracker()->broadcastAndSend(e, p);
 }
 
@@ -1100,7 +1107,7 @@ shared_ptr<Explosion> ServerLevel::explode(shared_ptr<Entity> source, double x, 
 {
 	// instead of calling super, we run the same explosion code here except
 	// we don't generate any particles
-	shared_ptr<Explosion> explosion = std::make_shared<Explosion>(this, source, x, y, z, r);
+	shared_ptr<Explosion> explosion = shared_ptr<Explosion>( new Explosion(this, source, x, y, z, r) );
 	explosion->fire = fire;
 	explosion->destroyBlocks = destroyBlocks;
 	explosion->explode();
@@ -1121,7 +1128,7 @@ shared_ptr<Explosion> ServerLevel::explode(shared_ptr<Entity> source, double x, 
 		if( sentTo.size() )
 		{
 			INetworkPlayer *thisPlayer = player->connection->getNetworkPlayer();
-			if( thisPlayer == nullptr )
+			if( thisPlayer == NULL )
 			{
 				continue;
 			}
@@ -1130,7 +1137,7 @@ shared_ptr<Explosion> ServerLevel::explode(shared_ptr<Entity> source, double x, 
 				for(auto& player2 : sentTo)
 				{
 					INetworkPlayer *otherPlayer = player2->connection->getNetworkPlayer();
-					if( otherPlayer != nullptr && thisPlayer->IsSameSystem(otherPlayer) )
+					if( otherPlayer != NULL && thisPlayer->IsSameSystem(otherPlayer) )
 					{
 						knockbackOnly = true;
 					}
@@ -1143,7 +1150,7 @@ shared_ptr<Explosion> ServerLevel::explode(shared_ptr<Entity> source, double x, 
 			Vec3 *knockbackVec = explosion->getHitPlayerKnockback(player);
 			//app.DebugPrintf("Sending %s with knockback (%f,%f,%f)\n", knockbackOnly?"knockbackOnly":"allExplosion",knockbackVec->x,knockbackVec->y,knockbackVec->z);
 			// If the player is not the primary on the system, then we only want to send info for the knockback
-			player->connection->send(std::make_shared<ExplodePacket>(x, y, z, r, &explosion->toBlow, knockbackVec, knockbackOnly));
+			player->connection->send( shared_ptr<ExplodePacket>( new ExplodePacket(x, y, z, r, &explosion->toBlow, knockbackVec, knockbackOnly)));
 			sentTo.push_back( player );
 		}
 	}
@@ -1181,7 +1188,7 @@ void ServerLevel::runTileEvents()
 			if (doTileEvent(&it))
 			{
 				TileEventData te = it;
-				server->getPlayers()->broadcast(te.getX(), te.getY(), te.getZ(), 64, dimension->id, std::make_shared<TileEventPacket>(te.getX(), te.getY(), te.getZ(), te.getTile(), te.getParamA(), te.getParamB()));
+				server->getPlayers()->broadcast(te.getX(), te.getY(), te.getZ(), 64, dimension->id, shared_ptr<TileEventPacket>( new TileEventPacket(te.getX(), te.getY(), te.getZ(), te.getTile(), te.getParamA(), te.getParamB())));
 			}
 		}
 		tileEvents[runList].clear();
@@ -1211,11 +1218,11 @@ void ServerLevel::tickWeather()
 	{
 		if (wasRaining)
 		{
-			server->getPlayers()->broadcastAll(std::make_shared<GameEventPacket>(GameEventPacket::STOP_RAINING, 0));
+			server->getPlayers()->broadcastAll( shared_ptr<GameEventPacket>( new GameEventPacket(GameEventPacket::STOP_RAINING, 0) ) );
 		}
 		else
 		{
-			server->getPlayers()->broadcastAll(std::make_shared<GameEventPacket>(GameEventPacket::START_RAINING, 0));
+			server->getPlayers()->broadcastAll( shared_ptr<GameEventPacket>( new GameEventPacket(GameEventPacket::START_RAINING, 0) ) );
 		}
 	}
 
@@ -1231,9 +1238,9 @@ EntityTracker *ServerLevel::getTracker()
 	return tracker;
 }
 
-void ServerLevel::setTimeAndAdjustTileTicks(int64_t newTime)
+void ServerLevel::setTimeAndAdjustTileTicks(__int64 newTime)
 {
-	int64_t delta = newTime - levelData->getGameTime();
+	__int64 delta = newTime - levelData->getGameTime();
 	// 4J - can't directly adjust m_delay in a set as it has a const interator, since changing values in here might change the ordering of the elements in the set.
 	// Instead move to a vector, do the adjustment, put back in the set.
 	vector<TickNextTickData> temp;
@@ -1267,7 +1274,7 @@ void ServerLevel::sendParticles(const wstring &name, double x, double y, double 
 
 void ServerLevel::sendParticles(const wstring &name, double x, double y, double z, int count, double xDist, double yDist, double zDist, double speed)
 {
-	shared_ptr<Packet> packet = std::make_shared<LevelParticlesPacket>( name, static_cast<float>(x), static_cast<float>(y), static_cast<float>(z), static_cast<float>(xDist), static_cast<float>(yDist), static_cast<float>(zDist), static_cast<float>(speed), count );
+	shared_ptr<Packet> packet = std::make_shared<LevelParticlesPacket>( name, (float) x, (float) y, (float) z, (float) xDist, (float) yDist, (float) zDist, (float) speed, count );
 
 	for(auto& it : players)
 	{
@@ -1577,7 +1584,7 @@ int ServerLevel::runUpdate(void* lpParam)
 					if( (id == Tile::grass_Id && grassTicks >= MAX_GRASS_TICKS) || (id == Tile::calmLava_Id && lavaTicks >= MAX_LAVA_TICKS) ) continue;
 
 					// 4J Stu - Added shouldTileTick as some tiles won't even do anything if they are set to tick and use up one of our updates
-					if (Tile::tiles[id] != nullptr && Tile::tiles[id]->isTicking() && Tile::tiles[id]->shouldTileTick(m_level[iLev],x + (cx * 16), y, z + (cz * 16) ) )
+					if (Tile::tiles[id] != NULL && Tile::tiles[id]->isTicking() && Tile::tiles[id]->shouldTileTick(m_level[iLev],x + (cx * 16), y, z + (cz * 16) ) )
 					{
 						if(id == Tile::grass_Id) ++grassTicks;
 						else if(id == Tile::calmLava_Id) ++lavaTicks;

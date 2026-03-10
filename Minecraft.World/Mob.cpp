@@ -43,7 +43,7 @@ void Mob::_init()
 	lookingAt = nullptr;
 	lookTime = 0;
 	target = nullptr;
-	sensing = nullptr;
+	sensing = NULL;
 
 	equipment = ItemInstanceArray(5);
 	dropChances  = floatArray(5);
@@ -58,7 +58,7 @@ void Mob::_init()
 
 	_isLeashed = false;
 	leashHolder = nullptr;
-	leashInfoTag = nullptr;
+	leashInfoTag = NULL;
 }
 
 Mob::Mob( Level* level) : LivingEntity(level)
@@ -87,16 +87,16 @@ Mob::Mob( Level* level) : LivingEntity(level)
 
 Mob::~Mob()
 {
-	if(lookControl != nullptr) delete lookControl;
-	if(moveControl != nullptr) delete moveControl;
-	if(jumpControl != nullptr) delete jumpControl;
-	if(bodyControl != nullptr) delete bodyControl;
-	if(navigation != nullptr) delete navigation;
-	if(sensing != nullptr) delete sensing;
+	if(lookControl != NULL) delete lookControl;
+	if(moveControl != NULL) delete moveControl;
+	if(jumpControl != NULL) delete jumpControl;
+	if(bodyControl != NULL) delete bodyControl;
+	if(navigation != NULL) delete navigation;
+	if(sensing != NULL) delete sensing;
 
-	if(leashInfoTag != nullptr) delete leashInfoTag;
+	if(leashInfoTag != NULL) delete leashInfoTag;
 
-	if(equipment.data != nullptr) delete [] equipment.data;
+	if(equipment.data != NULL) delete [] equipment.data;
 	delete [] dropChances.data;
 }
 
@@ -155,7 +155,7 @@ void Mob::ate()
 void Mob::defineSynchedData()
 {
 	LivingEntity::defineSynchedData();
-	entityData->define(DATA_CUSTOM_NAME_VISIBLE, static_cast<byte>(0));
+	entityData->define(DATA_CUSTOM_NAME_VISIBLE, (byte) 0);
 	entityData->define(DATA_CUSTOM_NAME, L"");
 }
 
@@ -196,7 +196,7 @@ int Mob::getExperienceReward(shared_ptr<Player> killedBy)
 		ItemInstanceArray slots = getEquipmentSlots();
 		for (int i = 0; i < slots.length; i++)
 		{
-			if (slots[i] != nullptr && dropChances[i] <= 1)
+			if (slots[i] != NULL && dropChances[i] <= 1)
 			{
 				result += 1 + random->nextInt(3);
 			}
@@ -280,7 +280,7 @@ void Mob::addAdditonalSaveData(CompoundTag *entityTag)
 	for (int i = 0; i < equipment.length; i++)
 	{
 		CompoundTag *tag = new CompoundTag();
-		if (equipment[i] != nullptr) equipment[i]->save(tag);
+		if (equipment[i] != NULL) equipment[i]->save(tag);
 		gear->add(tag);
 	}
 	entityTag->put(L"Equipment", gear);
@@ -296,7 +296,7 @@ void Mob::addAdditonalSaveData(CompoundTag *entityTag)
 
 	// leash info
 	entityTag->putBoolean(L"Leashed", _isLeashed);
-	if (leashHolder != nullptr)
+	if (leashHolder != NULL)
 	{
 		CompoundTag *leashTag = new CompoundTag(L"Leash");
 		if ( leashHolder->instanceof(eTYPE_LIVINGENTITY) )
@@ -347,7 +347,7 @@ void Mob::readAdditionalSaveData(CompoundTag *tag)
 	_isLeashed = tag->getBoolean(L"Leashed");
 	if (_isLeashed && tag->contains(L"Leash"))
 	{
-		leashInfoTag = static_cast<CompoundTag *>(tag->getCompound(L"Leash")->copy());
+		leashInfoTag = (CompoundTag *)tag->getCompound(L"Leash")->copy();
 	}
 }
 
@@ -372,7 +372,7 @@ void Mob::aiStep()
 		for (auto& it : *entities)
 		{
 			shared_ptr<ItemEntity> entity = dynamic_pointer_cast<ItemEntity>(it);
-			if (entity->removed || entity->getItem() == nullptr) continue;
+			if (entity->removed || entity->getItem() == NULL) continue;
 			shared_ptr<ItemInstance> item = entity->getItem();
 			int slot = getEquipmentSlotForItem(item);
 
@@ -381,17 +381,17 @@ void Mob::aiStep()
 				bool replace = true;
 				shared_ptr<ItemInstance> current = getCarried(slot);
 
-				if (current != nullptr)
+				if (current != NULL)
 				{
 					if (slot == SLOT_WEAPON)
 					{
 						WeaponItem *newWeapon = dynamic_cast<WeaponItem *>(item->getItem());
 						WeaponItem *oldWeapon = dynamic_cast<WeaponItem *>(current->getItem());
-						if ( newWeapon != nullptr && oldWeapon == nullptr)
+						if ( newWeapon != NULL && oldWeapon == NULL)
 						{
 							replace = true;
 						}
-						else if (newWeapon != nullptr && oldWeapon != nullptr)
+						else if (newWeapon != NULL && oldWeapon != NULL)
 						{
 							if (newWeapon->getTierDamage() == oldWeapon->getTierDamage())
 							{
@@ -411,11 +411,11 @@ void Mob::aiStep()
 					{
 						ArmorItem *newArmor = dynamic_cast<ArmorItem *>(item->getItem());
 						ArmorItem *oldArmor = dynamic_cast<ArmorItem *>(current->getItem());
-						if (newArmor != nullptr && oldArmor == nullptr)
+						if (newArmor != NULL && oldArmor == NULL)
 						{
 							replace = true;
 						}
-						else if (newArmor != nullptr && oldArmor != nullptr)
+						else if (newArmor != NULL && oldArmor != NULL)
 						{
 							if (newArmor->defense == oldArmor->defense)
 							{
@@ -435,7 +435,7 @@ void Mob::aiStep()
 
 				if (replace)
 				{
-					if (current != nullptr && random->nextFloat() - 0.1f < dropChances[slot])
+					if (current != NULL && random->nextFloat() - 0.1f < dropChances[slot])
 					{
 						spawnAtLocation(current, 0);
 					}
@@ -470,7 +470,7 @@ void Mob::checkDespawn()
 		return;
 	}
 	shared_ptr<Entity> player = level->getNearestPlayer(shared_from_this(), -1);
-	if (player != nullptr)
+	if (player != NULL)
 	{
 		double xd = player->x - x;
 		double yd = player->y - y;
@@ -547,7 +547,7 @@ void Mob::serverAiStep()
 	if (random->nextFloat() < 0.02f)
 	{
 		shared_ptr<Player> player = level->getNearestPlayer(shared_from_this(), lookDistance);
-		if (player != nullptr)
+		if (player != NULL)
 		{
 			lookingAt = player;
 			lookTime = 10 + random->nextInt(20);
@@ -558,9 +558,9 @@ void Mob::serverAiStep()
 		}
 	}
 
-	if (lookingAt != nullptr)
+	if (lookingAt != NULL)
 	{
-		lookAt(lookingAt, 10.0f, static_cast<float>(getMaxHeadXRot()));
+		lookAt(lookingAt, 10.0f, (float) getMaxHeadXRot());
 		if (lookTime-- <= 0 || lookingAt->removed || lookingAt->distanceToSqr(shared_from_this()) > lookDistance * lookDistance)
 		{
 			lookingAt = nullptr;
@@ -605,15 +605,15 @@ void Mob::lookAt(shared_ptr<Entity> e, float yMax, float xMax)
 
 	double sd = Mth::sqrt(xd * xd + zd * zd);
 
-	float yRotD = static_cast<float>(atan2(zd, xd) * 180 / PI) - 90;
-	float xRotD = static_cast<float>(-(atan2(yd, sd) * 180 / PI));
+	float yRotD = (float) (atan2(zd, xd) * 180 / PI) - 90;
+	float xRotD = (float) -(atan2(yd, sd) * 180 / PI);
 	xRot = rotlerp(xRot, xRotD, xMax);
 	yRot = rotlerp(yRot, yRotD, yMax);
 }
 
 bool Mob::isLookingAtAnEntity()
 {
-	return lookingAt != nullptr;
+	return lookingAt != NULL;
 }
 
 shared_ptr<Entity> Mob::getLookingAt()
@@ -658,8 +658,8 @@ int Mob::getMaxSpawnClusterSize()
 
 int Mob::getMaxFallDistance()
 {
-	if (getTarget() == nullptr) return 3;
-	int sacrifice = static_cast<int>(getHealth() - (getMaxHealth() * 0.33f));
+	if (getTarget() == NULL) return 3;
+	int sacrifice = (int) (getHealth() - (getMaxHealth() * 0.33f));
 	sacrifice -= (3 - level->difficulty) * 4;
 	if (sacrifice < 0) sacrifice = 0;
 	return sacrifice + 3;
@@ -697,7 +697,7 @@ void Mob::dropEquipment(bool byPlayer, int playerBonusLevel)
 		shared_ptr<ItemInstance> item = getCarried(slot);
 		bool preserve = dropChances[slot] > 1;
 
-		if (item != nullptr && (byPlayer || preserve) && random->nextFloat() - playerBonusLevel * 0.01f < dropChances[slot])
+		if (item != NULL && (byPlayer || preserve) && random->nextFloat() - playerBonusLevel * 0.01f < dropChances[slot])
 		{
 			if (!preserve && item->isDamageableItem())
 			{
@@ -726,10 +726,10 @@ void Mob::populateDefaultEquipmentSlots()
 		{
 			shared_ptr<ItemInstance> item = getArmor(i);
 			if (i < 3 && random->nextFloat() < partialChance) break;
-			if (item == nullptr)
+			if (item == NULL)
 			{
 				Item *equip = getEquipmentForSlot(i + 1, armorType);
-				if (equip != nullptr) setEquippedSlot(i + 1, std::make_shared<ItemInstance>(equip));
+				if (equip != NULL) setEquippedSlot(i + 1, shared_ptr<ItemInstance>(new ItemInstance(equip)));
 			}
 		}
 	}
@@ -743,7 +743,7 @@ int Mob::getEquipmentSlotForItem(shared_ptr<ItemInstance> item)
 	}
 
 	ArmorItem *armorItem = dynamic_cast<ArmorItem *>(item->getItem());
-	if (armorItem != nullptr)
+	if (armorItem != NULL)
 	{
 		switch (armorItem->slot)
 		{
@@ -791,23 +791,23 @@ Item *Mob::getEquipmentForSlot(int slot, int type)
 		if (type == 4) return Item::boots_diamond;
 	}
 
-	return nullptr;
+	return NULL;
 }
 
 void Mob::populateDefaultEquipmentEnchantments()
 {
 	float difficulty = level->getDifficulty(x, y, z);
 
-	if (getCarriedItem() != nullptr && random->nextFloat() < MAX_ENCHANTED_WEAPON_CHANCE * difficulty) {
-		EnchantmentHelper::enchantItem(random, getCarriedItem(), static_cast<int>(5 + difficulty * random->nextInt(18)));
+	if (getCarriedItem() != NULL && random->nextFloat() < MAX_ENCHANTED_WEAPON_CHANCE * difficulty) {
+		EnchantmentHelper::enchantItem(random, getCarriedItem(), (int) (5 + difficulty * random->nextInt(18)));
 	}
 
 	for (int i = 0; i < 4; i++)
 	{
 		shared_ptr<ItemInstance> item = getArmor(i);
-		if (item != nullptr && random->nextFloat() < MAX_ENCHANTED_ARMOR_CHANCE * difficulty)
+		if (item != NULL && random->nextFloat() < MAX_ENCHANTED_ARMOR_CHANCE * difficulty)
 		{
-			EnchantmentHelper::enchantItem(random, item, static_cast<int>(5 + difficulty * random->nextInt(18)));
+			EnchantmentHelper::enchantItem(random, item, (int) (5 + difficulty * random->nextInt(18)));
 		}
 	}
 }
@@ -865,7 +865,7 @@ bool Mob::hasCustomName()
 
 void Mob::setCustomNameVisible(bool visible)
 {
-	entityData->set(DATA_CUSTOM_NAME_VISIBLE, visible ? static_cast<byte>(1) : static_cast<byte>(0));
+	entityData->set(DATA_CUSTOM_NAME_VISIBLE, visible ? (byte) 1 : (byte) 0);
 }
 
 bool Mob::isCustomNameVisible()
@@ -908,7 +908,7 @@ bool Mob::interact(shared_ptr<Player> player)
 	}
 
 	shared_ptr<ItemInstance> itemstack = player->inventory->getSelected();
-	if (itemstack != nullptr)
+	if (itemstack != NULL)
 	{
 		// it's inconvenient to have the leash code here, but it's because
 		// the mob.interact(player) method has priority over
@@ -953,7 +953,7 @@ bool Mob::mobInteract(shared_ptr<Player> player)
 
 void Mob::tickLeash()
 {
-	if (leashInfoTag != nullptr)
+	if (leashInfoTag != NULL)
 	{
 		restoreLeashFromSave();
 	}
@@ -962,7 +962,7 @@ void Mob::tickLeash()
 		return;
 	}
 
-	if (leashHolder == nullptr || leashHolder->removed)
+	if (leashHolder == NULL || leashHolder->removed)
 	{
 		dropLeash(true, true);
 		return;
@@ -981,9 +981,9 @@ void Mob::dropLeash(bool synch, bool createItemDrop)
 		}
 
 		ServerLevel *serverLevel = dynamic_cast<ServerLevel *>(level);
-		if (!level->isClientSide && synch && serverLevel != nullptr)
+		if (!level->isClientSide && synch && serverLevel != NULL)
 		{
-			serverLevel->getTracker()->broadcast(shared_from_this(), std::make_shared<SetEntityLinkPacket>(SetEntityLinkPacket::LEASH, shared_from_this(), nullptr));
+			serverLevel->getTracker()->broadcast(shared_from_this(), shared_ptr<SetEntityLinkPacket>(new SetEntityLinkPacket(SetEntityLinkPacket::LEASH, shared_from_this(), nullptr)));
 		}
 	}
 }
@@ -1011,14 +1011,14 @@ void Mob::setLeashedTo(shared_ptr<Entity> holder, bool synch)
 	ServerLevel *serverLevel = dynamic_cast<ServerLevel *>(level);
 	if (!level->isClientSide && synch && serverLevel)
 	{
-		serverLevel->getTracker()->broadcast(shared_from_this(), std::make_shared<SetEntityLinkPacket>(SetEntityLinkPacket::LEASH, shared_from_this(), leashHolder));
+		serverLevel->getTracker()->broadcast(shared_from_this(), shared_ptr<SetEntityLinkPacket>( new SetEntityLinkPacket(SetEntityLinkPacket::LEASH, shared_from_this(), leashHolder)));
 	}
 }
 
 void Mob::restoreLeashFromSave()
 {
 	// after being added to the world, attempt to recreate leash bond
-	if (_isLeashed && leashInfoTag != nullptr)
+	if (_isLeashed && leashInfoTag != NULL)
 	{
 		if (leashInfoTag->contains(L"UUID"))
 		{
@@ -1043,7 +1043,7 @@ void Mob::restoreLeashFromSave()
 			int z = leashInfoTag->getInt(L"Z");
 
 			shared_ptr<LeashFenceKnotEntity> activeKnot = LeashFenceKnotEntity::findKnotAt(level, x, y, z);
-			if (activeKnot == nullptr)
+			if (activeKnot == NULL)
 			{
 				activeKnot = LeashFenceKnotEntity::createAndAddKnot(level, x, y, z);
 			}
@@ -1055,7 +1055,7 @@ void Mob::restoreLeashFromSave()
 			dropLeash(false, true);
 		}
 	}
-	leashInfoTag = nullptr;
+	leashInfoTag = NULL;
 }
 
 // 4J added so we can not render mobs before their chunks are loaded - to resolve bug 10327 :Gameplay: NPCs can spawn over chunks that have not yet been streamed and display jitter.

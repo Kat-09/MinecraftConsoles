@@ -28,7 +28,7 @@ WeighedRandomItem *WeighedRandom::getRandomItem(Random *random, vector<WeighedRa
             return item;
         }
 	}
-    return nullptr;
+    return NULL;
 }
 
 WeighedRandomItem *WeighedRandom::getRandomItem(Random *random, vector<WeighedRandomItem *> *items)
@@ -62,7 +62,7 @@ WeighedRandomItem *WeighedRandom::getRandomItem(Random *random, WeighedRandomIte
             return items[i];
         }
 	}
-    return nullptr;
+    return NULL;
 }
 
 

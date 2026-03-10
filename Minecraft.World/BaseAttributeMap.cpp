@@ -24,7 +24,7 @@ AttributeInstance *BaseAttributeMap::getInstance(eATTRIBUTE_ID id)
 	}
 	else
 	{
-		return nullptr;
+		return NULL;
 	}
 }
 
@@ -50,7 +50,7 @@ void BaseAttributeMap::removeItemModifiers(shared_ptr<ItemInstance> item)
 			AttributeInstance* attribute = getInstance(it.first);
 			AttributeModifier* modifier = it.second;
 
-			if (attribute != nullptr)
+			if (attribute != NULL)
 			{
 				attribute->removeModifier(modifier);
 			}
@@ -72,7 +72,7 @@ void BaseAttributeMap::addItemModifiers(shared_ptr<ItemInstance> item)
 			AttributeInstance* attribute = getInstance(it.first);
 			AttributeModifier* modifier = it.second;
 
-			if (attribute != nullptr)
+			if (attribute != NULL)
 			{
 				attribute->removeModifier(modifier);
 				attribute->addModifier(new AttributeModifier(*modifier));

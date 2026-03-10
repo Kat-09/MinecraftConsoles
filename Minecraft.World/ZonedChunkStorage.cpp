@@ -50,7 +50,7 @@ ZoneFile *ZonedChunkStorage::getZoneFile(int x, int z, bool create)
 
     int xZone = x >> CHUNKS_PER_ZONE_BITS;
     int zZone = z >> CHUNKS_PER_ZONE_BITS;
-    int64_t key = xZone + (zZone << 20l);
+    __int64 key = xZone + (zZone << 20l);
 	// 4J - was !zoneFiles.containsKey(key)
     if (zoneFiles.find(key) == zoneFiles.end())
 	{
@@ -62,8 +62,8 @@ ZoneFile *ZonedChunkStorage::getZoneFile(int x, int z, bool create)
 
 		if ( !file.exists() )
 		{
-            if (!create) return nullptr;
-			HANDLE ch = CreateFile(wstringtofilename(file.getPath()), GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+            if (!create) return NULL;
+			HANDLE ch = CreateFile(wstringtofilename(file.getPath()), GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 			CloseHandle(ch);
         }
 
@@ -76,7 +76,7 @@ ZoneFile *ZonedChunkStorage::getZoneFile(int x, int z, bool create)
     zoneFile->lastUse = tickCount;
     if (!zoneFile->containsSlot(slot))
 	{
-        if (!create) return nullptr;
+        if (!create) return NULL;
     }
     return zoneFile;
 
@@ -85,14 +85,14 @@ ZoneFile *ZonedChunkStorage::getZoneFile(int x, int z, bool create)
 ZoneIo *ZonedChunkStorage::getBuffer(int x, int z, bool create)
 {
     ZoneFile *zoneFile = getZoneFile(x, z, create);
-    if (zoneFile == nullptr) return nullptr;
+    if (zoneFile == NULL) return NULL;
     return zoneFile->getZoneIo(getSlot(x, z));
 }
 
 LevelChunk *ZonedChunkStorage::load(Level *level, int x, int z)
 {
     ZoneIo *zoneIo = getBuffer(x, z, false);
-    if (zoneIo == nullptr) return nullptr;
+    if (zoneIo == NULL) return NULL;
 
     LevelChunk *lc = new LevelChunk(level, x, z);
     lc->unsaved = false;
@@ -107,8 +107,8 @@ LevelChunk *ZonedChunkStorage::load(Level *level, int x, int z)
     header->flip();
     int xOrg = header->getInt();
     int zOrg = header->getInt();
-    int64_t time = header->getLong();
-    int64_t flags = header->getLong();
+    __int64 time = header->getLong();
+    __int64 flags = header->getLong();
 
     lc->terrainPopulated = (flags & BIT_TERRAIN_POPULATED) != 0;
 
@@ -121,7 +121,7 @@ LevelChunk *ZonedChunkStorage::load(Level *level, int x, int z)
 
 void ZonedChunkStorage::save(Level *level, LevelChunk *lc)
 {
-    int64_t flags = 0;
+    __int64 flags = 0;
     if (lc->terrainPopulated) flags |= BIT_TERRAIN_POPULATED;
 
     ByteBuffer *header = ByteBuffer::allocate(CHUNK_HEADER_SIZE);
@@ -176,7 +176,7 @@ void ZonedChunkStorage::flush()
 	for ( auto& it : zoneFiles )
 	{
 		ZoneFile *zoneFile = it.second;
-        if ( zoneFile )
+        if ( zoneFile ) 
             zoneFile->close();
 	}
 	zoneFiles.clear();
@@ -184,6 +184,28 @@ void ZonedChunkStorage::flush()
 
 void ZonedChunkStorage::loadEntities(Level *level, LevelChunk *lc)
 {
+    auto addRidingEntities = [level, lc](shared_ptr<Entity> rider, CompoundTag* riderTag)
+    {
+        CompoundTag* mountTag = riderTag;
+        shared_ptr<Entity> ridingEntity = rider;
+
+        while (mountTag != NULL && mountTag->contains(Entity::RIDING_TAG))
+        {
+            CompoundTag* nextMountTag = mountTag->getCompound(Entity::RIDING_TAG);
+            shared_ptr<Entity> mount = EntityIO::loadStatic(nextMountTag, level);
+            if (mount == nullptr)
+            {
+                    break;
+            }
+
+            lc->addEntity(mount);
+            ridingEntity->ride(mount);
+
+            ridingEntity = mount;
+            mountTag = nextMountTag;
+        }
+    };
+
     int slot = getSlot(lc->x, lc->z);
     ZoneFile *zoneFile = getZoneFile(lc->x, lc->z, true);
     vector<CompoundTag *> *tags = zoneFile->entityFile->readAll(slot);
@@ -194,7 +216,10 @@ void ZonedChunkStorage::loadEntities(Level *level, LevelChunk *lc)
         if (type == 0)
 		{
             shared_ptr<Entity> e = EntityIO::loadStatic(tag, level);
-            if (e != nullptr) lc->addEntity(e);
+            if (e != nullptr) {
+                lc->addEntity(e);
+                addRidingEntities(e, tag);
+            }
         }
 		else if (type == 1)
 		{

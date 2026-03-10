@@ -77,7 +77,7 @@ wstring PlayerTeam::formatNameForTeam(PlayerTeam *team)
 
 wstring PlayerTeam::formatNameForTeam(Team *team, const wstring &name)
 {
-	if (team == nullptr) return name;
+	if (team == NULL) return name;
 	return team->getFormattedName(name);
 }
 

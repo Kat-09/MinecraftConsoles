@@ -181,5 +181,5 @@ bool IUIScene_EnchantingMenu::IsSectionSlotList( ESceneSection eSection )
 
 EnchantmentMenu *IUIScene_EnchantingMenu::getMenu()
 {
-	return static_cast<EnchantmentMenu *>(m_menu);
+	return (EnchantmentMenu *)m_menu;
 }

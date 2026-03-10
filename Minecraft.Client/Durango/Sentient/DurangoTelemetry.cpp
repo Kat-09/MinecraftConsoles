@@ -64,7 +64,7 @@ bool CDurangoTelemetryManager::RecordPlayerSessionExit(int iPad, int exitStatus)
 	// 4J-JEV: Still needed to flush cached travel stats.
 	DurangoStats::playerSessionEnd(iPad);
 
-	if (plr != nullptr && plr->level != nullptr && plr->level->getLevelData() != nullptr)
+	if (plr != NULL && plr->level != NULL && plr->level->getLevelData() != NULL)
 	{
 		ULONG hr = EventWritePlayerSessionEnd(
 			DurangoStats::getUserId(iPad),
@@ -131,7 +131,7 @@ bool CDurangoTelemetryManager::RecordLevelStart(int iPad, ESen_FriendOrMatch fri
 	ProfileManager.GetXUID(iPad, &puid, true);
 	plr = Minecraft::GetInstance()->localplayers[iPad];
 
-	if (plr != nullptr && plr->level != nullptr && plr->level->getLevelData() != nullptr)
+	if (plr != NULL && plr->level != NULL && plr->level->getLevelData() != NULL)
 	{
 		hr = EventWritePlayerSessionStart(
 			DurangoStats::getUserId(iPad),
@@ -968,7 +968,7 @@ bool CDurangoTelemetryManager::RecordUnBanLevel(int iPad)
 
 DurangoStats *CDurangoTelemetryManager::durangoStats()
 {
-	return static_cast<DurangoStats *>(GenericStats::getInstance());
+	return (DurangoStats*) GenericStats::getInstance();
 }
 
 wstring CDurangoTelemetryManager::guid2str(LPCGUID guid)

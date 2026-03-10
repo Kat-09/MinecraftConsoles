@@ -17,7 +17,7 @@
 
 static const bool sc_verbose = true;
 
-cell::Spurs::Spurs2* C4JThread_SPU::ms_spurs2Object = nullptr;
+cell::Spurs::Spurs2* C4JThread_SPU::ms_spurs2Object = NULL;
 
 void C4JThread_SPU::initSPURS()
 {

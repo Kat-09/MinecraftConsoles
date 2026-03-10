@@ -59,7 +59,7 @@ bool FenceTile_SPU::connectsTo(ChunkRebuildData *level, int x, int y, int z)
         return true;
     }
     TileRef_SPU tileInstance(tile);
-    if (tileInstance.getPtr() != nullptr)
+    if (tileInstance.getPtr() != NULL)
 	{
         if (tileInstance->getMaterial()->isSolidBlocking() && tileInstance->isCubeShaped())
 		{

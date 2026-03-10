@@ -9,7 +9,7 @@
 #include "FileHeader.h"
 #include "OldChunkStorage.h"
 DWORD OldChunkStorage::tlsIdx = 0;
-OldChunkStorage::ThreadStorage *OldChunkStorage::tlsDefault = nullptr;
+OldChunkStorage::ThreadStorage *OldChunkStorage::tlsDefault = NULL;
 
 OldChunkStorage::ThreadStorage::ThreadStorage()
 {
@@ -30,7 +30,7 @@ OldChunkStorage::ThreadStorage::~ThreadStorage()
 void OldChunkStorage::CreateNewThreadStorage()
 {
 	ThreadStorage *tls = new ThreadStorage();
-	if(tlsDefault == nullptr )
+	if(tlsDefault == NULL )
 	{
 		tlsIdx = TlsAlloc();
 		tlsDefault = tls;
@@ -45,7 +45,7 @@ void OldChunkStorage::UseDefaultThreadStorage()
 
 void OldChunkStorage::ReleaseThreadStorage()
 {
-	ThreadStorage *tls = static_cast<ThreadStorage *>(TlsGetValue(tlsIdx));
+	ThreadStorage *tls = (ThreadStorage *)TlsGetValue(tlsIdx);
 	if( tls == tlsDefault ) return;
 
 	delete tls;
@@ -126,14 +126,14 @@ LevelChunk *OldChunkStorage::load(Level *level, int x, int z)
 			char buf[256];
 			sprintf(buf,"Chunk file at %d, %d is missing level data, skipping\n",x,z);
 			app.DebugPrintf(buf);
-			return nullptr;
+			return NULL;
 		}
 		if (!tag->getCompound(L"Level")->contains(L"Blocks"))
 		{
 			char buf[256];
 			sprintf(buf,"Chunk file at %d, %d is missing block data, skipping\n",x,z);
 			app.DebugPrintf(buf);
-			return nullptr;
+			return NULL;
 		}
 		LevelChunk *levelChunk = OldChunkStorage::load(level, tag->getCompound(L"Level"));
 		if (!levelChunk->isAt(x, z))
@@ -152,7 +152,7 @@ LevelChunk *OldChunkStorage::load(Level *level, int x, int z)
 		//			e.printStackTrace();
 		//		}
 	}
-	return nullptr;
+	return NULL;
 }
 
 void OldChunkStorage::save(Level *level, LevelChunk *levelChunk)
@@ -277,9 +277,9 @@ void OldChunkStorage::save(LevelChunk *lc, Level *level, DataOutputStream *dos)
 
 	PIXBeginNamedEvent(0,"Saving tile tick data");
 	vector<TickNextTickData > *ticksInChunk = level->fetchTicksInChunk(lc, false);
-	if (ticksInChunk != nullptr)
+	if (ticksInChunk != NULL)
 	{
-		int64_t levelTime = level->getGameTime();
+		__int64 levelTime = level->getGameTime();
 
 		ListTag<CompoundTag> *tickTags = new ListTag<CompoundTag>();
 		for( int i = 0; i < ticksInChunk->size(); i++ )
@@ -290,7 +290,7 @@ void OldChunkStorage::save(LevelChunk *lc, Level *level, DataOutputStream *dos)
 			teTag->putInt(L"x", td.x);
 			teTag->putInt(L"y", td.y);
 			teTag->putInt(L"z", td.z);
-			teTag->putInt(L"t", static_cast<int>(td.m_delay - levelTime));
+			teTag->putInt(L"t", (int) (td.m_delay - levelTime));
 
 			tickTags->add(teTag);
 		}
@@ -318,7 +318,7 @@ void OldChunkStorage::save(LevelChunk *lc, Level *level, CompoundTag *tag)
 	// Will be fine so long as we only actually create tags for once chunk at a time.
 
 	// 4J Stu - As we now save on multiple threads, the static data has been moved to TLS
-	ThreadStorage *tls = static_cast<ThreadStorage *>(TlsGetValue(tlsIdx));
+	ThreadStorage *tls = (ThreadStorage *)TlsGetValue(tlsIdx);
 
 	PIXBeginNamedEvent(0,"Getting block data");
 	//static byteArray blockData = byteArray(32768);
@@ -365,9 +365,9 @@ void OldChunkStorage::save(LevelChunk *lc, Level *level, CompoundTag *tag)
 
 	PIXBeginNamedEvent(0,"Saving tile tick data");
 	vector<TickNextTickData > *ticksInChunk = level->fetchTicksInChunk(lc, false);
-	if (ticksInChunk != nullptr)
+	if (ticksInChunk != NULL)
 	{
-		int64_t levelTime = level->getGameTime();
+		__int64 levelTime = level->getGameTime();
 
 		ListTag<CompoundTag> *tickTags = new ListTag<CompoundTag>();
 		for( int i = 0; i < ticksInChunk->size(); i++ )
@@ -378,7 +378,7 @@ void OldChunkStorage::save(LevelChunk *lc, Level *level, CompoundTag *tag)
 			teTag->putInt(L"x", td.x);
 			teTag->putInt(L"y", td.y);
 			teTag->putInt(L"z", td.z);
-			teTag->putInt(L"t", static_cast<int>(td.m_delay - levelTime));
+			teTag->putInt(L"t", (int) (td.m_delay - levelTime));
 			teTag->putInt(L"p", td.priorityTilt);
 
 			tickTags->add(teTag);
@@ -392,29 +392,52 @@ void OldChunkStorage::save(LevelChunk *lc, Level *level, CompoundTag *tag)
 
 void OldChunkStorage::loadEntities(LevelChunk *lc, Level *level, CompoundTag *tag)
 {
+	auto addRidingEntities = [lc, level](shared_ptr<Entity> rider, CompoundTag* riderTag)
+	{
+		CompoundTag* mountTag = riderTag;
+		shared_ptr<Entity> ridingEntity = rider;
+
+		while (mountTag != NULL && mountTag->contains(Entity::RIDING_TAG))
+		{
+			CompoundTag* nextMountTag = mountTag->getCompound(Entity::RIDING_TAG);
+			shared_ptr<Entity> mount = EntityIO::loadStatic(nextMountTag, level);
+			if (mount == NULL)
+			{
+				break;
+			}
+
+			lc->addEntity(mount);
+			ridingEntity->ride(mount);
+
+			ridingEntity = mount;
+			mountTag = nextMountTag;
+		}
+	};
+
 	ListTag<CompoundTag> *entityTags = (ListTag<CompoundTag> *) tag->getList(L"Entities");
-	if (entityTags != nullptr)
+	if (entityTags != NULL)
 	{
 		for (int i = 0; i < entityTags->size(); i++)
 		{
 			CompoundTag *teTag = entityTags->get(i);
 			shared_ptr<Entity> te = EntityIO::loadStatic(teTag, level);
 			lc->lastSaveHadEntities = true;
-			if (te != nullptr)
+			if (te != NULL)
 			{
 				lc->addEntity(te);
+				addRidingEntities(te, teTag);
 			}
 		}
 	}
 
 	ListTag<CompoundTag> *tileEntityTags = (ListTag<CompoundTag> *) tag->getList(L"TileEntities");
-	if (tileEntityTags != nullptr)
+	if (tileEntityTags != NULL)
 	{
 		for (int i = 0; i < tileEntityTags->size(); i++)
 		{
 			CompoundTag *teTag = tileEntityTags->get(i);
 			shared_ptr<TileEntity> te = TileEntity::loadStatic(teTag);
-			if (te != nullptr)
+			if (te != NULL)
 			{
 				lc->addTileEntity(te);
 			}
@@ -476,7 +499,7 @@ LevelChunk *OldChunkStorage::load(Level *level, DataInputStream *dis)
 		PIXBeginNamedEvent(0,"Loading TileTicks");
 		ListTag<CompoundTag> *tileTicks = (ListTag<CompoundTag> *) tag->getList(L"TileTicks");
 
-		if (tileTicks != nullptr)
+		if (tileTicks != NULL)
 		{
 			for (int i = 0; i < tileTicks->size(); i++)
 			{
@@ -556,7 +579,7 @@ LevelChunk *OldChunkStorage::load(Level *level, CompoundTag *tag)
 
 	// 4J removed - we shouldn't need this any more
 #if 0
-	if (levelChunk->heightmap.data == nullptr || !levelChunk->skyLight->isValid())
+	if (levelChunk->heightmap.data == NULL || !levelChunk->skyLight->isValid())
 	{
 		static int chunksUpdated = 0;
 		delete [] levelChunk->heightmap.data;
@@ -594,7 +617,7 @@ LevelChunk *OldChunkStorage::load(Level *level, CompoundTag *tag)
 	{
 		ListTag<CompoundTag> *tileTicks = (ListTag<CompoundTag> *) tag->getList(L"TileTicks");
 
-		if (tileTicks != nullptr)
+		if (tileTicks != NULL)
 		{
 			for (int i = 0; i < tileTicks->size(); i++)
 			{

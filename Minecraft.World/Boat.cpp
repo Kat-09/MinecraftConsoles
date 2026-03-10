@@ -10,6 +10,12 @@
 #include "net.minecraft.world.damagesource.h"
 #include "Boat.h"
 
+#ifdef _WINDOWS64
+#include "../Minecraft.Client/Windows64/Windows64_Launcher.h"
+
+extern bool g_doBoatBreak;
+#endif
+
 const double Boat::MAX_SPEED = 0.35;
 const double Boat::MAX_COLLISION_SPEED = MAX_SPEED * 0.75;
 const double Boat::MIN_ACCELERATION = 0.07;
@@ -27,7 +33,7 @@ void Boat::_init()
 
 	blocksBuilding = true;
 	setSize(1.5f, 0.6f);
-	heightOffset = (bbHeight / 2.0f) + 0.2f;
+	heightOffset = bbHeight / 2.0f;
 
 	// 4J Stu - This function call had to be moved here from the Entity ctor to ensure that
 	// the derived version of the function is called
@@ -74,7 +80,7 @@ bool Boat::isPushable()
 Boat::Boat(Level *level, double x, double y, double z) : Entity( level )
 {
 	_init();
-	setPos(x, y + heightOffset, z);
+	setPos(x, y + heightOffset + 0.1, z);
 
 	xd = 0;
 	yd = 0;
@@ -97,7 +103,7 @@ bool Boat::hurt(DamageSource *source, float hurtDamage)
 
 	// 4J-JEV: Fix for #88212,
 	// Untrusted players shouldn't be able to damage minecarts or boats.
-	if (dynamic_cast<EntityDamageSource *>(source) != nullptr)
+	if (dynamic_cast<EntityDamageSource *>(source) != NULL)
 	{
 		shared_ptr<Entity> attacker = source->getDirectEntity();
 
@@ -113,18 +119,18 @@ bool Boat::hurt(DamageSource *source, float hurtDamage)
 	// 4J Stu - If someone is riding in this, then it can tick multiple times which causes the damage to
 	// decrease too quickly. So just make the damage a bit higher to start with for similar behaviour
 	// to an unridden one. Only do this change if the riding player is attacking it.
-	if( rider.lock() != nullptr && rider.lock() == source->getEntity() ) hurtDamage += 1;
+	if( rider.lock() != NULL && rider.lock() == source->getEntity() ) hurtDamage += 1;
 
 	setDamage(getDamage() + hurtDamage * 10);
 	markHurt();
 
 	// 4J Stu - Brought froward from 12w36 to fix #46611 - TU5: Gameplay: Minecarts and boat requires more hits than one to be destroyed in creative mode
 	// 4J-PB - Fix for XB1 #175735 - [CRASH] [Multi-Plat]: Code: Gameplay: Placing a boat on harmful surfaces causes the game to crash
-	bool creativePlayer = (source->getEntity() != nullptr) && source->getEntity()->instanceof(eTYPE_PLAYER) && dynamic_pointer_cast<Player>(source->getEntity())->abilities.instabuild;
+	bool creativePlayer = (source->getEntity() != NULL) && source->getEntity()->instanceof(eTYPE_PLAYER) && dynamic_pointer_cast<Player>(source->getEntity())->abilities.instabuild;
 
 	if (creativePlayer || getDamage() > 20 * 2)
 	{
-		if (rider.lock() != nullptr) rider.lock()->ride( shared_from_this() );
+		if (rider.lock() != NULL) rider.lock()->ride( shared_from_this() );
 		if (!creativePlayer) spawnAtLocation(Item::boat_Id, 1, 0);
 		remove();
 	}
@@ -194,7 +200,7 @@ void Boat::tick()
 	yo = y;
 	zo = z;
 
-	// Check how much of the boat is in water
+
 	int steps = 5;
 	double waterPercentage = 0;
 	for (int i = 0; i < steps; i++)
@@ -208,14 +214,12 @@ void Boat::tick()
 		}
 	}
 
-	// Create particles
 	double lastSpeed = sqrt(xd * xd + zd * zd);
-	if (lastSpeed > MAX_COLLISION_SPEED && waterPercentage > 0)
+	if (lastSpeed > MAX_COLLISION_SPEED && waterPercentage > 1)
 	{
 		createSplash(lastSpeed);
 	}
 
-	// Interpolation
 	if (level->isClientSide && doLerp)
 	{
 		if (lSteps > 0)
@@ -257,22 +261,20 @@ void Boat::tick()
 		return;
 	}
 
-	// Bob in water
+	// Bob on water
 	if (waterPercentage > 0)
 	{
 		double bob = waterPercentage * 2 - 1;
 		yd += 0.04f * bob;
 	}
-
-	// Reimplement gravity again (??)
-	int tileUnder = level->getTile(Mth::floor(x), Mth::floor(y-0.15), Mth::floor(z));
-	if (tileUnder == 0 && !onGround)
-	{
-		yd -= 0.04f;
+	
+	// Reimplement "gravity"
+	if (level->getTile(x, Mth::floor(y - 0.15), z) == 0 && !onGround) {
+		yd += 0.04f * -1.0; // -1.0 is what bob should return in this situation, just hardcoded.
 	}
 
-	// Rider controls
-	if ( rider.lock() != nullptr && rider.lock()->instanceof(eTYPE_LIVINGENTITY) )
+	// Rider Controls
+	if ( rider.lock() != NULL && rider.lock()->instanceof(eTYPE_LIVINGENTITY) )
 	{
 		shared_ptr<LivingEntity> livingRider = dynamic_pointer_cast<LivingEntity>(rider.lock());
 		double forward = livingRider->yya;
@@ -288,6 +290,7 @@ void Boat::tick()
 
 	double curSpeed = sqrt(xd * xd + zd * zd);
 
+	// Speed Clamp
 	if (curSpeed > MAX_SPEED)
 	{
 		double ratio = MAX_SPEED / curSpeed;
@@ -308,17 +311,16 @@ void Boat::tick()
 		if (acceleration < MIN_ACCELERATION) acceleration = MIN_ACCELERATION;
 	}
 
-	// Slow on ground
+	// Slow speed on ground
 	if (onGround)
 	{
 		xd *= 0.5f;
-		yd *= 0.5f;
 		zd *= 0.5f;
 	}
 	move(xd, yd, zd);
 
-	// Break boat on high speed collision
-	if ((horizontalCollision && lastSpeed > 0.20))
+	// Break boat 
+	if ((horizontalCollision && lastSpeed > 0.20) && g_doBoatBreak)
 	{
 		if (!level->isClientSide && !removed)
 		{
@@ -357,7 +359,7 @@ void Boat::tick()
 	yRot += (float) rotDiff;
 	setRot(yRot, xRot);
 
-	// Server code after this
+	// Server only code below
 	if(level->isClientSide) return;
 
 	vector<shared_ptr<Entity> > *entities = level->getEntities(shared_from_this(), bb->grow(0.2f, 0, 0.2f));
@@ -395,7 +397,7 @@ void Boat::tick()
 
 	}
 
-	if (rider.lock() != nullptr)
+	if (rider.lock() != NULL)
 	{
 		if (rider.lock()->removed) rider = weak_ptr<Entity>();
 	}
@@ -427,12 +429,11 @@ void Boat::createSplash(double particleStrengh) {
 
 void Boat::positionRider()
 {
-	if (rider.lock() == nullptr) return;
+	if (rider.lock() == NULL) return;
 
 	double xa = cos(yRot * PI / 180) * 0.4;
 	double za = sin(yRot * PI / 180) * 0.4;
-	// We minus 0.4 to ensure that the player is not hovering above the boat.
-	rider.lock()->setPos(x + xa, y + getRideHeight() + rider.lock()->getRidingHeight()-0.4, z + za);
+	rider.lock()->setPos(x + xa, y + getRideHeight() + rider.lock()->getRidingHeight()-0.5, z + za);
 }
 
 
@@ -457,7 +458,7 @@ wstring Boat::getName()
 
 bool Boat::interact(shared_ptr<Player> player)
 {
-	if ( (rider.lock() != nullptr) && rider.lock()->instanceof(eTYPE_PLAYER) && (rider.lock() != player) ) return true;
+	if ( (rider.lock() != NULL) && rider.lock()->instanceof(eTYPE_PLAYER) && (rider.lock() != player) ) return true;
 	if (!level->isClientSide)
 	{
 		// 4J HEG - Fixed issue with player not being able to dismount boat (issue #4446)
@@ -505,4 +506,3 @@ void Boat::setDoLerp(bool doLerp)
 {
 	this->doLerp = doLerp;
 }
-

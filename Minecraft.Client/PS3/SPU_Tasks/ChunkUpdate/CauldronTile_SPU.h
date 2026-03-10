@@ -6,7 +6,7 @@ class CauldronTile_SPU : public Tile_SPU
 {
 public:
 	CauldronTile_SPU(int id) : Tile_SPU(id) {}
-	virtual Icon_SPU *getTexture(int face, int data) { return nullptr; }
+	virtual Icon_SPU *getTexture(int face, int data) { return NULL; }
 	//@Override
 // 	virtual void updateDefaultShape();
 	virtual bool isSolidRender(bool isServerLevel = false) { return false; }

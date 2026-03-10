@@ -44,7 +44,7 @@ void Lighting::turnOn()
 
 FloatBuffer *Lighting::getBuffer(double a, double b, double c, double d)
 {
-	return getBuffer(static_cast<float>(a), static_cast<float>(b), static_cast<float>(c), static_cast<float>(d));
+	return getBuffer((float) a, (float) b, (float) c, (float) d);
 }
 
 FloatBuffer *Lighting::getBuffer(float a, float b, float c, float d)

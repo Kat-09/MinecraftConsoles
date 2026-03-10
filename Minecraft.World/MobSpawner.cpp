@@ -118,7 +118,7 @@ const int MobSpawner::tick(ServerLevel *level, bool spawnEnemies, bool spawnFrie
 	// 4J - rewritten to add chunks interleaved by player, and to add them from the centre outwards. We're going to be
 	// potentially adding less creatures than the original so that our count stays consistent with number of players added, so
 	// we want to make sure as best we can that the ones we do add are near the active players
-	int playerCount = static_cast<int>(level->players.size());
+	int playerCount = (int)level->players.size();
 	int *xx = new int[playerCount];
 	int *zz = new int[playerCount];
 	for (int i = 0; i < playerCount; i++)
@@ -251,8 +251,8 @@ const int MobSpawner::tick(ServerLevel *level, bool spawnEnemies, bool spawnFrie
 				   int z = zStart;
 				   int ss = 6;
 
-				   Biome::MobSpawnerData *currentMobType = nullptr;
-				MobGroupData *groupData = nullptr;
+				   Biome::MobSpawnerData *currentMobType = NULL;
+				MobGroupData *groupData = NULL;
 
 				   for (int ll = 0; ll < 4; ll++)
 				   {
@@ -267,9 +267,9 @@ const int MobSpawner::tick(ServerLevel *level, bool spawnEnemies, bool spawnFrie
 					   if (isSpawnPositionOk(mobCategory, level, x, y, z))
 					   {
 						   float xx = x + 0.5f;
-						   float yy = static_cast<float>(y);
+						   float yy = (float) y;
 						   float zz = z + 0.5f;
-						   if (level->getNearestPlayer(xx, yy, zz, MIN_SPAWN_DISTANCE) != nullptr)
+						   if (level->getNearestPlayer(xx, yy, zz, MIN_SPAWN_DISTANCE) != NULL)
 						   {
 							   continue;
 						   }
@@ -285,10 +285,10 @@ const int MobSpawner::tick(ServerLevel *level, bool spawnEnemies, bool spawnFrie
 							   }
 						   }
 
-                            if (currentMobType == nullptr)
+                            if (currentMobType == NULL)
 							{
                                 currentMobType = level->getRandomMobSpawnAt(mobCategory, x, y, z);
-                                if (currentMobType == nullptr)
+                                if (currentMobType == NULL)
 								{
                                     break;
                                 }
@@ -440,7 +440,7 @@ void MobSpawner::postProcessSpawnMobs(Level *level, Biome *biome, int xo, int zo
 	while (random->nextFloat() < biome->getCreatureProbability())
 	{
 		Biome::MobSpawnerData *type = (Biome::MobSpawnerData *) WeighedRandom::getRandomItem(level->random, ((vector<WeighedRandomItem *> *)mobs));
-		MobGroupData *groupData = nullptr;
+		MobGroupData *groupData = NULL;
 		int count = type->minCount + random->nextInt(1 + type->maxCount - type->minCount);
 
 		int x = xo + random->nextInt(cellWidth);

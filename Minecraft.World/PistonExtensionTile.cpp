@@ -7,7 +7,7 @@
 PistonExtensionTile::PistonExtensionTile(int id) : Tile(id, Material::piston,isSolidRender() )
 {
 	// 4J added initialiser
-	overrideTopTexture = nullptr;
+	overrideTopTexture = NULL;
 
 	setSoundType(SOUND_STONE);
 	setDestroyTime(0.5f);
@@ -20,7 +20,7 @@ void PistonExtensionTile::setOverrideTopTexture(Icon *overrideTopTexture)
 
 void PistonExtensionTile::clearOverrideTopTexture()
 {
-	this->overrideTopTexture = nullptr;
+	this->overrideTopTexture = NULL;
 }
 
 void PistonExtensionTile::playerWillDestroy(Level *level, int x, int y, int z, int data, shared_ptr<Player> player)
@@ -65,7 +65,7 @@ Icon *PistonExtensionTile::getTexture(int face, int data)
 
 	if (face == facing)
 	{
-		if (overrideTopTexture != nullptr)
+		if (overrideTopTexture != NULL)
 		{
 			return overrideTopTexture;
 		}

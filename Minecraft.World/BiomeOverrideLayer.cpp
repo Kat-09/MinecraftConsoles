@@ -11,14 +11,14 @@ BiomeOverrideLayer::BiomeOverrideLayer(int seedMixup) : Layer(seedMixup)
 
 #ifdef _UNICODE
 	wstring path = L"GAME:\\GameRules\\biomemap.bin";
-	HANDLE file = CreateFile(path.c_str(), GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+	HANDLE file = CreateFile(path.c_str(), GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 #else
 #ifdef _WINDOWS64
 	string path = "GameRules\\biomemap.bin";
 #else
 	string path = "GAME:\\GameRules\\biomemap.bin";
 #endif
-	HANDLE file = CreateFile(path.c_str(), GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+	HANDLE file = CreateFile(path.c_str(), GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 #endif
 	if( file == INVALID_HANDLE_VALUE )
 	{
@@ -35,14 +35,14 @@ BiomeOverrideLayer::BiomeOverrideLayer(int seedMixup) : Layer(seedMixup)
 		__debugbreak();	// TODO
 		DWORD bytesRead,dwFileSize = 0;
 #else
-		DWORD bytesRead,dwFileSize = GetFileSize(file,nullptr);
+		DWORD bytesRead,dwFileSize = GetFileSize(file,NULL);
 #endif
 		if(dwFileSize > m_biomeOverride.length)
 		{
 			app.DebugPrintf("Biomemap binary is too large!!\n");
 			__debugbreak();
 		}
-		BOOL bSuccess = ReadFile(file,m_biomeOverride.data,dwFileSize,&bytesRead,nullptr);
+		BOOL bSuccess = ReadFile(file,m_biomeOverride.data,dwFileSize,&bytesRead,NULL);
 
 		if(bSuccess==FALSE)
 		{

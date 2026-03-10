@@ -27,14 +27,14 @@ DispenseItemBehavior *DropperTile::getDispenseMethod(shared_ptr<ItemInstance> it
 
 shared_ptr<TileEntity> DropperTile::newTileEntity(Level *level)
 {
-	return std::make_shared<DropperTileEntity>();
+	return shared_ptr<DropperTileEntity>( new DropperTileEntity() );
 }
 
 void DropperTile::dispenseFrom(Level *level, int x, int y, int z)
 {
 	BlockSourceImpl source(level, x, y, z);
 	shared_ptr<DispenserTileEntity> trap = dynamic_pointer_cast<DispenserTileEntity>( source.getEntity() );
-	if (trap == nullptr) return;
+	if (trap == NULL) return;
 
 	int slot = trap->getRandomSlot();
 	if (slot < 0)
@@ -48,11 +48,11 @@ void DropperTile::dispenseFrom(Level *level, int x, int y, int z)
 		shared_ptr<Container> into = HopperTileEntity::getContainerAt(level, x + Facing::STEP_X[face], y + Facing::STEP_Y[face], z + Facing::STEP_Z[face]);
 		shared_ptr<ItemInstance> remaining = nullptr;
 
-		if (into != nullptr)
+		if (into != NULL)
 		{
 			remaining = HopperTileEntity::addItem(into.get(), item->copy()->remove(1), Facing::OPPOSITE_FACING[face]);
 
-			if (remaining == nullptr)
+			if (remaining == NULL)
 			{
 				remaining = item->copy();
 				if (--remaining->count == 0) remaining = nullptr;
@@ -66,7 +66,7 @@ void DropperTile::dispenseFrom(Level *level, int x, int y, int z)
 		else
 		{
 			remaining = DISPENSE_BEHAVIOUR->dispense(&source, item);
-			if (remaining != nullptr && remaining->count == 0) remaining = nullptr;
+			if (remaining != NULL && remaining->count == 0) remaining = nullptr;
 		}
 
 		trap->setItem(slot, remaining);

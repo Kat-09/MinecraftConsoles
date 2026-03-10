@@ -72,7 +72,7 @@ int Silverfish::getDeathSound()
 bool Silverfish::hurt(DamageSource *source, float dmg)
 {
 	if (isInvulnerable()) return false;
-	if (lookForFriends <= 0 && (dynamic_cast<EntityDamageSource *>(source) != nullptr || source == DamageSource::magic))
+	if (lookForFriends <= 0 && (dynamic_cast<EntityDamageSource *>(source) != NULL || source == DamageSource::magic))
 	{
 		// look for friends
 		lookForFriends = 20;
@@ -173,7 +173,7 @@ void Silverfish::serverAiStep()
 		}
 	}
 
-	if (attackTarget == nullptr && !isPathFinding())
+	if (attackTarget == NULL && !isPathFinding())
 	{
 		// if the silverfish isn't doing anything special, it will merge
 		// with any rock tile it is nearby
@@ -193,7 +193,7 @@ void Silverfish::serverAiStep()
 		}
 
 	}
-	else if (attackTarget != nullptr && !isPathFinding())
+	else if (attackTarget != NULL && !isPathFinding())
 	{
 		attackTarget = nullptr;
 	}
@@ -216,7 +216,7 @@ bool Silverfish::canSpawn()
 	if (Monster::canSpawn())
 	{
 		shared_ptr<Player> nearestPlayer = level->getNearestPlayer(shared_from_this(), 5.0);
-		return nearestPlayer == nullptr;
+		return nearestPlayer == NULL;
 	}
 	return false;
 }

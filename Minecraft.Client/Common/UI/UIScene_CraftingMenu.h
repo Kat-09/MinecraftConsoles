@@ -74,7 +74,7 @@ public:
 #endif
 #ifdef _WINDOWS64
 	virtual bool handleMouseClick(F32 x, F32 y);
-	// Cached from customDraw â€” H slot bounding boxes in SWF space
+	// Cached from customDraw — H slot bounding boxes in SWF space
 	F32 m_hSlotX0, m_hSlotY0, m_hSlotY1;
 	F32 m_hSlotSpacing; // x distance between slot 0 and slot 1
 	bool m_hSlotBoundsValid;
@@ -106,7 +106,7 @@ protected:
 		ETouchInput_TouchPanel_5,
 		ETouchInput_TouchPanel_6,
 		ETouchInput_CraftingHSlots,
-
+		
 		ETouchInput_Count,
 	};
 	UIControl_Touch m_TouchInput[ETouchInput_Count];

@@ -124,5 +124,3 @@
 #include "UIScene_EndPoem.h"
 #include "UIScene_EULA.h"
 #include "UIScene_NewUpdateMessage.h"
-
-extern ConsoleUIController ui;

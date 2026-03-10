@@ -21,7 +21,7 @@
 #include "Windows64\Social\SocialManager.h"
 #include "Windows64\Sentient\DynamicConfigurations.h"
 #include "Windows64\Network\WinsockNetLayer.h"
-#include "Windows64\Windows64_Xuid.h"
+#include "Windows64\Windows64_NameXuid.h"
 #elif defined __PSVITA__
 #include "PSVita\Sentient\SentientManager.h"
 #include "StatsCounter.h"
@@ -58,7 +58,7 @@ bool	CSocialManager::IsTitleAllowedToPostImages() { return false; }
 
 bool	CSocialManager::PostLinkToSocialNetwork(ESocialNetwork eSocialNetwork, DWORD dwUserIndex, bool bUsingKinect) { return false; }
 bool	CSocialManager::PostImageToSocialNetwork(ESocialNetwork eSocialNetwork, DWORD dwUserIndex, bool bUsingKinect) { return false; }
-CSocialManager* CSocialManager::Instance() { return nullptr; }
+CSocialManager* CSocialManager::Instance() { return NULL; }
 void CSocialManager::SetSocialPostText(LPCWSTR Title, LPCWSTR Caption, LPCWSTR Desc) {};
 
 DWORD XShowPartyUI(DWORD dwUserIndex) { return 0; }
@@ -68,11 +68,11 @@ DWORD XContentGetThumbnail(DWORD dwUserIndex, const XCONTENT_DATA* pContentData,
 void XShowAchievementsUI(int i) {}
 DWORD XBackgroundDownloadSetMode(XBACKGROUND_DOWNLOAD_MODE Mode) { return 0; }
 
-#if !defined(_DURANGO) && !defined(_WIN64)
-void PIXAddNamedCounter(int a, const char* b, ...) {}
+#ifndef _DURANGO
+void PIXAddNamedCounter(int a, char* b, ...) {}
 //#define PS3_USE_PIX_EVENTS 
 //#define PS4_USE_PIX_EVENTS 
-void PIXBeginNamedEvent(int a, const char* b, ...)
+void PIXBeginNamedEvent(int a, char* b, ...)
 {
 #ifdef PS4_USE_PIX_EVENTS
 	char buf[512];
@@ -125,10 +125,8 @@ void PIXEndNamedEvent()
 	PixDepth -= 1;
 #endif
 }
-void PIXSetMarkerDeprecated(int a, const char* b, ...) {}
-#endif
-
-#if 0//__PSVITA__
+void PIXSetMarkerDeprecated(int a, char* b, ...) {}
+#else
 // 4J Stu - Removed this implementation in favour of a macro that will convert our string format
 // conversion at compile time rather than at runtime
 //void PIXBeginNamedEvent(int a, char *b, ...)
@@ -161,7 +159,7 @@ void PIXSetMarkerDeprecated(int a, const char* b, ...) {}
 //}
 #endif
 
-// void *D3DXBUFFER::GetBufferPointer() { return nullptr; }
+// void *D3DXBUFFER::GetBufferPointer() { return NULL; }
 // int D3DXBUFFER::GetBufferSize() { return 0; }
 // void D3DXBUFFER::Release() {}
 
@@ -194,16 +192,7 @@ void IQNetPlayer::SendData(IQNetPlayer * player, const void* pvData, DWORD dwDat
 {
 	if (WinsockNetLayer::IsActive())
 	{
-		if (!WinsockNetLayer::IsHosting() && !m_isRemote)
-		{
-			SOCKET sock = WinsockNetLayer::GetLocalSocket(m_smallId);
-			if (sock != INVALID_SOCKET)
-				WinsockNetLayer::SendOnSocket(sock, pvData, dwDataSize);
-		}
-		else
-		{
-			WinsockNetLayer::SendToSmallId(player->m_smallId, pvData, dwDataSize);
-		}
+		WinsockNetLayer::SendToSmallId(player->m_smallId, pvData, dwDataSize);
 	}
 }
 bool IQNetPlayer::IsSameSystem(IQNetPlayer * player) { return (this == player) || (!m_isRemote && !player->m_isRemote); }
@@ -212,15 +201,7 @@ DWORD IQNetPlayer::GetCurrentRtt() { return 0; }
 bool IQNetPlayer::IsHost() { return m_isHostPlayer; }
 bool IQNetPlayer::IsGuest() { return false; }
 bool IQNetPlayer::IsLocal() { return !m_isRemote; }
-PlayerUID IQNetPlayer::GetXuid()
-{
-	// Compatibility model:
-	// - Preferred path: use per-player resolved XUID populated from login/add-player flow.
-	// - Fallback path: keep legacy base+smallId behavior for peers/saves still on old scheme.
-	if (m_resolvedXuid != INVALID_XUID)
-		return m_resolvedXuid;
-	return (PlayerUID)(0xe000d45248242f2e + m_smallId);
-}
+PlayerUID IQNetPlayer::GetXuid() { return (PlayerUID)(0xe000d45248242f2e + m_smallId); } // todo: restore to INVALID_XUID once saves support this
 LPCWSTR IQNetPlayer::GetGamertag() { return m_gamertag; }
 int IQNetPlayer::GetSessionIndex() { return m_smallId; }
 bool IQNetPlayer::IsTalking() { return false; }
@@ -246,7 +227,6 @@ void Win64_SetupRemoteQNetPlayer(IQNetPlayer * player, BYTE smallId, bool isHost
 	player->m_smallId = smallId;
 	player->m_isRemote = !isLocal;
 	player->m_isHostPlayer = isHost;
-	player->m_resolvedXuid = INVALID_XUID;
 	swprintf_s(player->m_gamertag, 32, L"Player%d", smallId);
 	if (smallId >= IQNet::s_playerCount)
 		IQNet::s_playerCount = smallId + 1;
@@ -254,20 +234,7 @@ void Win64_SetupRemoteQNetPlayer(IQNetPlayer * player, BYTE smallId, bool isHost
 
 static bool Win64_IsActivePlayer(IQNetPlayer* p, DWORD index);
 
-HRESULT IQNet::AddLocalPlayerByUserIndex(DWORD dwUserIndex) {
-	if (dwUserIndex >= MINECRAFT_NET_MAX_PLAYERS) return E_FAIL;
-	m_player[dwUserIndex].m_isRemote = false;
-	m_player[dwUserIndex].m_isHostPlayer = false;
-	// Give the joining player a distinct gamertag
-	extern wchar_t g_Win64UsernameW[17];
-	if (dwUserIndex == 0)
-		wcscpy_s(m_player[0].m_gamertag, 32, g_Win64UsernameW);
-	else
-		swprintf_s(m_player[dwUserIndex].m_gamertag, 32, L"%s(%d)", g_Win64UsernameW, dwUserIndex + 1);
-	if (dwUserIndex >= s_playerCount)
-		s_playerCount = dwUserIndex + 1;
-	return S_OK;
-}
+HRESULT IQNet::AddLocalPlayerByUserIndex(DWORD dwUserIndex) { return S_OK; }
 IQNetPlayer* IQNet::GetHostPlayer() { return &m_player[0]; }
 IQNetPlayer* IQNet::GetLocalPlayerByUserIndex(DWORD dwUserIndex)
 {
@@ -277,34 +244,16 @@ IQNetPlayer* IQNet::GetLocalPlayerByUserIndex(DWORD dwUserIndex)
 			!m_player[dwUserIndex].m_isRemote &&
 			Win64_IsActivePlayer(&m_player[dwUserIndex], dwUserIndex))
 			return &m_player[dwUserIndex];
-		return nullptr;
+		return NULL;
 	}
-	if (dwUserIndex == 0)
+	if (dwUserIndex != 0)
+		return NULL;
+	for (DWORD i = 0; i < s_playerCount; i++)
 	{
-		// Primary pad: use direct index when networking is active (smallId may not be 0)
-		if (WinsockNetLayer::IsActive())
-		{
-			DWORD idx = WinsockNetLayer::GetLocalSmallId();
-			if (idx < MINECRAFT_NET_MAX_PLAYERS &&
-				!m_player[idx].m_isRemote &&
-				Win64_IsActivePlayer(&m_player[idx], idx))
-				return &m_player[idx];
-			return nullptr;
-		}
-		// Offline: scan for first local player
-		for (DWORD i = 0; i < s_playerCount; i++)
-		{
-			if (!m_player[i].m_isRemote && Win64_IsActivePlayer(&m_player[i], i))
-				return &m_player[i];
-		}
-		return nullptr;
+		if (!m_player[i].m_isRemote && Win64_IsActivePlayer(&m_player[i], i))
+			return &m_player[i];
 	}
-	// Split-screen pads 1-3: the player is at m_player[dwUserIndex] with isRemote=false
-	if (dwUserIndex < MINECRAFT_NET_MAX_PLAYERS &&
-		!m_player[dwUserIndex].m_isRemote &&
-		Win64_IsActivePlayer(&m_player[dwUserIndex], dwUserIndex))
-		return &m_player[dwUserIndex];
-	return nullptr;
+	return NULL;
 }
 static bool Win64_IsActivePlayer(IQNetPlayer * p, DWORD index)
 {
@@ -331,19 +280,26 @@ IQNetPlayer* IQNet::GetPlayerBySmallId(BYTE SmallId)
 	{
 		if (m_player[i].m_smallId == SmallId && Win64_IsActivePlayer(&m_player[i], i)) return &m_player[i];
 	}
-	return nullptr;
+	return NULL;
 }
 IQNetPlayer* IQNet::GetPlayerByXuid(PlayerUID xuid)
 {
 	for (DWORD i = 0; i < s_playerCount; i++)
 	{
+		// Conventional XUID implementation except for Windows 64.
 		if (!Win64_IsActivePlayer(&m_player[i], i))
 			continue;
 
 		if (m_player[i].GetXuid() == xuid)
 			return &m_player[i];
+
+		// For Windows 64, NameBase XUID is used.
+#ifdef _WINDOWS64
+		PlayerUID nameXuid = Win64NameXuid::ResolvePersistentXuidFromName(m_player[i].GetGamertag());
+		if (nameXuid == xuid)
+			return &m_player[i];
+#endif
 	}
-	// Keep existing stub behavior: return host slot instead of nullptr on miss.
 	return &m_player[0];
 }
 DWORD IQNet::GetPlayerCount()
@@ -358,13 +314,7 @@ DWORD IQNet::GetPlayerCount()
 QNET_STATE IQNet::GetState() { return _iQNetStubState; }
 bool IQNet::IsHost() { return s_isHosting; }
 HRESULT IQNet::JoinGameFromInviteInfo(DWORD dwUserIndex, DWORD dwUserMask, const INVITE_INFO * pInviteInfo) { return S_OK; }
-void IQNet::HostGame()
-{
-	_iQNetStubState = QNET_STATE_SESSION_STARTING;
-	s_isHosting = true;
-	// Host slot keeps legacy XUID so old host player data remains addressable.
-	m_player[0].m_resolvedXuid = Win64Xuid::GetLegacyEmbeddedHostXuid();
-}
+void IQNet::HostGame() { _iQNetStubState = QNET_STATE_SESSION_STARTING; s_isHosting = true; }
 void IQNet::ClientJoinGame()
 {
 	_iQNetStubState = QNET_STATE_SESSION_STARTING;
@@ -372,10 +322,9 @@ void IQNet::ClientJoinGame()
 
 	for (int i = 0; i < MINECRAFT_NET_MAX_PLAYERS; i++)
 	{
-		m_player[i].m_smallId = static_cast<BYTE>(i);
+		m_player[i].m_smallId = (BYTE)i;
 		m_player[i].m_isRemote = true;
 		m_player[i].m_isHostPlayer = false;
-		m_player[i].m_resolvedXuid = INVALID_XUID;
 		m_player[i].m_gamertag[0] = 0;
 		m_player[i].SetCustomDataValue(0);
 	}
@@ -387,10 +336,9 @@ void IQNet::EndGame()
 	s_playerCount = 1;
 	for (int i = 0; i < MINECRAFT_NET_MAX_PLAYERS; i++)
 	{
-		m_player[i].m_smallId = static_cast<BYTE>(i);
+		m_player[i].m_smallId = (BYTE)i;
 		m_player[i].m_isRemote = false;
 		m_player[i].m_isHostPlayer = false;
-		m_player[i].m_resolvedXuid = INVALID_XUID;
 		m_player[i].m_gamertag[0] = 0;
 		m_player[i].SetCustomDataValue(0);
 	}
@@ -495,11 +443,11 @@ HRESULT XMemCreateCompressionContext(
 )
 {
 	/*
-	COMPRESSOR_HANDLE Compressor    = nullptr;
+	COMPRESSOR_HANDLE Compressor    = NULL;
 
 	HRESULT hr = CreateCompressor(
 		COMPRESS_ALGORITHM_XPRESS_HUFF, //  Compression Algorithm
-		nullptr,                           //  Optional allocation routine
+		NULL,                           //  Optional allocation routine
 		&Compressor);                   //  Handle
 
 	pContext = (XMEMDECOMPRESSION_CONTEXT *)Compressor;
@@ -516,11 +464,11 @@ HRESULT XMemCreateDecompressionContext(
 )
 {
 	/*
-	DECOMPRESSOR_HANDLE  Decompressor    = nullptr;
+	DECOMPRESSOR_HANDLE  Decompressor    = NULL;
 
 	HRESULT hr = CreateDecompressor(
 		COMPRESS_ALGORITHM_XPRESS_HUFF, //  Compression Algorithm
-		nullptr,                           //  Optional allocation routine
+		NULL,                           //  Optional allocation routine
 		&Decompressor);                   //  Handle
 
 	pContext = (XMEMDECOMPRESSION_CONTEXT *)Decompressor;
@@ -570,7 +518,7 @@ void				C_4JProfile::Initialise(DWORD dwTitleID,
 		ZeroMemory(profileData[i], sizeof(byte) * iGameDefinedDataSizeX4 / 4);
 
 		// Set some sane initial values!
-		GAME_SETTINGS* pGameSettings = static_cast<GAME_SETTINGS *>(profileData[i]);
+		GAME_SETTINGS* pGameSettings = (GAME_SETTINGS*)profileData[i];
 		pGameSettings->ucMenuSensitivity = 100; //eGameSetting_Sensitivity_InMenu
 		pGameSettings->ucInterfaceOpacity = 80; //eGameSetting_Sensitivity_InMenu
 		pGameSettings->usBitmaskValues |= 0x0200; //eGameSetting_DisplaySplitscreenGamertags - on
@@ -624,7 +572,7 @@ void				C_4JProfile::SetTrialTextStringTable(CXuiStringTable * pStringTable, int
 void				C_4JProfile::SetTrialAwardText(eAwardType AwardType, int iTitle, int iText) {}
 int					C_4JProfile::GetLockedProfile() { return 0; }
 void				C_4JProfile::SetLockedProfile(int iProf) {}
-bool				C_4JProfile::IsSignedIn(int iQuadrant) { return (iQuadrant == 0) || InputManager.IsPadConnected(iQuadrant); }
+bool				C_4JProfile::IsSignedIn(int iQuadrant) { return (iQuadrant == 0); }
 bool				C_4JProfile::IsSignedInLive(int iProf) { return true; }
 bool				C_4JProfile::IsGuest(int iQuadrant) { return false; }
 UINT				C_4JProfile::RequestSignInUI(bool bFromInvite, bool bLocalGame, bool bNoGuestsAllowed, bool bMultiplayerSignIn, bool bAddUser, int(*Func)(LPVOID, const bool, const int iPad), LPVOID lpParam, int iQuadrant) { return 0; }
@@ -635,10 +583,18 @@ bool				C_4JProfile::QuerySigninStatus(void) { return true; }
 void				C_4JProfile::GetXUID(int iPad, PlayerUID * pXuid, bool bOnlineXuid)
 {
 #ifdef _WINDOWS64
-	// Each pad gets a unique XUID derived from the persistent uid.dat value.
-	// Pad 0 uses the base XUID directly. Pads 1-3 get a deterministic hash
-	// of (base + pad) to produce fully independent IDs with no overlap risk.
-	*pXuid = Win64Xuid::DeriveXuidForPad(Win64Xuid::ResolvePersistentXuid(), iPad);
+	if (iPad != 0)
+	{
+		*pXuid = INVALID_XUID;
+		return;
+	}
+	// LoginPacket reads this value as client identity:
+	// - host keeps legacy host XUID for world compatibility
+	// - non-host uses persistent uid.dat-backed XUID
+	if (IQNet::s_isHosting)
+		*pXuid = 0xe000d45248242f2e;
+	else
+		*pXuid = 0xe000d45248242f2e + WinsockNetLayer::GetLocalSmallId();
 #else
 	* pXuid = 0xe000d45248242f2e + iPad;
 #endif
@@ -668,24 +624,8 @@ void				C_4JProfile::SetPrimaryPad(int iPad) {}
 char fakeGamerTag[32] = "PlayerName";
 void				SetFakeGamertag(char* name) { strcpy_s(fakeGamerTag, name); }
 #else
-char* C_4JProfile::GetGamertag(int iPad) {
-	extern char g_Win64Username[17];
-	if (iPad > 0 && iPad < XUSER_MAX_COUNT && IQNet::m_player[iPad].m_gamertag[0] != 0 &&
-		!IQNet::m_player[iPad].m_isRemote)
-	{
-		static char s_padGamertag[XUSER_MAX_COUNT][17];
-		WideCharToMultiByte(CP_ACP, 0, IQNet::m_player[iPad].m_gamertag, -1, s_padGamertag[iPad], 17, nullptr, nullptr);
-		return s_padGamertag[iPad];
-	}
-	return g_Win64Username;
-}
-wstring C_4JProfile::GetDisplayName(int iPad) {
-	extern wchar_t g_Win64UsernameW[17];
-	if (iPad > 0 && iPad < XUSER_MAX_COUNT && IQNet::m_player[iPad].m_gamertag[0] != 0 &&
-		!IQNet::m_player[iPad].m_isRemote)
-		return IQNet::m_player[iPad].m_gamertag;
-	return g_Win64UsernameW;
-}
+char* C_4JProfile::GetGamertag(int iPad) { extern char g_Win64Username[17]; return g_Win64Username; }
+wstring				C_4JProfile::GetDisplayName(int iPad) { extern wchar_t g_Win64UsernameW[17]; return g_Win64UsernameW; }
 #endif
 bool				C_4JProfile::IsFullVersion() { return s_bProfileIsFullVersion; }
 void				C_4JProfile::SetSignInChangeCallback(void (*Func)(LPVOID, bool, unsigned int), LPVOID lpParam) {}
@@ -695,8 +635,8 @@ bool				C_4JProfile::LocaleIsUSorCanada(void) { return false; }
 HRESULT				C_4JProfile::GetLiveConnectionStatus() { return S_OK; }
 bool				C_4JProfile::IsSystemUIDisplayed() { return false; }
 void				C_4JProfile::SetProfileReadErrorCallback(void (*Func)(LPVOID), LPVOID lpParam) {}
-int(*defaultOptionsCallback)(LPVOID, C_4JProfile::PROFILESETTINGS*, const int iPad) = nullptr;
-LPVOID lpProfileParam = nullptr;
+int(*defaultOptionsCallback)(LPVOID, C_4JProfile::PROFILESETTINGS*, const int iPad) = NULL;
+LPVOID lpProfileParam = NULL;
 int					C_4JProfile::SetDefaultOptionsCallback(int(*Func)(LPVOID, PROFILESETTINGS*, const int iPad), LPVOID lpParam)
 {
 	defaultOptionsCallback = Func;
@@ -774,7 +714,7 @@ void								C4JStorage::GetSaveCacheFileInfo(DWORD dwFile, XCONTENT_DATA & xCont
 void								C4JStorage::GetSaveCacheFileInfo(DWORD dwFile, PBYTE * ppbImageData, DWORD * pdwImageBytes) {}
 C4JStorage::ESaveGameState			C4JStorage::LoadSaveData(PSAVE_INFO pSaveInfo, int(*Func)(LPVOID lpParam, const bool, const bool), LPVOID lpParam) { return C4JStorage::ESaveGame_Idle; }
 C4JStorage::EDeleteGameStatus		C4JStorage::DeleteSaveData(PSAVE_INFO pSaveInfo, int(*Func)(LPVOID lpParam, const bool), LPVOID lpParam) { return C4JStorage::EDeleteGame_Idle; }
-PSAVE_DETAILS						C4JStorage::ReturnSavesInfo() { return nullptr; }
+PSAVE_DETAILS						C4JStorage::ReturnSavesInfo() { return NULL; }
 
 void								C4JStorage::RegisterMarketplaceCountsCallback(int (*Func)(LPVOID lpParam, C4JStorage::DLC_TMS_DETAILS*, int), LPVOID lpParam) {}
 void								C4JStorage::SetDLCPackageRoot(char* pszDLCRoot) {}
@@ -796,7 +736,7 @@ void								C4JStorage::StoreTMSPathName(WCHAR * pwchName) {}
 unsigned int						C4JStorage::CRC(unsigned char* buf, int len) { return 0; }
 
 struct PTMSPP_FILEDATA;
-C4JStorage::ETMSStatus				C4JStorage::TMSPP_ReadFile(int iPad, C4JStorage::eGlobalStorage eStorageFacility, C4JStorage::eTMS_FILETYPEVAL eFileTypeVal, LPCSTR szFilename, int(*Func)(LPVOID, int, int, PTMSPP_FILEDATA, LPCSTR)/*=nullptr*/, LPVOID lpParam/*=nullptr*/, int iUserData/*=0*/) { return C4JStorage::ETMSStatus_Idle; }
+C4JStorage::ETMSStatus				C4JStorage::TMSPP_ReadFile(int iPad, C4JStorage::eGlobalStorage eStorageFacility, C4JStorage::eTMS_FILETYPEVAL eFileTypeVal, LPCSTR szFilename, int(*Func)(LPVOID, int, int, PTMSPP_FILEDATA, LPCSTR)/*=NULL*/, LPVOID lpParam/*=NULL*/, int iUserData/*=0*/) { return C4JStorage::ETMSStatus_Idle; }
 #endif // _WINDOWS64
 
 #endif // __PS3__

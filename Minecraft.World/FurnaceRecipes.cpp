@@ -3,7 +3,7 @@
 #include "Tile.h"
 #include "FurnaceRecipes.h"
 
-FurnaceRecipes *FurnaceRecipes::instance = nullptr;
+FurnaceRecipes *FurnaceRecipes::instance = NULL;
 
 void FurnaceRecipes::staticCtor()
 {
@@ -63,7 +63,7 @@ ItemInstance *FurnaceRecipes::getResult(int itemId)
 	{
 		return it->second;
 	}
-	return nullptr;
+	return NULL;
 }
 
 unordered_map<int, ItemInstance *> *FurnaceRecipes::getRecipies()

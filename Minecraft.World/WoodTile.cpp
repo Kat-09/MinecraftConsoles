@@ -21,7 +21,7 @@ const wstring WoodTile::TEXTURE_NAMES[] = {L"oak", L"spruce", L"birch", L"jungle
 
 WoodTile::WoodTile(int id) : Tile(id, Material::wood)
 {
-	icons = nullptr;
+	icons = NULL;
 }
 
 unsigned int WoodTile::getDescriptionId(int iData)

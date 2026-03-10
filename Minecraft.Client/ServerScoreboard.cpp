@@ -37,7 +37,7 @@ void ServerScoreboard::setDisplayObjective(int slot, Objective *objective)
 
 	//Scoreboard::setDisplayObjective(slot, objective);
 
-	//if (old != objective && old != nullptr)
+	//if (old != objective && old != NULL)
 	//{
 	//	if (getObjectiveDisplaySlotCount(old) > 0)
 	//	{
@@ -49,7 +49,7 @@ void ServerScoreboard::setDisplayObjective(int slot, Objective *objective)
 	//	}
 	//}
 
-	//if (objective != nullptr)
+	//if (objective != NULL)
 	//{
 	//	if (trackedObjectives.contains(objective))
 	//	{
@@ -146,7 +146,7 @@ void ServerScoreboard::setSaveData(ScoreboardSaveData *data)
 
 void ServerScoreboard::setDirty()
 {
-	//if (saveData != nullptr)
+	//if (saveData != NULL)
 	//{
 	//	saveData->setDirty();
 	//}
@@ -154,7 +154,7 @@ void ServerScoreboard::setDirty()
 
 vector<shared_ptr<Packet> > *ServerScoreboard::getStartTrackingPackets(Objective *objective)
 {
-	return nullptr;
+	return NULL;
 
 	//vector<shared_ptr<Packet> > *packets = new vector<shared_ptr<Packet> >();
 	//packets.push_back( shared_ptr<SetObjectivePacket>( new SetObjectivePacket(objective, SetObjectivePacket::METHOD_ADD)));
@@ -189,7 +189,7 @@ void ServerScoreboard::startTrackingObjective(Objective *objective)
 
 vector<shared_ptr<Packet> > *ServerScoreboard::getStopTrackingPackets(Objective *objective)
 {
-	return nullptr;
+	return NULL;
 
 	//vector<shared_ptr<Packet> > *packets = new ArrayList<Packet>();
 	//packets->push_back( shared_ptr<SetObjectivePacket( new SetObjectivePacket(objective, SetObjectivePacket.METHOD_REMOVE)));

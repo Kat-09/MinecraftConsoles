@@ -15,17 +15,7 @@ MobRenderer::MobRenderer(Model *model, float shadow) : LivingEntityRenderer(mode
 
 void MobRenderer::render(shared_ptr<Entity> _mob, double x, double y, double z, float rot, float a)
 {
-	if (_mob == nullptr)
-	{
-		return;
-	}
-
 	shared_ptr<Mob> mob = dynamic_pointer_cast<Mob>(_mob);
-
-	if (mob == nullptr)
-	{
-		return;
-	}
 
 	LivingEntityRenderer::render(mob, x, y, z, rot, a);
 	renderLeash(mob, x, y, z, rot, a);
@@ -40,7 +30,7 @@ void MobRenderer::renderLeash(shared_ptr<Mob> entity, double x, double y, double
 {
     shared_ptr<Entity> roper = entity->getLeashHolder();
     // roper = entityRenderDispatcher.cameraEntity;
-    if (roper != nullptr)
+    if (roper != NULL)
 	{
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
@@ -71,9 +61,9 @@ void MobRenderer::renderLeash(shared_ptr<Mob> entity, double x, double y, double
         x += rotOffCos;
         z += rotOffSin;
 
-        double dx = static_cast<float>(endX - startX);
-        double dy = static_cast<float>(endY - startY);
-        double dz = static_cast<float>(endZ - startZ);
+        double dx = (float) (endX - startX);
+        double dy = (float) (endY - startY);
+        double dz = (float) (endZ - startZ);
 
         glDisable(GL_TEXTURE_2D);
         glDisable(GL_LIGHTING);
@@ -102,9 +92,9 @@ void MobRenderer::renderLeash(shared_ptr<Mob> entity, double x, double y, double
 			{
                 tessellator->color(rDarkCol, gDarkCol, bDarkCol, 1.0F);
             }
-            float aa = static_cast<float>(k) / static_cast<float>(steps);
-            tessellator->vertex(x + (dx * aa) + 0, y + (dy * ((aa * aa) + aa) * 0.5) + (((static_cast<float>(steps) - static_cast<float>(k)) / (steps * 0.75F)) + 0.125F), z + (dz * aa));
-            tessellator->vertex(x + (dx * aa) + width, y + (dy * ((aa * aa) + aa) * 0.5) + (((static_cast<float>(steps) - static_cast<float>(k)) / (steps * 0.75F)) + 0.125F) + width, z + (dz * aa));
+            float aa = (float) k / (float) steps;
+            tessellator->vertex(x + (dx * aa) + 0, y + (dy * ((aa * aa) + aa) * 0.5) + ((((float) steps - (float) k) / (steps * 0.75F)) + 0.125F), z + (dz * aa));
+            tessellator->vertex(x + (dx * aa) + width, y + (dy * ((aa * aa) + aa) * 0.5) + ((((float) steps - (float) k) / (steps * 0.75F)) + 0.125F) + width, z + (dz * aa));
         }
         tessellator->end();
 
@@ -119,9 +109,9 @@ void MobRenderer::renderLeash(shared_ptr<Mob> entity, double x, double y, double
 			{
                 tessellator->color(rDarkCol, gDarkCol, bDarkCol, 1.0F);
             }
-            float aa = static_cast<float>(k) / static_cast<float>(steps);
-            tessellator->vertex(x + (dx * aa) + 0, y + (dy * ((aa * aa) + aa) * 0.5) + (((static_cast<float>(steps) - static_cast<float>(k)) / (steps * 0.75F)) + 0.125F) + width, z + (dz * aa));
-            tessellator->vertex(x + (dx * aa) + width, y + (dy * ((aa * aa) + aa) * 0.5) + (((static_cast<float>(steps) - static_cast<float>(k)) / (steps * 0.75F)) + 0.125F), z + (dz * aa) + width);
+            float aa = (float) k / (float) steps;
+            tessellator->vertex(x + (dx * aa) + 0, y + (dy * ((aa * aa) + aa) * 0.5) + ((((float) steps - (float) k) / (steps * 0.75F)) + 0.125F) + width, z + (dz * aa));
+            tessellator->vertex(x + (dx * aa) + width, y + (dy * ((aa * aa) + aa) * 0.5) + ((((float) steps - (float) k) / (steps * 0.75F)) + 0.125F), z + (dz * aa) + width);
         }
         tessellator->end();
 

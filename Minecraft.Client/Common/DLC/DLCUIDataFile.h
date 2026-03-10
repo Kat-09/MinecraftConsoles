@@ -10,11 +10,11 @@ private:
 
 public:
 	DLCUIDataFile(const wstring &path);
-	~DLCUIDataFile() override;
+	~DLCUIDataFile();
 
 	using DLCFile::addData;
 	using DLCFile::addParameter;
 
 	virtual void addData(PBYTE pbData, DWORD dwBytes,bool canDeleteData = false);
-    PBYTE getData(DWORD &dwBytes) override;
+	virtual PBYTE getData(DWORD &dwBytes);
 };

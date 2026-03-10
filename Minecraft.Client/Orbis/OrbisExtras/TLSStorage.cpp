@@ -4,7 +4,7 @@
 
 
 
-TLSStorageOrbis* TLSStorageOrbis::m_pInstance = nullptr;
+TLSStorageOrbis* TLSStorageOrbis::m_pInstance = NULL;
 
 BOOL TLSStorageOrbis::m_activeList[sc_maxSlots];
 __thread LPVOID TLSStorageOrbis::m_values[sc_maxSlots];
@@ -16,7 +16,7 @@ TLSStorageOrbis::TLSStorageOrbis()
 	for(int i=0;i<sc_maxSlots; i++)
 	{
 		m_activeList[i] = false;
-		m_values[i] = nullptr;
+		m_values[i] = NULL;
 	}
 }
 
@@ -37,7 +37,7 @@ int TLSStorageOrbis::Alloc()
 		if(m_activeList[i] == false)
 		{
 			m_activeList[i] = true;
-			m_values[i] = nullptr;
+			m_values[i] = NULL;
 			return i;
 		}
 	}
@@ -50,7 +50,7 @@ BOOL TLSStorageOrbis::Free( DWORD _index )
 		return false; // not been allocated
 
 	m_activeList[_index] = false;
-	m_values[_index] = nullptr;
+	m_values[_index] = NULL;
 	return true;
 }
 
@@ -65,7 +65,7 @@ BOOL TLSStorageOrbis::SetValue( DWORD _index, LPVOID _val )
 LPVOID TLSStorageOrbis::GetValue( DWORD _index )
 {
 	if(m_activeList[_index] == false)
-		return nullptr;
+		return NULL;
 	return m_values[_index];
 }
 

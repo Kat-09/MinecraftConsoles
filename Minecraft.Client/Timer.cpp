@@ -20,9 +20,9 @@ Timer::Timer(float ticksPerSecond)
 
 void Timer::advanceTime()
 {
-    int64_t nowMs = System::currentTimeMillis();
-    int64_t passedMs = nowMs - lastMs;
-
+    __int64 nowMs = System::currentTimeMillis();
+    __int64 passedMs = nowMs - lastMs;
+    
     // 4J - Use high-resolution timer for 'now' in seconds
     double now = System::nanoTime() / 1000000000.0;
 
@@ -40,10 +40,10 @@ void Timer::advanceTime()
         accumMs += passedMs;
         if (accumMs > 1000)
 		{
-            const int64_t msSysTime = static_cast<int64_t>(now * 1000.0);
-            const int64_t passedMsSysTime = msSysTime - lastMsSysTime;
+            __int64 msSysTime = (__int64)(now * 1000.0);
+            __int64 passedMsSysTime = msSysTime - lastMsSysTime;
 
-            const double adjustTimeT = accumMs / static_cast<double>(passedMsSysTime);
+            double adjustTimeT = accumMs / (double) passedMsSysTime;
             adjustTime += (adjustTimeT - adjustTime) * 0.2f;
 
             lastMsSysTime = msSysTime;
@@ -51,7 +51,7 @@ void Timer::advanceTime()
         }
         if (accumMs < 0)
 		{
-            lastMsSysTime = static_cast<int64_t>(now * 1000.0);
+            lastMsSysTime = (__int64)(now * 1000.0);
         }
     }
     lastMs = nowMs;
@@ -62,9 +62,9 @@ void Timer::advanceTime()
     if (passedSeconds < 0) passedSeconds = 0;
     if (passedSeconds > 1) passedSeconds = 1;
 
-    passedTime = static_cast<float>(passedTime + (passedSeconds * timeScale * ticksPerSecond));
+    passedTime = (float)( passedTime + (passedSeconds * timeScale * ticksPerSecond));
 
-    ticks = static_cast<int>(passedTime);
+    ticks = (int) passedTime;
     passedTime -= ticks;
 
     if (ticks > MAX_TICKS_PER_UPDATE) ticks = MAX_TICKS_PER_UPDATE;
@@ -75,10 +75,10 @@ void Timer::advanceTime()
 void Timer::advanceTimeQuickly()
 {
 
-    double passedSeconds = static_cast<double>(MAX_TICKS_PER_UPDATE) / static_cast<double>(ticksPerSecond);
+    double passedSeconds = (double) MAX_TICKS_PER_UPDATE / (double) ticksPerSecond;
 
-    passedTime = static_cast<float>(passedTime + (passedSeconds * timeScale * ticksPerSecond));
-    ticks = static_cast<int>(passedTime);
+    passedTime = (float)(passedTime + (passedSeconds * timeScale * ticksPerSecond));
+    ticks = (int) passedTime;
     passedTime -= ticks;
     a = passedTime;
 
@@ -89,9 +89,9 @@ void Timer::advanceTimeQuickly()
 
 void Timer::skipTime()
 {
-    int64_t nowMs = System::currentTimeMillis();
-    int64_t passedMs = nowMs - lastMs;
-    int64_t msSysTime = System::nanoTime() / 1000000;
+    __int64 nowMs = System::currentTimeMillis();
+    __int64 passedMs = nowMs - lastMs;
+    __int64 msSysTime = System::nanoTime() / 1000000;
     double now = msSysTime / 1000.0;
 
 
@@ -108,9 +108,9 @@ void Timer::skipTime()
         accumMs += passedMs;
         if (accumMs > 1000)
 		{
-            int64_t passedMsSysTime = msSysTime - lastMsSysTime;
+            __int64 passedMsSysTime = msSysTime - lastMsSysTime;
 
-            double adjustTimeT = accumMs / static_cast<double>(passedMsSysTime);
+            double adjustTimeT = accumMs / (double) passedMsSysTime;
             adjustTime += (adjustTimeT - adjustTime) * 0.2f;
 
             lastMsSysTime = msSysTime;
@@ -130,9 +130,9 @@ void Timer::skipTime()
     if (passedSeconds < 0) passedSeconds = 0;
     if (passedSeconds > 1) passedSeconds = 1;
 
-    passedTime = static_cast<float>(passedTime + (passedSeconds * timeScale * ticksPerSecond));
+    passedTime = (float)(passedTime + (passedSeconds * timeScale * ticksPerSecond));
 
-    ticks = static_cast<int>(0);
+    ticks = (int) 0;
     if (ticks > MAX_TICKS_PER_UPDATE) ticks = MAX_TICKS_PER_UPDATE;
     passedTime -= ticks;
 

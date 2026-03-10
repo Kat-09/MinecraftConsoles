@@ -8,9 +8,9 @@ int CXuiCtrlBubblesProgress::GetValue()
 	void* pvUserData;
 	this->GetUserData( &pvUserData );
 
-	if( pvUserData != nullptr )
+	if( pvUserData != NULL )
 	{
-		BrewingStandTileEntity *pBrewingStandTileEntity = static_cast<BrewingStandTileEntity *>(pvUserData);
+		BrewingStandTileEntity *pBrewingStandTileEntity = (BrewingStandTileEntity *)pvUserData;
 
 		int value = 0;
 		int bubbleStep = (pBrewingStandTileEntity->getBrewTime() / 2) % 7;

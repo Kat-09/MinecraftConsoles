@@ -7,12 +7,12 @@
 
 DLCColourTableFile::DLCColourTableFile(const wstring &path) : DLCFile(DLCManager::e_DLCType_ColourTable,path)
 {	
-	m_colourTable = nullptr;
+	m_colourTable = NULL;
 }
 
 DLCColourTableFile::~DLCColourTableFile()
 {
-	if(m_colourTable != nullptr)
+	if(m_colourTable != NULL)
 	{
 		app.DebugPrintf("Deleting DLCColourTableFile data\n");
 		delete m_colourTable;

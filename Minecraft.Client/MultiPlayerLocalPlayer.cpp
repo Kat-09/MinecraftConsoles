@@ -76,8 +76,8 @@ void MultiplayerLocalPlayer::tick()
 	{		
 		if (isRiding())
 		{
-			connection->send(std::make_shared<MovePlayerPacket::Rot>(yRot, xRot, onGround, abilities.flying));
-            connection->send(std::make_shared<PlayerInputPacket>(xxa, yya, input->jumping, input->sneaking));
+			connection->send(shared_ptr<MovePlayerPacket>(new MovePlayerPacket::Rot(yRot, xRot, onGround, abilities.flying)));
+            connection->send(shared_ptr<PlayerInputPacket>(new PlayerInputPacket(xxa, yya, input->jumping, input->sneaking)));
         }
 		else
 		{
@@ -96,8 +96,8 @@ void MultiplayerLocalPlayer::sendPosition()
 	bool sprinting = isSprinting();
 	if (sprinting != lastSprinting)
 	{
-		if (sprinting) connection->send(std::make_shared<PlayerCommandPacket>(shared_from_this(), PlayerCommandPacket::START_SPRINTING));
-		else connection->send(std::make_shared<PlayerCommandPacket>(shared_from_this(), PlayerCommandPacket::STOP_SPRINTING));
+		if (sprinting) connection->send(shared_ptr<PlayerCommandPacket>( new PlayerCommandPacket(shared_from_this(), PlayerCommandPacket::START_SPRINTING)));
+		else connection->send(shared_ptr<PlayerCommandPacket>( new PlayerCommandPacket(shared_from_this(), PlayerCommandPacket::STOP_SPRINTING)));
 
 		lastSprinting = sprinting;
 	}
@@ -105,8 +105,8 @@ void MultiplayerLocalPlayer::sendPosition()
     bool sneaking = isSneaking();
     if (sneaking != lastSneaked)
 	{
-        if (sneaking) connection->send(std::make_shared<PlayerCommandPacket>(shared_from_this(), PlayerCommandPacket::START_SNEAKING));
-        else connection->send(std::make_shared<PlayerCommandPacket>(shared_from_this(), PlayerCommandPacket::STOP_SNEAKING));
+        if (sneaking) connection->send( shared_ptr<PlayerCommandPacket>( new PlayerCommandPacket(shared_from_this(), PlayerCommandPacket::START_SNEAKING) ) );
+        else connection->send( shared_ptr<PlayerCommandPacket>( new PlayerCommandPacket(shared_from_this(), PlayerCommandPacket::STOP_SNEAKING) ) );
 
         lastSneaked = sneaking;
     }
@@ -114,8 +114,8 @@ void MultiplayerLocalPlayer::sendPosition()
 	bool idle = isIdle();
 	if (idle != lastIdle)
 	{
-		if (idle) connection->send(std::make_shared<PlayerCommandPacket>(shared_from_this(), PlayerCommandPacket::START_IDLEANIM));
-		else connection->send(std::make_shared<PlayerCommandPacket>(shared_from_this(), PlayerCommandPacket::STOP_IDLEANIM));
+		if (idle) connection->send( shared_ptr<PlayerCommandPacket>( new PlayerCommandPacket(shared_from_this(), PlayerCommandPacket::START_IDLEANIM) ) );
+		else connection->send( shared_ptr<PlayerCommandPacket>( new PlayerCommandPacket(shared_from_this(), PlayerCommandPacket::STOP_IDLEANIM) ) );
 
 		lastIdle = idle;
 	}
@@ -129,28 +129,28 @@ void MultiplayerLocalPlayer::sendPosition()
 
 	bool move = (xdd * xdd + ydd1 * ydd1 + zdd * zdd) > 0.03 * 0.03 || positionReminder >= POSITION_REMINDER_INTERVAL;
     bool rot = rydd != 0 || rxdd != 0;
-    if (riding != nullptr)
+    if (riding != NULL)
 	{
-		connection->send(std::make_shared<MovePlayerPacket::PosRot>(xd, -999, -999, zd, yRot, xRot, onGround, abilities.flying));
+		connection->send( shared_ptr<MovePlayerPacket>( new MovePlayerPacket::PosRot(xd, -999, -999, zd, yRot, xRot, onGround, abilities.flying) ) );
         move = false;
     }
 	else
 	{
         if (move && rot)
 		{
-            connection->send(std::make_shared<MovePlayerPacket::PosRot>(x, bb->y0, y, z, yRot, xRot, onGround, abilities.flying));
+            connection->send( shared_ptr<MovePlayerPacket>( new MovePlayerPacket::PosRot(x, bb->y0, y, z, yRot, xRot, onGround, abilities.flying) ) );
         }
 		else if (move)
 		{
-            connection->send(std::make_shared<MovePlayerPacket::Pos>(x, bb->y0, y, z, onGround, abilities.flying));
+            connection->send( shared_ptr<MovePlayerPacket>( new MovePlayerPacket::Pos(x, bb->y0, y, z, onGround, abilities.flying) ) );
         }
 		else if (rot)
 		{
-            connection->send(std::make_shared<MovePlayerPacket::Rot>(yRot, xRot, onGround, abilities.flying));
+            connection->send( shared_ptr<MovePlayerPacket>( new MovePlayerPacket::Rot(yRot, xRot, onGround, abilities.flying) ) );
         }
 		else
 		{
-			connection->send(std::make_shared<MovePlayerPacket>(onGround, abilities.flying));
+			connection->send( shared_ptr<MovePlayerPacket>( new MovePlayerPacket(onGround, abilities.flying) ) );
         }
     }
 
@@ -173,9 +173,13 @@ void MultiplayerLocalPlayer::sendPosition()
 
 }
 
-shared_ptr<ItemEntity> MultiplayerLocalPlayer::drop()
+shared_ptr<ItemEntity> MultiplayerLocalPlayer::drop(bool dropAll)
 {
-	connection->send(std::make_shared<PlayerActionPacket>(PlayerActionPacket::DROP_ITEM, 0, 0, 0, 0));
+	int action = dropAll ?
+		PlayerActionPacket::DROP_ALL_ITEMS :
+		PlayerActionPacket::DROP_ITEM;
+
+	connection->send(std::make_shared<PlayerActionPacket>(action, 0, 0, 0, 0));
 	return nullptr;
 }
 
@@ -185,19 +189,19 @@ void MultiplayerLocalPlayer::reallyDrop(shared_ptr<ItemEntity> itemEntity)
 
 void MultiplayerLocalPlayer::chat(const wstring& message)
 {
-	connection->send(std::make_shared<ChatPacket>(message));
+	connection->send( shared_ptr<ChatPacket>( new ChatPacket(message) ) );
 }
 
 void MultiplayerLocalPlayer::swing()
 {
 	LocalPlayer::swing();
-	connection->send(std::make_shared<AnimatePacket>(shared_from_this(), AnimatePacket::SWING));
+	connection->send( shared_ptr<AnimatePacket>( new AnimatePacket(shared_from_this(), AnimatePacket::SWING) ) );
 
 }
 
 void MultiplayerLocalPlayer::respawn()
 {
-	connection->send(std::make_shared<ClientCommandPacket>(ClientCommandPacket::PERFORM_RESPAWN));
+	connection->send( shared_ptr<ClientCommandPacket>( new ClientCommandPacket(ClientCommandPacket::PERFORM_RESPAWN)));
 }
 
 
@@ -211,9 +215,9 @@ void MultiplayerLocalPlayer::actuallyHurt(DamageSource *source, float dmg)
 void MultiplayerLocalPlayer::completeUsingItem()
 {
 	Minecraft *pMinecraft = Minecraft::GetInstance();
-	if(useItem != nullptr && pMinecraft->localgameModes[m_iPad] != nullptr )
+	if(useItem != NULL && pMinecraft->localgameModes[m_iPad] != NULL )
 	{
-		TutorialMode *gameMode = static_cast<TutorialMode *>(pMinecraft->localgameModes[m_iPad]);
+		TutorialMode *gameMode = (TutorialMode *)pMinecraft->localgameModes[m_iPad];
 		Tutorial *tutorial = gameMode->getTutorial();
 		tutorial->completeUsingItem(useItem);
 	}
@@ -223,9 +227,9 @@ void MultiplayerLocalPlayer::completeUsingItem()
 void MultiplayerLocalPlayer::onEffectAdded(MobEffectInstance *effect)
 {
 	Minecraft *pMinecraft = Minecraft::GetInstance();
-	if(pMinecraft->localgameModes[m_iPad] != nullptr )
+	if(pMinecraft->localgameModes[m_iPad] != NULL )
 	{
-		TutorialMode *gameMode = static_cast<TutorialMode *>(pMinecraft->localgameModes[m_iPad]);
+		TutorialMode *gameMode = (TutorialMode *)pMinecraft->localgameModes[m_iPad];
 		Tutorial *tutorial = gameMode->getTutorial();
 		tutorial->onEffectChanged(MobEffect::effects[effect->getId()]);
 	}
@@ -236,9 +240,9 @@ void MultiplayerLocalPlayer::onEffectAdded(MobEffectInstance *effect)
 void MultiplayerLocalPlayer::onEffectUpdated(MobEffectInstance *effect, bool doRefreshAttributes)
 {
 	Minecraft *pMinecraft = Minecraft::GetInstance();
-	if(pMinecraft->localgameModes[m_iPad] != nullptr )
+	if(pMinecraft->localgameModes[m_iPad] != NULL )
 	{
-		TutorialMode *gameMode = static_cast<TutorialMode *>(pMinecraft->localgameModes[m_iPad]);
+		TutorialMode *gameMode = (TutorialMode *)pMinecraft->localgameModes[m_iPad];
 		Tutorial *tutorial = gameMode->getTutorial();
 		tutorial->onEffectChanged(MobEffect::effects[effect->getId()]);
 	}
@@ -249,9 +253,9 @@ void MultiplayerLocalPlayer::onEffectUpdated(MobEffectInstance *effect, bool doR
 void MultiplayerLocalPlayer::onEffectRemoved(MobEffectInstance *effect)
 {
 	Minecraft *pMinecraft = Minecraft::GetInstance();
-	if(pMinecraft->localgameModes[m_iPad] != nullptr )
+	if(pMinecraft->localgameModes[m_iPad] != NULL )
 	{
-		TutorialMode *gameMode = static_cast<TutorialMode *>(pMinecraft->localgameModes[m_iPad]);
+		TutorialMode *gameMode = (TutorialMode *)pMinecraft->localgameModes[m_iPad];
 		Tutorial *tutorial = gameMode->getTutorial();
 		tutorial->onEffectChanged(MobEffect::effects[effect->getId()],true);
 	}
@@ -260,7 +264,7 @@ void MultiplayerLocalPlayer::onEffectRemoved(MobEffectInstance *effect)
 
 void MultiplayerLocalPlayer::closeContainer()
 {
-    connection->send(std::make_shared<ContainerClosePacket>(containerMenu->containerId));
+    connection->send( shared_ptr<ContainerClosePacket>( new ContainerClosePacket(containerMenu->containerId) ) );
 	clientSideCloseContainer();
 }
 
@@ -286,7 +290,7 @@ void MultiplayerLocalPlayer::hurtTo(float newHealth, ETelemetryChallenges damage
 
 void MultiplayerLocalPlayer::awardStat(Stat *stat, byteArray param)
 {
-    if (stat == nullptr)
+    if (stat == NULL)
 	{
 		delete [] param.data;
         return;
@@ -305,7 +309,7 @@ void MultiplayerLocalPlayer::awardStat(Stat *stat, byteArray param)
 
 void MultiplayerLocalPlayer::awardStatFromServer(Stat *stat, byteArray param)
 {
-	if ( stat != nullptr && !stat->awardLocallyOnly )
+	if ( stat != NULL && !stat->awardLocallyOnly )
 	{
 		LocalPlayer::awardStat(stat, param);
 	}
@@ -314,7 +318,7 @@ void MultiplayerLocalPlayer::awardStatFromServer(Stat *stat, byteArray param)
 
 void MultiplayerLocalPlayer::onUpdateAbilities()
 {
-	connection->send(std::make_shared<PlayerAbilitiesPacket>(&abilities));
+	connection->send(shared_ptr<PlayerAbilitiesPacket>(new PlayerAbilitiesPacket(&abilities)));
 }
 
 bool MultiplayerLocalPlayer::isLocalPlayer()
@@ -324,19 +328,19 @@ bool MultiplayerLocalPlayer::isLocalPlayer()
 
 void MultiplayerLocalPlayer::sendRidingJump()
 {
-	connection->send(std::make_shared<PlayerCommandPacket>(shared_from_this(), PlayerCommandPacket::RIDING_JUMP, static_cast<int>(getJumpRidingScale() * 100.0f)));
+	connection->send(shared_ptr<PlayerCommandPacket>(new PlayerCommandPacket(shared_from_this(), PlayerCommandPacket::RIDING_JUMP, (int) (getJumpRidingScale() * 100.0f))));
 }
 
 void MultiplayerLocalPlayer::sendOpenInventory()
 {
-	connection->send(std::make_shared<PlayerCommandPacket>(shared_from_this(), PlayerCommandPacket::OPEN_INVENTORY));
+	connection->send(shared_ptr<PlayerCommandPacket>(new PlayerCommandPacket(shared_from_this(), PlayerCommandPacket::OPEN_INVENTORY)));
 }
 
 void MultiplayerLocalPlayer::ride(shared_ptr<Entity> e)
 {
-	bool wasRiding = riding != nullptr;
+	bool wasRiding = riding != NULL;
 	LocalPlayer::ride(e);
-	bool isRiding = riding != nullptr;
+	bool isRiding = riding != NULL;
 
 	// 4J Added
 	if(wasRiding && !isRiding)
@@ -348,7 +352,7 @@ void MultiplayerLocalPlayer::ride(shared_ptr<Entity> e)
 	if( isRiding )
 	{
 		ETelemetryChallenges eventType = eTelemetryChallenges_Unknown;
-		if( this->riding != nullptr )
+		if( this->riding != NULL )
 		{
 			switch(riding->GetType())
 			{
@@ -370,9 +374,9 @@ void MultiplayerLocalPlayer::ride(shared_ptr<Entity> e)
 
 	Minecraft *pMinecraft = Minecraft::GetInstance();
 	
-	if( pMinecraft->localgameModes[m_iPad] != nullptr )
+	if( pMinecraft->localgameModes[m_iPad] != NULL )
 	{
-		TutorialMode *gameMode = static_cast<TutorialMode *>(pMinecraft->localgameModes[m_iPad]);
+		TutorialMode *gameMode = (TutorialMode *)pMinecraft->localgameModes[m_iPad];
 		if(wasRiding && !isRiding)
 		{
 			gameMode->getTutorial()->changeTutorialState(e_Tutorial_State_Gameplay);
@@ -386,7 +390,7 @@ void MultiplayerLocalPlayer::ride(shared_ptr<Entity> e)
 
 void MultiplayerLocalPlayer::StopSleeping()
 {
-	connection->send(std::make_shared<PlayerCommandPacket>(shared_from_this(), PlayerCommandPacket::STOP_SLEEPING));
+	connection->send( shared_ptr<PlayerCommandPacket>( new PlayerCommandPacket(shared_from_this(), PlayerCommandPacket::STOP_SLEEPING) ) );
 }
 
 // 4J Added
@@ -397,7 +401,7 @@ void MultiplayerLocalPlayer::setAndBroadcastCustomSkin(DWORD skinId)
 #ifndef _CONTENT_PACKAGE
 	wprintf(L"Skin for local player %ls has changed to %ls (%d)\n", name.c_str(), customTextureUrl.c_str(), getPlayerDefaultSkin() );
 #endif
-	if(getCustomSkin() != oldSkinIndex) connection->send(std::make_shared<TextureAndGeometryChangePacket>(shared_from_this(), app.GetPlayerSkinName(GetXboxPad())));
+	if(getCustomSkin() != oldSkinIndex) connection->send( shared_ptr<TextureAndGeometryChangePacket>( new TextureAndGeometryChangePacket( shared_from_this(), app.GetPlayerSkinName(GetXboxPad()) ) ) );
 }
 
 void MultiplayerLocalPlayer::setAndBroadcastCustomCape(DWORD capeId)
@@ -407,7 +411,7 @@ void MultiplayerLocalPlayer::setAndBroadcastCustomCape(DWORD capeId)
 #ifndef _CONTENT_PACKAGE
 	wprintf(L"Cape for local player %ls has changed to %ls\n", name.c_str(), customTextureUrl2.c_str());
 #endif
-	if(getCustomCape() != oldCapeIndex) connection->send(std::make_shared<TextureChangePacket>(shared_from_this(), TextureChangePacket::e_TextureChange_Cape, app.GetPlayerCapeName(GetXboxPad())));
+	if(getCustomCape() != oldCapeIndex) connection->send( shared_ptr<TextureChangePacket>( new TextureChangePacket( shared_from_this(), TextureChangePacket::e_TextureChange_Cape, app.GetPlayerCapeName(GetXboxPad()) ) ) );
 }
 
 // 4J added for testing. This moves the player in a repeated sequence of 2 modes:

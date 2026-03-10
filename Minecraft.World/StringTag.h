@@ -34,7 +34,7 @@ public:
 	{
 		if (Tag::equals(obj))
 		{
-			StringTag *o = static_cast<StringTag *>(obj);
+			StringTag *o = (StringTag *) obj;
 			return ((data.empty() && o->data.empty()) || (!data.empty() && data.compare(o->data) == 0));
 		}
 		return false;

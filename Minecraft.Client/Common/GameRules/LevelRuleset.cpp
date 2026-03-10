@@ -6,7 +6,7 @@
 
 LevelRuleset::LevelRuleset()
 {
-	m_stringTable = nullptr;
+	m_stringTable = NULL;
 }
 
 LevelRuleset::~LevelRuleset()
@@ -26,11 +26,11 @@ void LevelRuleset::getChildren(vector<GameRuleDefinition *> *children)
 
 GameRuleDefinition *LevelRuleset::addChild(ConsoleGameRules::EGameRuleType ruleType)
 {
-	GameRuleDefinition *rule = nullptr;
+	GameRuleDefinition *rule = NULL;
 	if(ruleType == ConsoleGameRules::eGameRuleType_NamedArea)
 	{
 		rule = new NamedAreaRuleDefinition();
-		m_areas.push_back(static_cast<NamedAreaRuleDefinition *>(rule));
+		m_areas.push_back((NamedAreaRuleDefinition *)rule);
 	}
 	else
 	{
@@ -46,7 +46,7 @@ void LevelRuleset::loadStringTable(StringTable *table)
 
 LPCWSTR LevelRuleset::getString(const wstring &key)
 {
-	if(m_stringTable == nullptr)
+	if(m_stringTable == NULL)
 	{
 		return L"";
 	}

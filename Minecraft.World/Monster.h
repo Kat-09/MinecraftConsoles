@@ -12,7 +12,7 @@ class Monster : public PathfinderMob, public Enemy
 {
 public:
 	eINSTANCEOF GetType() { return eTYPE_MONSTER; }
-	static Entity *create(Level *level) { return nullptr; }
+	static Entity *create(Level *level) { return NULL; }
 
 public:
 	Monster(Level *level);

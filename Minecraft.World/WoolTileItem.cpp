@@ -112,18 +112,15 @@ WoolTileItem::WoolTileItem(int id) : TileItem(id)
 
 Icon *WoolTileItem::getIcon(int itemAuxValue) 
 {
-#ifndef _CONTENT_PACKAGE
 	if(Tile::tiles[id])
 	{
 		if (id == Tile::stained_glass_Id || id == Tile::stained_glass_pane_Id)
 		{
 			return Tile::tiles[id]->getTexture(2, itemAuxValue);
 		}
-
 		return Tile::tiles[id]->getTexture(2, ColoredTile::getTileDataForItemAuxValue(itemAuxValue));
 	}
 	else
-#endif
 	{
 		return Tile::wool->getTexture(2, ColoredTile::getTileDataForItemAuxValue(itemAuxValue));
 	}

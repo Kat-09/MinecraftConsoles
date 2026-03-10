@@ -32,7 +32,7 @@ bool MineShaftFeature::isFeatureChunk(int x, int z, bool bIsSuperflat)
 {
 	bool forcePlacement = false;
 	LevelGenerationOptions *levelGenOptions = app.getLevelGenerationOptions();
-	if( levelGenOptions != nullptr )
+	if( levelGenOptions != NULL )
 	{
 		forcePlacement = levelGenOptions->isFeatureChunk(x,z,eFeature_Mineshaft);
 	}

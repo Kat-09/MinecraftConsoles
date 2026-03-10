@@ -123,7 +123,7 @@ void CPlatformNetworkManagerSony::HandleDataReceived(SQRNetworkPlayer *playerFro
 		INetworkPlayer *pPlayerFrom = getNetworkPlayer(playerFrom);
 		Socket *socket = pPlayerFrom->GetSocket();
 
-		if(socket != nullptr)
+		if(socket != NULL)
 			socket->pushDataToQueue(data, dataSize, false);
 	}
 	else
@@ -132,7 +132,7 @@ void CPlatformNetworkManagerSony::HandleDataReceived(SQRNetworkPlayer *playerFro
 		INetworkPlayer *pPlayerTo = getNetworkPlayer(playerTo);
 		Socket *socket = pPlayerTo->GetSocket();
 		//app.DebugPrintf( "Pushing data into read queue for user \"%ls\"\n", apPlayersTo[dwPlayer]->GetGamertag());
-		if(socket != nullptr)
+		if(socket != NULL)
 			socket->pushDataToQueue(data, dataSize);
 	}
 }
@@ -226,7 +226,7 @@ void CPlatformNetworkManagerSony::HandlePlayerJoined(SQRNetworkPlayer *         
 
 	for( int idx = 0; idx < XUSER_MAX_COUNT; ++idx)
 	{
-		if(playerChangedCallback[idx] != nullptr)
+		if(playerChangedCallback[idx] != NULL)
 			playerChangedCallback[idx]( playerChangedCallbackParam[idx], networkPlayer, false );
 	}
 
@@ -235,7 +235,7 @@ void CPlatformNetworkManagerSony::HandlePlayerJoined(SQRNetworkPlayer *         
 		int localPlayerCount = 0;
 		for(unsigned int idx = 0; idx < XUSER_MAX_COUNT; ++idx)
 		{
-			if( m_pSQRNet->GetLocalPlayerByUserIndex(idx) != nullptr ) ++localPlayerCount;
+			if( m_pSQRNet->GetLocalPlayerByUserIndex(idx) != NULL ) ++localPlayerCount;
 		}
 
 		float appTime = app.getAppTime();
@@ -258,7 +258,7 @@ void CPlatformNetworkManagerSony::HandlePlayerLeaving(SQRNetworkPlayer *pSQRPlay
 	{
 		// Get our wrapper object associated with this player.
 		Socket *socket = networkPlayer->GetSocket();
-		if( socket != nullptr )
+		if( socket != NULL )
 		{
 			// If we are in game then remove this player from the game as well.
 			// We may get here either from the player requesting to exit the game,
@@ -274,19 +274,19 @@ void CPlatformNetworkManagerSony::HandlePlayerLeaving(SQRNetworkPlayer *pSQRPlay
 			// We need this as long as the game server still needs to communicate with the player
 			//delete socket;
 
-			networkPlayer->SetSocket( nullptr );
+			networkPlayer->SetSocket( NULL );
 		}
 
 		if( m_pSQRNet->IsHost() && !m_bHostChanged )
 		{
 			if( isSystemPrimaryPlayer(pSQRPlayer) )
 			{
-				SQRNetworkPlayer *pNewSQRPrimaryPlayer = nullptr;
+				SQRNetworkPlayer *pNewSQRPrimaryPlayer = NULL;
 				for(unsigned int i = 0; i < m_pSQRNet->GetPlayerCount(); ++i )
 				{
 					SQRNetworkPlayer *pSQRPlayer2 = m_pSQRNet->GetPlayerByIndex( i );
 
-					if ( pSQRPlayer2 != nullptr && pSQRPlayer2 != pSQRPlayer && pSQRPlayer2->IsSameSystem( pSQRPlayer ) )
+					if ( pSQRPlayer2 != NULL && pSQRPlayer2 != pSQRPlayer && pSQRPlayer2->IsSameSystem( pSQRPlayer ) )
 					{
 						pNewSQRPrimaryPlayer = pSQRPlayer2;
 						break;
@@ -298,7 +298,7 @@ void CPlatformNetworkManagerSony::HandlePlayerLeaving(SQRNetworkPlayer *pSQRPlay
 					m_machineSQRPrimaryPlayers.erase( it );
 				}
 
-				if( pNewSQRPrimaryPlayer != nullptr )
+				if( pNewSQRPrimaryPlayer != NULL )
 					m_machineSQRPrimaryPlayers.push_back( pNewSQRPrimaryPlayer );
 			}
 
@@ -311,7 +311,7 @@ void CPlatformNetworkManagerSony::HandlePlayerLeaving(SQRNetworkPlayer *pSQRPlay
 
 		for( int idx = 0; idx < XUSER_MAX_COUNT; ++idx)
 		{
-			if(playerChangedCallback[idx] != nullptr)
+			if(playerChangedCallback[idx] != NULL)
 				playerChangedCallback[idx]( playerChangedCallbackParam[idx], networkPlayer, true );
 		}
 
@@ -320,7 +320,7 @@ void CPlatformNetworkManagerSony::HandlePlayerLeaving(SQRNetworkPlayer *pSQRPlay
 			int localPlayerCount = 0;
 			for(unsigned int idx = 0; idx < XUSER_MAX_COUNT; ++idx)
 			{
-				if( m_pSQRNet->GetLocalPlayerByUserIndex(idx) != nullptr ) ++localPlayerCount;
+				if( m_pSQRNet->GetLocalPlayerByUserIndex(idx) != NULL ) ++localPlayerCount;
 			}
 
 			float appTime = app.getAppTime();
@@ -391,7 +391,7 @@ bool CPlatformNetworkManagerSony::Initialise(CGameNetworkManager *pGameNetworkMa
 	if(ProfileManager.IsSignedInPSN(ProfileManager.GetPrimaryPad()))
 	{
 		// we're signed into the PSN, but we won't be online yet, force a sign-in online here
-		m_pSQRNet_Vita->AttemptPSNSignIn(nullptr, nullptr);
+		m_pSQRNet_Vita->AttemptPSNSignIn(NULL, NULL);
 	}
 
 
@@ -402,7 +402,7 @@ bool CPlatformNetworkManagerSony::Initialise(CGameNetworkManager *pGameNetworkMa
 	g_pPlatformNetworkManager = this;
 	for( int i = 0; i < XUSER_MAX_COUNT; i++ )
 	{
-		playerChangedCallback[ i ] = nullptr;
+		playerChangedCallback[ i ] = NULL;
 	}
 
 	m_bLeavingGame = false;
@@ -413,11 +413,11 @@ bool CPlatformNetworkManagerSony::Initialise(CGameNetworkManager *pGameNetworkMa
 	m_bSearchPending = false;
 
 	m_bIsOfflineGame = false;
-	m_pSearchParam = nullptr;
-	m_SessionsUpdatedCallback = nullptr;
+	m_pSearchParam = NULL;
+	m_SessionsUpdatedCallback = NULL;
 
 	m_searchResultsCount = 0;
-	m_pSearchResults = nullptr;
+	m_pSearchResults = NULL;
 
 	m_lastSearchStartTime = 0;
 
@@ -622,11 +622,11 @@ bool CPlatformNetworkManagerSony::RemoveLocalPlayerByUserIndex( int userIndex )
 	SQRNetworkPlayer *pSQRPlayer = m_pSQRNet->GetLocalPlayerByUserIndex(userIndex);
 	INetworkPlayer *pNetworkPlayer = getNetworkPlayer(pSQRPlayer);
 
-	if(pNetworkPlayer != nullptr)
+	if(pNetworkPlayer != NULL)
 	{
 		Socket *socket = pNetworkPlayer->GetSocket();
 
-		if( socket != nullptr )
+		if( socket != NULL )
 		{
 			// We can't remove the player from qnet until we have stopped using it to communicate
 			C4JThread* thread = new C4JThread(&CPlatformNetworkManagerSony::RemovePlayerOnSocketClosedThreadProc, pNetworkPlayer, "RemovePlayerOnSocketClosed");
@@ -702,11 +702,11 @@ bool CPlatformNetworkManagerSony::LeaveGame(bool bMigrateHost)
 	SQRNetworkPlayer *pSQRPlayer = m_pSQRNet->GetLocalPlayerByUserIndex(g_NetworkManager.GetPrimaryPad());
 	INetworkPlayer *pNetworkPlayer = getNetworkPlayer(pSQRPlayer);
 
-	if(pNetworkPlayer != nullptr)
+	if(pNetworkPlayer != NULL)
 	{
 		Socket *socket = pNetworkPlayer->GetSocket();
 
-		if( socket != nullptr )
+		if( socket != NULL )
 		{
 			//printf("Waiting for socket closed event\n");
 			DWORD result = socket->m_socketClosedEvent->WaitForSignal(INFINITE);
@@ -718,13 +718,13 @@ bool CPlatformNetworkManagerSony::LeaveGame(bool bMigrateHost)
 				// 4J Stu - Clear our reference to this socket
 				pSQRPlayer = m_pSQRNet->GetLocalPlayerByUserIndex(g_NetworkManager.GetPrimaryPad());
 				pNetworkPlayer = getNetworkPlayer(pSQRPlayer);
-				pNetworkPlayer->SetSocket( nullptr );
+				pNetworkPlayer->SetSocket( NULL );
 			}
 			delete socket;
 		}
 		else
 		{
-			//printf("Socket is already nullptr\n");
+			//printf("Socket is already NULL\n");
 		}
 	}
 
@@ -878,8 +878,8 @@ void CPlatformNetworkManagerSony::UnRegisterPlayerChangedCallback(int iPad, void
 {
 	if(playerChangedCallbackParam[iPad] == callbackParam)
 	{
-		playerChangedCallback[iPad] = nullptr;
-		playerChangedCallbackParam[iPad] = nullptr;
+		playerChangedCallback[iPad] = NULL;
+		playerChangedCallbackParam[iPad] = NULL;
 	}
 }
 
@@ -917,7 +917,7 @@ bool CPlatformNetworkManagerSony::_RunNetworkGame()
 
 // Note that this does less than the xbox equivalent as we have HandleResyncPlayerRequest that is called by the underlying SQRNetworkManager when players are added/removed etc., so this
 // call is only used to update the game host settings & then do the final push out of the data.
-void CPlatformNetworkManagerSony::UpdateAndSetGameSessionData(INetworkPlayer *pNetworkPlayerLeaving /*= nullptr*/)
+void CPlatformNetworkManagerSony::UpdateAndSetGameSessionData(INetworkPlayer *pNetworkPlayerLeaving /*= NULL*/)
 {
 	if( this->m_bLeavingGame )
 		return;
@@ -934,7 +934,7 @@ void CPlatformNetworkManagerSony::UpdateAndSetGameSessionData(INetworkPlayer *pN
 
 	// If this is called With a pNetworkPlayerLeaving, then the call has ultimately started within SQRNetworkManager::RemoveRemotePlayersAndSync, so we don't need to sync each change
 	// as that function does a sync at the end of all changes.
-	if( pNetworkPlayerLeaving == nullptr )
+	if( pNetworkPlayerLeaving == NULL )
 	{
 		m_pSQRNet->UpdateExternalRoomData();
 	}
@@ -946,14 +946,14 @@ int CPlatformNetworkManagerSony::RemovePlayerOnSocketClosedThreadProc( void* lpP
 
 	Socket *socket = pNetworkPlayer->GetSocket();
 
-	if( socket != nullptr )
+	if( socket != NULL )
 	{
 		//printf("Waiting for socket closed event\n");
 		socket->m_socketClosedEvent->WaitForSignal(INFINITE);
 
 		//printf("Socket closed event has fired\n");
 		// 4J Stu - Clear our reference to this socket
-		pNetworkPlayer->SetSocket( nullptr );
+		pNetworkPlayer->SetSocket( NULL );
 		delete socket;
 	}
 
@@ -1030,7 +1030,7 @@ void CPlatformNetworkManagerSony::SystemFlagReset()
 void CPlatformNetworkManagerSony::SystemFlagSet(INetworkPlayer *pNetworkPlayer, int index)
 {
 	if( ( index < 0 ) || ( index >= m_flagIndexSize ) ) return;
-	if( pNetworkPlayer == nullptr ) return;
+	if( pNetworkPlayer == NULL ) return;
 
 	for( unsigned int i = 0; i < m_playerFlags.size(); i++ )
 	{
@@ -1046,7 +1046,7 @@ void CPlatformNetworkManagerSony::SystemFlagSet(INetworkPlayer *pNetworkPlayer, 
 bool CPlatformNetworkManagerSony::SystemFlagGet(INetworkPlayer *pNetworkPlayer, int index)
 {
 	if( ( index < 0 ) || ( index >= m_flagIndexSize ) ) return false;
-	if( pNetworkPlayer == nullptr )
+	if( pNetworkPlayer == NULL )
 	{
 		return false;
 	}
@@ -1064,8 +1064,8 @@ bool CPlatformNetworkManagerSony::SystemFlagGet(INetworkPlayer *pNetworkPlayer, 
 wstring CPlatformNetworkManagerSony::GatherStats()
 {
 #if 0
-	return L"Queue messages: " + std::to_wstring(((NetworkPlayerXbox *)GetHostPlayer())->GetQNetPlayer()->GetSendQueueSize( nullptr, QNET_GETSENDQUEUESIZE_MESSAGES ) )
-		+ L" Queue bytes: " + std::to_wstring( ((NetworkPlayerXbox *)GetHostPlayer())->GetQNetPlayer()->GetSendQueueSize( nullptr, QNET_GETSENDQUEUESIZE_BYTES  ) );
+	return L"Queue messages: " + std::to_wstring(((NetworkPlayerXbox *)GetHostPlayer())->GetQNetPlayer()->GetSendQueueSize( NULL, QNET_GETSENDQUEUESIZE_MESSAGES ) )
+		+ L" Queue bytes: " + std::to_wstring( ((NetworkPlayerXbox *)GetHostPlayer())->GetQNetPlayer()->GetSendQueueSize( NULL, QNET_GETSENDQUEUESIZE_BYTES  ) );
 #else
 	return L"";
 #endif
@@ -1111,7 +1111,7 @@ void CPlatformNetworkManagerSony::TickSearch()
 			}
 			m_bSearchPending = false;
 
-			if( m_SessionsUpdatedCallback != nullptr ) m_SessionsUpdatedCallback(m_pSearchParam);
+			if( m_SessionsUpdatedCallback != NULL ) m_SessionsUpdatedCallback(m_pSearchParam);
 		}
 	}
 	else
@@ -1126,7 +1126,7 @@ void CPlatformNetworkManagerSony::TickSearch()
 			if( usingAdhocMode())
 				searchDelay = 5000;
 #endif
-			if( m_SessionsUpdatedCallback != nullptr && (m_lastSearchStartTime + searchDelay) < GetTickCount() )
+			if( m_SessionsUpdatedCallback != NULL && (m_lastSearchStartTime + searchDelay) < GetTickCount() )
 			{
 				if( m_pSQRNet->FriendRoomManagerSearch() )
 				{
@@ -1189,7 +1189,7 @@ bool CPlatformNetworkManagerSony::GetGameSessionInfo(int iPad, SessionID session
 			if(memcmp( &pSearchResult->info.sessionID, &sessionId, sizeof(SessionID) ) != 0) continue;
 
 			bool foundSession = false;
-			FriendSessionInfo *sessionInfo = nullptr;
+			FriendSessionInfo *sessionInfo = NULL;
 			auto itFriendSession = friendsSessions[iPad].begin();
 			for(itFriendSession = friendsSessions[iPad].begin(); itFriendSession < friendsSessions[iPad].end(); ++itFriendSession)
 			{
@@ -1231,7 +1231,7 @@ bool CPlatformNetworkManagerSony::GetGameSessionInfo(int iPad, SessionID session
 					sessionInfo->data.isJoinable)
 				{
 					foundSessionInfo->data = sessionInfo->data;
-					if(foundSessionInfo->displayLabel != nullptr) delete [] foundSessionInfo->displayLabel;
+					if(foundSessionInfo->displayLabel != NULL) delete [] foundSessionInfo->displayLabel;
 					foundSessionInfo->displayLabel = new wchar_t[100];
 					memcpy(foundSessionInfo->displayLabel, sessionInfo->displayLabel, 100 * sizeof(wchar_t) );
 					foundSessionInfo->displayLabelLength = sessionInfo->displayLabelLength;
@@ -1267,7 +1267,7 @@ void CPlatformNetworkManagerSony::ForceFriendsSessionRefresh()
 	m_lastSearchStartTime = 0;
 	m_searchResultsCount = 0;
 	delete m_pSearchResults;
-	m_pSearchResults = nullptr;
+	m_pSearchResults = NULL;
 }
 
 INetworkPlayer *CPlatformNetworkManagerSony::addNetworkPlayer(SQRNetworkPlayer *pSQRPlayer)
@@ -1293,7 +1293,7 @@ void CPlatformNetworkManagerSony::removeNetworkPlayer(SQRNetworkPlayer *pSQRPlay
 
 INetworkPlayer *CPlatformNetworkManagerSony::getNetworkPlayer(SQRNetworkPlayer *pSQRPlayer)
 {
-	return pSQRPlayer ? (INetworkPlayer *)(pSQRPlayer->GetCustomDataValue()) : nullptr;
+	return pSQRPlayer ? (INetworkPlayer *)(pSQRPlayer->GetCustomDataValue()) : NULL;
 }
 
 

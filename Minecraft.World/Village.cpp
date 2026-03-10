@@ -25,7 +25,7 @@ Village::Village()
 	golemCount = 0;
 	noBreedTimer = 0;
 
-	level = nullptr;
+	level = NULL;
 }
 
 Village::Village(Level *level)
@@ -69,9 +69,9 @@ void Village::tick(int tick)
 	if (golemCount < idealGolemCount && doorInfos.size() > 20 && level->random->nextInt(7000) == 0)
 	{
 		Vec3 *spawnPos = findRandomSpawnPos(center->x, center->y, center->z, 2, 4, 2);
-		if (spawnPos != nullptr)
+		if (spawnPos != NULL)
 		{
-			shared_ptr<VillagerGolem> vg = std::make_shared<VillagerGolem>(level);
+			shared_ptr<VillagerGolem> vg = shared_ptr<VillagerGolem>( new VillagerGolem(level) );
 			vg->setPos(spawnPos->x, spawnPos->y, spawnPos->z);
 			level->addEntity(vg);
 			++golemCount;
@@ -103,7 +103,7 @@ Vec3 *Village::findRandomSpawnPos(int x, int y, int z, int sx, int sy, int sz)
 		if (!isInside(xx, yy, zz)) continue;
 		if (canSpawnAt(xx, yy, zz, sx, sy, sz)) return Vec3::newTemp(xx, yy, zz);
 	}
-	return nullptr;
+	return NULL;
 }
 
 bool Village::canSpawnAt(int x, int y, int z, int sx, int sy, int sz)
@@ -215,7 +215,7 @@ shared_ptr<DoorInfo>Village::getBestDoorInfo(int x, int y, int z)
 
 bool Village::hasDoorInfo(int x, int y, int z)
 {
-	return getDoorInfo(x, y, z) != nullptr;
+	return getDoorInfo(x, y, z) != NULL;
 }
 
 shared_ptr<DoorInfo> Village::getDoorInfo(int x, int y, int z)
@@ -260,7 +260,7 @@ void Village::addAggressor(shared_ptr<LivingEntity> mob)
 shared_ptr<LivingEntity> Village::getClosestAggressor(shared_ptr<LivingEntity> from)
 {
 	double closestSqr = Double::MAX_VALUE;
-	Aggressor *closest = nullptr;
+	Aggressor *closest = NULL;
 	for(auto& a : aggressors)
 	{
 		double distSqr = a->mob->distanceToSqr(from);
@@ -268,7 +268,7 @@ shared_ptr<LivingEntity> Village::getClosestAggressor(shared_ptr<LivingEntity> f
 		closest = a;
 		closestSqr = distSqr;
 	}
-	return closest != nullptr ? closest->mob : nullptr;
+	return closest != NULL ? closest->mob : nullptr;
 }
 
 shared_ptr<Player> Village::getClosestBadStandingPlayer(shared_ptr<LivingEntity> from)
@@ -282,7 +282,7 @@ shared_ptr<Player> Village::getClosestBadStandingPlayer(shared_ptr<LivingEntity>
 		if (isVeryBadStanding(player))
 		{
 			shared_ptr<Player> mob = level->getPlayerByName(player);
-			if (mob != nullptr)
+			if (mob != NULL)
 			{
 				double distSqr = mob->distanceToSqr(from);
 				if (distSqr > closestSqr) continue;
@@ -422,7 +422,7 @@ void Village::readAdditionalSaveData(CompoundTag *tag)
 	{
 		CompoundTag *dTag = doorTags->get(i);
 
-		shared_ptr<DoorInfo> door = std::make_shared<DoorInfo>(dTag->getInt(L"X"), dTag->getInt(L"Y"), dTag->getInt(L"Z"), dTag->getInt(L"IDX"), dTag->getInt(L"IDZ"), dTag->getInt(L"TS"));
+		shared_ptr<DoorInfo> door = shared_ptr<DoorInfo>(new DoorInfo(dTag->getInt(L"X"), dTag->getInt(L"Y"), dTag->getInt(L"Z"), dTag->getInt(L"IDX"), dTag->getInt(L"IDZ"), dTag->getInt(L"TS")));
 		doorInfos.push_back(door);
 	}
 

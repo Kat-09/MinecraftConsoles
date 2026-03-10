@@ -32,7 +32,7 @@ void SetHealthPacket::read(DataInputStream *dis) //throws IOException
 	saturation = dis->readFloat();
 	//        exhaustion = dis.readFloat();
 
-	damageSource = static_cast<ETelemetryChallenges>(dis->readByte());
+	damageSource = (ETelemetryChallenges)dis->readByte();
 }
 
 void SetHealthPacket::write(DataOutputStream *dos) //throws IOException 

@@ -39,5 +39,5 @@ public:
 private:
 	SQRNetworkPlayer *m_sqrPlayer;
 	Socket *m_pSocket;
-	int64_t m_lastChunkPacketTime;
+	__int64 m_lastChunkPacketTime;
 };

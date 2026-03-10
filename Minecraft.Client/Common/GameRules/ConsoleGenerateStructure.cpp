@@ -10,7 +10,7 @@
 ConsoleGenerateStructure::ConsoleGenerateStructure() : StructurePiece(0)
 {
 	m_x = m_y = m_z = 0;
-	boundingBox = nullptr;
+	boundingBox = NULL;
 	orientation = Direction::NORTH;
 	m_dimension = 0;
 }
@@ -25,26 +25,26 @@ void ConsoleGenerateStructure::getChildren(vector<GameRuleDefinition *> *childre
 
 GameRuleDefinition *ConsoleGenerateStructure::addChild(ConsoleGameRules::EGameRuleType ruleType)
 {
-	GameRuleDefinition *rule = nullptr;
+	GameRuleDefinition *rule = NULL;
 	if(ruleType == ConsoleGameRules::eGameRuleType_GenerateBox)
 	{
 		rule = new XboxStructureActionGenerateBox();
-		m_actions.push_back(static_cast<XboxStructureActionGenerateBox *>(rule));
+		m_actions.push_back((XboxStructureActionGenerateBox *)rule);
 	}
 	else if(ruleType == ConsoleGameRules::eGameRuleType_PlaceBlock)
 	{
 		rule = new XboxStructureActionPlaceBlock();
-		m_actions.push_back(static_cast<XboxStructureActionPlaceBlock *>(rule));
+		m_actions.push_back((XboxStructureActionPlaceBlock *)rule);
 	}
 	else if(ruleType == ConsoleGameRules::eGameRuleType_PlaceContainer)
 	{
 		rule = new XboxStructureActionPlaceContainer();
-		m_actions.push_back(static_cast<XboxStructureActionPlaceContainer *>(rule));
+		m_actions.push_back((XboxStructureActionPlaceContainer *)rule);
 	}
 	else if(ruleType == ConsoleGameRules::eGameRuleType_PlaceSpawner)
 	{
 		rule = new XboxStructureActionPlaceSpawner();
-		m_actions.push_back(static_cast<XboxStructureActionPlaceSpawner *>(rule));
+		m_actions.push_back((XboxStructureActionPlaceSpawner *)rule);
 	}
 	else
 	{
@@ -112,7 +112,7 @@ void ConsoleGenerateStructure::addAttribute(const wstring &attributeName, const 
 
 BoundingBox* ConsoleGenerateStructure::getBoundingBox()
 {
-	if(boundingBox == nullptr)
+	if(boundingBox == NULL)
 	{
 		// Find the max bounds
 		int maxX, maxY, maxZ;
@@ -139,25 +139,25 @@ bool ConsoleGenerateStructure::postProcess(Level *level, Random *random, Boundin
 		{
 		case ConsoleGameRules::eGameRuleType_GenerateBox:
 			{
-				XboxStructureActionGenerateBox *genBox = static_cast<XboxStructureActionGenerateBox *>(action);
+				XboxStructureActionGenerateBox *genBox = (XboxStructureActionGenerateBox *)action;
 				genBox->generateBoxInLevel(this,level,chunkBB);
 			}
 			break;
 		case ConsoleGameRules::eGameRuleType_PlaceBlock:
 			{
-				XboxStructureActionPlaceBlock *pPlaceBlock = static_cast<XboxStructureActionPlaceBlock *>(action);
+				XboxStructureActionPlaceBlock *pPlaceBlock = (XboxStructureActionPlaceBlock *)action;
 				pPlaceBlock->placeBlockInLevel(this,level,chunkBB);
 			}
 			break;
 		case ConsoleGameRules::eGameRuleType_PlaceContainer:
 			{
-				XboxStructureActionPlaceContainer *pPlaceContainer = static_cast<XboxStructureActionPlaceContainer *>(action);
+				XboxStructureActionPlaceContainer *pPlaceContainer = (XboxStructureActionPlaceContainer *)action;
 				pPlaceContainer->placeContainerInLevel(this,level,chunkBB);
 			}
 			break;
 		case ConsoleGameRules::eGameRuleType_PlaceSpawner:
 			{
-				XboxStructureActionPlaceSpawner *pPlaceSpawner = static_cast<XboxStructureActionPlaceSpawner *>(action);
+				XboxStructureActionPlaceSpawner *pPlaceSpawner = (XboxStructureActionPlaceSpawner *)action;
 				pPlaceSpawner->placeSpawnerInLevel(this,level,chunkBB);
 			}
 			break;

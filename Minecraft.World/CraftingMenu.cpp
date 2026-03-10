@@ -19,8 +19,8 @@ const int CraftingMenu::USE_ROW_SLOT_END = CraftingMenu::USE_ROW_SLOT_START + 9;
 
 CraftingMenu::CraftingMenu(shared_ptr<Inventory> inventory, Level *level, int xt, int yt, int zt) : AbstractContainerMenu()
 {
-	craftSlots = std::make_shared<CraftingContainer>(this, 3, 3);
-	resultSlots = std::make_shared<ResultContainer>();
+	craftSlots = shared_ptr<CraftingContainer>( new CraftingContainer(this, 3, 3) );
+	resultSlots = shared_ptr<ResultContainer>( new ResultContainer() );
 
 	this->level = level;
 	x = xt;
@@ -64,7 +64,7 @@ void CraftingMenu::removed(shared_ptr<Player> player)
 	for (int i = 0; i < 9; i++)
 	{
 		shared_ptr<ItemInstance> item = craftSlots->removeItemNoUpdate(i);
-		if (item != nullptr)
+		if (item != NULL)
 		{
 			player->drop(item);
 		}
@@ -82,7 +82,7 @@ shared_ptr<ItemInstance> CraftingMenu::quickMoveStack(shared_ptr<Player> player,
 {
 	shared_ptr<ItemInstance> clicked = nullptr;
 	Slot *slot = slots.at(slotIndex);
-	if (slot != nullptr && slot->hasItem())
+	if (slot != NULL && slot->hasItem())
 	{
 		shared_ptr<ItemInstance> stack = slot->getItem();
 		clicked = stack->copy();

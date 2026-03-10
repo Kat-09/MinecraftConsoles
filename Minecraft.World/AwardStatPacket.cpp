@@ -8,7 +8,7 @@
 
 AwardStatPacket::AwardStatPacket()
 {
-	this->m_paramData.data = nullptr;
+	this->m_paramData.data = NULL;
 	this->m_paramData.length = 0;
 }
 
@@ -28,17 +28,17 @@ AwardStatPacket::AwardStatPacket(int statId, byteArray paramData)
 
 AwardStatPacket::~AwardStatPacket()
 {
-	if (m_paramData.data != nullptr) 
+	if (m_paramData.data != NULL) 
 	{
 		delete [] m_paramData.data;
-		m_paramData.data = nullptr;
+		m_paramData.data = NULL;
 	}
 }
 
 void AwardStatPacket::handle(PacketListener *listener) 
 {
 	listener->handleAwardStat(shared_from_this());
-	m_paramData.data = nullptr;
+	m_paramData.data = NULL;
 }
 
 void AwardStatPacket::read(DataInputStream *dis) //throws IOException 

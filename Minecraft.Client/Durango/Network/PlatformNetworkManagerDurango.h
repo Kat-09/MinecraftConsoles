@@ -87,7 +87,7 @@ private:
 	bool m_hostGameSessionIsJoinable;
 	CGameNetworkManager *m_pGameNetworkManager;
 public:
-	virtual void UpdateAndSetGameSessionData(INetworkPlayer *pNetworkPlayerLeaving = nullptr);
+	virtual void UpdateAndSetGameSessionData(INetworkPlayer *pNetworkPlayerLeaving = NULL);
 
 private:
 	// TODO 4J Stu - Do we need to be able to have more than one of these?

@@ -19,7 +19,7 @@ DisconnectPacket::DisconnectPacket(eDisconnectReason reason)
 
 void DisconnectPacket::read(DataInputStream *dis) //throws IOException
 {
-	reason = static_cast<eDisconnectReason>(dis->readInt());
+	reason = (eDisconnectReason)dis->readInt();
 }
 
 void DisconnectPacket::write(DataOutputStream *dos) //throws IOException

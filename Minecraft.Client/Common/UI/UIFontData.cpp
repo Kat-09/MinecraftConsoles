@@ -145,9 +145,9 @@ CFontData::CFontData()
 {
 	m_unicodeMap = unordered_map<unsigned int, unsigned short>();
 
-	m_sFontData = nullptr;
-	m_kerningTable = nullptr;
-	m_pbRawImage = nullptr;
+	m_sFontData = NULL;
+	m_kerningTable = NULL;
+	m_pbRawImage = NULL;
 }
 
 CFontData::CFontData(SFontData &sFontData, int *pbRawImage)

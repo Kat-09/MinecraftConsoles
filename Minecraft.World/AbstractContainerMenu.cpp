@@ -29,7 +29,7 @@ AbstractContainerMenu::~AbstractContainerMenu()
 
 Slot *AbstractContainerMenu::addSlot(Slot *slot)
 {
-	slot->index = static_cast<int>(slots.size());
+	slot->index = (int)slots.size();
 	slots.push_back(slot);
 	lastSlots.push_back(nullptr);
 	return slot;
@@ -80,7 +80,7 @@ void AbstractContainerMenu::broadcastChanges()
 		{
 			// 4J Stu - Added 0 count check. There is a bug in the Java with anvils that means this broadcast
 			// happens while we are in the middle of quickmoving, and before the slot properly gets set to null
-			expected = (current == nullptr || current->count == 0) ? nullptr : current->copy();
+			expected = (current == NULL || current->count == 0) ? nullptr : current->copy();
 			lastSlots[i] = expected;
 			m_bNeedsRendered = true;
 
@@ -103,7 +103,7 @@ bool AbstractContainerMenu::needsRendered()
 		shared_ptr<ItemInstance> expected = lastSlots.at(i);
 		if (!ItemInstance::matches(expected, current))
 		{
-			expected = current == nullptr ? nullptr : current->copy();
+			expected = current == NULL ? nullptr : current->copy();
 			lastSlots[i] = expected;
 			needsRendered = true;
 		}
@@ -126,26 +126,18 @@ Slot *AbstractContainerMenu::getSlotFor(shared_ptr<Container> c, int index)
 			return slot;
 		}
 	}
-	return nullptr;
+	return NULL;
 }
 
 Slot *AbstractContainerMenu::getSlot(int index)
 {
-	if (index < 0 || index >= static_cast<int>(slots.size()))
-	{
-		return nullptr;
-	}
 	return slots.at(index);
 }
 
 shared_ptr<ItemInstance> AbstractContainerMenu::quickMoveStack(shared_ptr<Player> player, int slotIndex)
 {
-	if (slotIndex < 0 || slotIndex >= static_cast<int>(slots.size()))
-	{
-		return nullptr;
-	}
 	Slot *slot = slots.at(slotIndex);
-	if (slot != nullptr)
+	if (slot != NULL)
 	{
 		return slot->getItem();
 	}
@@ -166,7 +158,7 @@ shared_ptr<ItemInstance> AbstractContainerMenu::clicked(int slotIndex, int butto
 		{
 			resetQuickCraft();
 		}
-		else if (inventory->getCarried() == nullptr)
+		else if (inventory->getCarried() == NULL)
 		{
 			resetQuickCraft();
 		}
@@ -188,7 +180,7 @@ shared_ptr<ItemInstance> AbstractContainerMenu::clicked(int slotIndex, int butto
 		{
 			Slot *slot = slots.at(slotIndex);
 
-			if (slot != nullptr && canItemQuickReplace(slot, inventory->getCarried(), true) && slot->mayPlace(inventory->getCarried()) && inventory->getCarried()->count > quickcraftSlots.size() && canDragTo(slot))
+			if (slot != NULL && canItemQuickReplace(slot, inventory->getCarried(), true) && slot->mayPlace(inventory->getCarried()) && inventory->getCarried()->count > quickcraftSlots.size() && canDragTo(slot))
 			{
 				quickcraftSlots.insert(slot);
 			}
@@ -239,7 +231,7 @@ shared_ptr<ItemInstance> AbstractContainerMenu::clicked(int slotIndex, int butto
 	{
 		if (slotIndex == SLOT_CLICKED_OUTSIDE)
 		{
-			if (inventory->getCarried() != nullptr)
+			if (inventory->getCarried() != NULL)
 			{
 				if (slotIndex == SLOT_CLICKED_OUTSIDE)
 				{
@@ -259,12 +251,12 @@ shared_ptr<ItemInstance> AbstractContainerMenu::clicked(int slotIndex, int butto
 		}
 		else if (clickType == CLICK_QUICK_MOVE)
 		{
-			if (slotIndex < 0 || slotIndex >= static_cast<int>(slots.size())) return nullptr;
+			if (slotIndex < 0) return nullptr;
 			Slot *slot = slots.at(slotIndex);
-			if(slot != nullptr && slot->mayPickup(player))
+			if(slot != NULL && slot->mayPickup(player))
 			{
 				shared_ptr<ItemInstance> piiClicked = quickMoveStack(player, slotIndex);
-				if (piiClicked != nullptr)
+				if (piiClicked != NULL)
 				{
 					int oldType = piiClicked->id;
 
@@ -277,14 +269,14 @@ shared_ptr<ItemInstance> AbstractContainerMenu::clicked(int slotIndex, int butto
 					// 4J Stu - Remove the reference to this before we start a recursive loop
 					piiClicked = nullptr;
 
-					if (slot != nullptr)
+					if (slot != NULL)
 					{
-						if (slot->getItem() != nullptr && slot->getItem()->id == oldType)
+						if (slot->getItem() != NULL && slot->getItem()->id == oldType)
 						{
 							if(looped)
 							{
 								// Return a non-null value to indicate that we want to loop more
-								clickedEntity = std::make_shared<ItemInstance>(0, 1, 0);
+								clickedEntity = shared_ptr<ItemInstance>(new ItemInstance(0,1,0));
 							}
 							else
 							{
@@ -301,19 +293,19 @@ shared_ptr<ItemInstance> AbstractContainerMenu::clicked(int slotIndex, int butto
 			if (slotIndex < 0) return nullptr;
 
 			Slot *slot = slots.at(slotIndex);
-			if (slot != nullptr)
+			if (slot != NULL)
 			{
 				shared_ptr<ItemInstance> clicked = slot->getItem();
 				shared_ptr<ItemInstance> carried = inventory->getCarried();
 
-				if (clicked != nullptr)
+				if (clicked != NULL)
 				{
 					clickedEntity = clicked->copy();
 				}
 
-				if (clicked == nullptr)
+				if (clicked == NULL)
 				{
-					if (carried != nullptr && slot->mayPlace(carried))
+					if (carried != NULL && slot->mayPlace(carried))
 					{
 						int c = buttonNum == 0 ? carried->count : 1;
 						if (c > slot->getMaxStackSize())
@@ -334,7 +326,7 @@ shared_ptr<ItemInstance> AbstractContainerMenu::clicked(int slotIndex, int butto
 				else if (buttonNum == 1 && mayCombine(slot, carried))
 				{
 					shared_ptr<ItemInstance> combined = slot->combine(carried);
-					if(combined != nullptr)
+					if(combined != NULL)
 					{
 						slot->set(combined);
 						if(!player->abilities.instabuild) carried->remove(1);
@@ -346,7 +338,7 @@ shared_ptr<ItemInstance> AbstractContainerMenu::clicked(int slotIndex, int butto
 				}
 				else if (slot->mayPickup(player))
 				{
-					if (carried == nullptr)
+					if (carried == NULL)
 					{
 						// pick up to empty hand
 						int c = buttonNum == 0 ? clicked->count : (clicked->count + 1) / 2;
@@ -416,12 +408,11 @@ shared_ptr<ItemInstance> AbstractContainerMenu::clicked(int slotIndex, int butto
 	}
 	else if (clickType == CLICK_SWAP && buttonNum >= 0 && buttonNum < 9)
 	{
-		if (slotIndex < 0 || slotIndex >= static_cast<int>(slots.size())) return nullptr;
 		Slot *slot = slots.at(slotIndex);
 		if (slot->mayPickup(player))
 		{
 			shared_ptr<ItemInstance> current = inventory->getItem(buttonNum);
-			bool canMove = current == nullptr || (slot->container == inventory && slot->mayPlace(current));
+			bool canMove = current == NULL || (slot->container == inventory && slot->mayPlace(current));
 			int freeSlot = -1;
 
 			if (!canMove)
@@ -435,7 +426,7 @@ shared_ptr<ItemInstance> AbstractContainerMenu::clicked(int slotIndex, int butto
 				shared_ptr<ItemInstance> taking = slot->getItem();
 				inventory->setItem(buttonNum, taking);
 
-				if ((slot->container == inventory && slot->mayPlace(current)) || current == nullptr)
+				if ((slot->container == inventory && slot->mayPlace(current)) || current == NULL)
 				{
 					slot->remove(taking->count);
 					slot->set(current);
@@ -449,50 +440,47 @@ shared_ptr<ItemInstance> AbstractContainerMenu::clicked(int slotIndex, int butto
 					slot->onTake(player, taking);
 				}
 			}
-			else if (!slot->hasItem() && current != nullptr && slot->mayPlace(current))
+			else if (!slot->hasItem() && current != NULL && slot->mayPlace(current))
 			{
 				inventory->setItem(buttonNum, nullptr);
 				slot->set(current);
 			}
 		}
 	}
-	else if (clickType == CLICK_CLONE && player->abilities.instabuild && inventory->getCarried() == nullptr && slotIndex >= 0)
+	else if (clickType == CLICK_CLONE && player->abilities.instabuild && inventory->getCarried() == NULL && slotIndex >= 0)
 	{
-		if (slotIndex >= static_cast<int>(slots.size())) return nullptr;
 		Slot *slot = slots.at(slotIndex);
-		if (slot != nullptr && slot->hasItem())
+		if (slot != NULL && slot->hasItem())
 		{
 			shared_ptr<ItemInstance> copy = slot->getItem()->copy();
 			copy->count = copy->getMaxStackSize();
 			inventory->setCarried(copy);
 		}
 	}
-	else if (clickType == CLICK_THROW && inventory->getCarried() == nullptr && slotIndex >= 0)
+	else if (clickType == CLICK_THROW && inventory->getCarried() == NULL && slotIndex >= 0)
 	{
-		if (slotIndex >= static_cast<int>(slots.size())) return nullptr;
 		Slot *slot = slots.at(slotIndex);
-		if (slot != nullptr && slot->hasItem() && slot->mayPickup(player))
+		if (slot != NULL && slot->hasItem() && slot->mayPickup(player))
 		{
 			shared_ptr<ItemInstance> item = slot->remove(buttonNum == 0 ? 1 : slot->getItem()->count);
 			slot->onTake(player, item);
 			player->drop(item);
 		}
 	}
-		else if (clickType == CLICK_PICKUP_ALL && slotIndex >= 0)
+	else if (clickType == CLICK_PICKUP_ALL && slotIndex >= 0)
 	{
-		if (slotIndex >= static_cast<int>(slots.size())) return nullptr;
 		Slot *slot = slots.at(slotIndex);
 		shared_ptr<ItemInstance> carried = inventory->getCarried();
 
-		if (carried != nullptr && (slot == nullptr || !slot->hasItem() || !slot->mayPickup(player)))
+		if (carried != NULL && (slot == NULL || !slot->hasItem() || !slot->mayPickup(player)))
 		{
-			int start = buttonNum == 0 ? 0 : static_cast<int>(slots.size()) - 1;
+			int start = buttonNum == 0 ? 0 : slots.size() - 1;
 			int step = buttonNum == 0 ? 1 : -1;
 
 			for (int pass = 0; pass < 2; pass++ )
 			{
 				// In the first pass, we only get partial stacks.
-				for (size_t i = start; i >= 0 && i < static_cast<int>(slots.size()) && carried->count < carried->getMaxStackSize(); i += step)
+				for (int i = start; i >= 0 && i < slots.size() && carried->count < carried->getMaxStackSize(); i += step)
 				{
 					Slot *target = slots.at(i);
 
@@ -526,7 +514,7 @@ bool AbstractContainerMenu::canTakeItemForPickAll(shared_ptr<ItemInstance> carri
 // 4J Stu - Brought forward from 1.2 to fix infinite recursion bug in creative
 void AbstractContainerMenu::loopClick(int slotIndex, int buttonNum, bool quickKeyHeld, shared_ptr<Player> player)
 {
-	while( clicked(slotIndex, buttonNum, CLICK_QUICK_MOVE, player, true) != nullptr)
+	while( clicked(slotIndex, buttonNum, CLICK_QUICK_MOVE, player, true) != NULL)
 	{
 	}
 }
@@ -539,7 +527,7 @@ bool AbstractContainerMenu::mayCombine(Slot *slot, shared_ptr<ItemInstance> item
 void AbstractContainerMenu::removed(shared_ptr<Player> player)
 {
 	shared_ptr<Inventory> inventory = player->inventory;
-	if (inventory->getCarried() != nullptr)
+	if (inventory->getCarried() != NULL)
 	{
 		player->drop(inventory->getCarried());
 		inventory->setCarried(nullptr);
@@ -617,7 +605,7 @@ bool AbstractContainerMenu::moveItemStackTo(shared_ptr<ItemInstance> itemStack, 
 
 			Slot *slot = slots.at(destSlot);
 			shared_ptr<ItemInstance> target = slot->getItem();
-			if (target != nullptr && target->id == itemStack->id && (!itemStack->isStackedByData() || itemStack->getAuxValue() == target->getAuxValue())
+			if (target != NULL && target->id == itemStack->id && (!itemStack->isStackedByData() || itemStack->getAuxValue() == target->getAuxValue())
 				&& ItemInstance::tagMatches(itemStack, target) )
 			{
 				int totalStack = target->count + itemStack->count;
@@ -664,7 +652,7 @@ bool AbstractContainerMenu::moveItemStackTo(shared_ptr<ItemInstance> itemStack, 
 			Slot *slot = slots.at(destSlot);
 			shared_ptr<ItemInstance> target = slot->getItem();
 
-			if (target == nullptr)
+			if (target == NULL)
 			{
 				slot->set(itemStack->copy());
 				slot->setChanged();
@@ -719,9 +707,9 @@ void AbstractContainerMenu::resetQuickCraft()
 
 bool AbstractContainerMenu::canItemQuickReplace(Slot *slot, shared_ptr<ItemInstance> item, bool ignoreSize)
 {
-	bool canReplace = slot == nullptr || !slot->hasItem();
+	bool canReplace = slot == NULL || !slot->hasItem();
 
-	if (slot != nullptr && slot->hasItem() && item != nullptr && item->sameItem(slot->getItem()) && ItemInstance::tagMatches(slot->getItem(), item))
+	if (slot != NULL && slot->hasItem() && item != NULL && item->sameItem(slot->getItem()) && ItemInstance::tagMatches(slot->getItem(), item))
 	{
 		canReplace |= slot->getItem()->count + (ignoreSize ? 0 : item->count) <= item->getMaxStackSize();
 	}
@@ -734,7 +722,7 @@ void AbstractContainerMenu::getQuickCraftSlotCount(unordered_set<Slot *> *quickC
 	switch (quickCraftingType)
 	{
 	case QUICKCRAFT_TYPE_CHARITABLE:
-		item->count = Mth::floor(item->count / static_cast<float>(quickCraftSlots->size()));
+		item->count = Mth::floor(item->count / (float) quickCraftSlots->size());
 		break;
 	case QUICKCRAFT_TYPE_GREEDY:
 		item->count = 1;
@@ -751,7 +739,7 @@ bool AbstractContainerMenu::canDragTo(Slot *slot)
 
 int AbstractContainerMenu::getRedstoneSignalFromContainer(shared_ptr<Container> container)
 {
-	if (container == nullptr) return 0;
+	if (container == NULL) return 0;
 	int count = 0;
 	float totalPct = 0;
 
@@ -759,9 +747,9 @@ int AbstractContainerMenu::getRedstoneSignalFromContainer(shared_ptr<Container> 
 	{
 		shared_ptr<ItemInstance> item = container->getItem(i);
 
-		if (item != nullptr)
+		if (item != NULL)
 		{
-			totalPct += item->count / static_cast<float>(min(container->getMaxStackSize(), item->getMaxStackSize()));
+			totalPct += item->count / (float) min(container->getMaxStackSize(), item->getMaxStackSize());
 			count++;
 		}
 	}

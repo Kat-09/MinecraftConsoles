@@ -18,7 +18,7 @@ Icon *BottleItem::getIcon(int auxValue)
 shared_ptr<ItemInstance> BottleItem::use(shared_ptr<ItemInstance> itemInstance, Level *level, shared_ptr<Player> player)
 {
 	HitResult *hr = getPlayerPOVHitResult(level, player, true);
-	if (hr == nullptr) return itemInstance;
+	if (hr == NULL) return itemInstance;
 
 	if (hr->type == HitResult::TILE)
 	{
@@ -40,13 +40,13 @@ shared_ptr<ItemInstance> BottleItem::use(shared_ptr<ItemInstance> itemInstance, 
 			itemInstance->count--;
 			if (itemInstance->count <= 0)
 			{
-				return std::make_shared<ItemInstance>(static_cast<Item *>(Item::potion));
+				return shared_ptr<ItemInstance>( new ItemInstance( (Item *)Item::potion) );
 			}
 			else
 			{
-				if (!player->inventory->add(std::make_shared<ItemInstance>(static_cast<Item *>(Item::potion))))
+				if (!player->inventory->add(shared_ptr<ItemInstance>( new ItemInstance( (Item *)Item::potion) )))
 				{
-					player->drop(std::make_shared<ItemInstance>(Item::potion_Id, 1, 0));
+					player->drop( shared_ptr<ItemInstance>( new ItemInstance(Item::potion_Id, 1, 0) ));
 				}
 			}
 		}
@@ -63,7 +63,7 @@ shared_ptr<ItemInstance> BottleItem::use(shared_ptr<ItemInstance> itemInstance, 
 bool BottleItem::TestUse(shared_ptr<ItemInstance> itemInstance, Level *level, shared_ptr<Player> player)
 {
 	HitResult *hr = getPlayerPOVHitResult(level, player, true);
-	if (hr == nullptr) return false;
+	if (hr == NULL) return false;
 
 	if (hr->type == HitResult::TILE)
 	{

@@ -6,6 +6,7 @@
 #include "..\..\ClientConnection.h"
 #include "..\..\..\Minecraft.World\net.minecraft.network.packet.h"
 
+
 #define CHECKBOXES_TIMER_ID 0
 #define CHECKBOXES_TIMER_TIME 100
 
@@ -16,21 +17,21 @@ UIScene_InGamePlayerOptionsMenu::UIScene_InGamePlayerOptionsMenu(int iPad, void 
 
 	m_bShouldNavBack = false;
 
-	InGamePlayerOptionsInitData *initData = static_cast<InGamePlayerOptionsInitData *>(_initData);
+	InGamePlayerOptionsInitData *initData = (InGamePlayerOptionsInitData *)_initData;
 	m_networkSmallId = initData->networkSmallId;
 	m_playerPrivileges = initData->playerPrivileges;
 
 	INetworkPlayer *localPlayer = g_NetworkManager.GetLocalPlayerByUserIndex( m_iPad );
 	INetworkPlayer *editingPlayer = g_NetworkManager.GetPlayerBySmallId(m_networkSmallId);
 
-	if(editingPlayer != nullptr)
+	if(editingPlayer != NULL)
 	{
 		m_labelGamertag.init(editingPlayer->GetDisplayName());
 	}
 
 	bool trustPlayers = app.GetGameHostOption(eGameHostOption_TrustPlayers) != 0;
 	bool cheats = app.GetGameHostOption(eGameHostOption_CheatsEnabled) != 0;
-	m_editingSelf = (localPlayer != nullptr && localPlayer == editingPlayer);
+	m_editingSelf = (localPlayer != NULL && localPlayer == editingPlayer);
 
 	if( m_editingSelf || trustPlayers || editingPlayer->IsHost())
 	{
@@ -60,7 +61,7 @@ UIScene_InGamePlayerOptionsMenu::UIScene_InGamePlayerOptionsMenu(int iPad, void 
 
 	if(m_editingSelf)
 	{
-#ifndef _DEBUG // (defined(_CONTENT_PACKAGE) || defined(_FINAL_BUILD) && !defined(_DEBUG_MENUS_ENABLED))
+#if (defined(_CONTENT_PACKAGE) || defined(_FINAL_BUILD) && !defined(_DEBUG_MENUS_ENABLED))
 		removeControl( &m_checkboxes[eControl_Op], true );
 #else
 		m_checkboxes[eControl_Op].init(L"DEBUG: Creative",eControl_Op,Player::getPlayerGamePrivilege(m_playerPrivileges,Player::ePlayerGamePrivilege_CreativeMode));
@@ -240,7 +241,7 @@ void UIScene_InGamePlayerOptionsMenu::handleReload()
 
 	bool trustPlayers = app.GetGameHostOption(eGameHostOption_TrustPlayers) != 0;
 	bool cheats = app.GetGameHostOption(eGameHostOption_CheatsEnabled) != 0;
-	m_editingSelf = (localPlayer != nullptr && localPlayer == editingPlayer);
+	m_editingSelf = (localPlayer != NULL && localPlayer == editingPlayer);
 
 	if( m_editingSelf || trustPlayers || editingPlayer->IsHost())
 	{
@@ -253,7 +254,7 @@ void UIScene_InGamePlayerOptionsMenu::handleReload()
 
 	if(m_editingSelf)
 	{
-#ifndef _DEBUG //(defined(_CONTENT_PACKAGE) || defined(_FINAL_BUILD) && !defined(_DEBUG_MENUS_ENABLED))
+#if (defined(_CONTENT_PACKAGE) || defined(_FINAL_BUILD) && !defined(_DEBUG_MENUS_ENABLED))
 		removeControl( &m_checkboxes[eControl_Op], true );
 #endif
 		
@@ -347,7 +348,7 @@ void UIScene_InGamePlayerOptionsMenu::handleInput(int iPad, int key, bool repeat
 			bool cheats = app.GetGameHostOption(eGameHostOption_CheatsEnabled) != 0;
 			if(m_editingSelf)
 			{
-#ifndef _DEBUG // (defined(_CONTENT_PACKAGE) || defined(_FINAL_BUILD) && !defined(_DEBUG_MENUS_ENABLED))
+#if (defined(_CONTENT_PACKAGE) || defined(_FINAL_BUILD) && !defined(_DEBUG_MENUS_ENABLED))
 #else
 				Player::setPlayerGamePrivilege(m_playerPrivileges,Player::ePlayerGamePrivilege_CreativeMode,m_checkboxes[eControl_Op].IsChecked());
 #endif
@@ -371,7 +372,7 @@ void UIScene_InGamePlayerOptionsMenu::handleInput(int iPad, int key, bool repeat
 			else
 			{
 				INetworkPlayer *editingPlayer = g_NetworkManager.GetPlayerBySmallId(m_networkSmallId);
-				if(!trustPlayers && (editingPlayer != nullptr && !editingPlayer->IsHost() ) )
+				if(!trustPlayers && (editingPlayer != NULL && !editingPlayer->IsHost() ) )
 				{
 					Player::setPlayerGamePrivilege(m_playerPrivileges,Player::ePlayerGamePrivilege_CannotMine,!m_checkboxes[eControl_BuildAndMine].IsChecked());
 					Player::setPlayerGamePrivilege(m_playerPrivileges,Player::ePlayerGamePrivilege_CannotBuild,!m_checkboxes[eControl_BuildAndMine].IsChecked());
@@ -404,7 +405,7 @@ void UIScene_InGamePlayerOptionsMenu::handleInput(int iPad, int key, bool repeat
 				shared_ptr<MultiplayerLocalPlayer> player = pMinecraft->localplayers[m_iPad];
 				if(player->connection)
 				{
-					player->connection->send(std::make_shared<PlayerInfoPacket>(m_networkSmallId, -1, m_playerPrivileges));
+					player->connection->send( shared_ptr<PlayerInfoPacket>( new PlayerInfoPacket( m_networkSmallId, -1, m_playerPrivileges) ) );
 				}
 			}
 			navigateBack();
@@ -427,7 +428,7 @@ void UIScene_InGamePlayerOptionsMenu::handleInput(int iPad, int key, bool repeat
 
 void UIScene_InGamePlayerOptionsMenu::handlePress(F64 controlId, F64 childId)
 {
-	switch(static_cast<int>(controlId))
+	switch((int)controlId)
 	{
 	case eControl_Kick:
 		{
@@ -445,7 +446,7 @@ void UIScene_InGamePlayerOptionsMenu::handlePress(F64 controlId, F64 childId)
 
 int UIScene_InGamePlayerOptionsMenu::KickPlayerReturned(void *pParam,int iPad,C4JStorage::EMessageResult result)
 {
-	BYTE smallId = *static_cast<BYTE *>(pParam);
+	BYTE smallId = *(BYTE *)pParam;
 	delete pParam;
 
 	if(result==C4JStorage::EMessage_ResultAccept)
@@ -454,7 +455,7 @@ int UIScene_InGamePlayerOptionsMenu::KickPlayerReturned(void *pParam,int iPad,C4
 		shared_ptr<MultiplayerLocalPlayer> localPlayer = pMinecraft->localplayers[iPad];
 		if(localPlayer->connection)
 		{
-			localPlayer->connection->send(std::make_shared<KickPlayerPacket>(smallId));
+			localPlayer->connection->send( shared_ptr<KickPlayerPacket>( new KickPlayerPacket(smallId) ) );
 		}
 
 		// Fix for #61494 - [CRASH]: TU7: Code: Multiplayer: Title may crash while kicking a player from an online game.
@@ -469,12 +470,12 @@ int UIScene_InGamePlayerOptionsMenu::KickPlayerReturned(void *pParam,int iPad,C4
 void UIScene_InGamePlayerOptionsMenu::OnPlayerChanged(void *callbackParam, INetworkPlayer *pPlayer, bool leaving)
 {
 	app.DebugPrintf("UIScene_InGamePlayerOptionsMenu::OnPlayerChanged");
-	UIScene_InGamePlayerOptionsMenu *scene = static_cast<UIScene_InGamePlayerOptionsMenu *>(callbackParam);
+	UIScene_InGamePlayerOptionsMenu *scene = (UIScene_InGamePlayerOptionsMenu *)callbackParam;
 
-	UIScene_InGameInfoMenu *infoScene = static_cast<UIScene_InGameInfoMenu *>(scene->getBackScene());
-	if(infoScene != nullptr) UIScene_InGameInfoMenu::OnPlayerChanged(infoScene,pPlayer,leaving);
+	UIScene_InGameInfoMenu *infoScene = (UIScene_InGameInfoMenu *)scene->getBackScene();
+	if(infoScene != NULL) UIScene_InGameInfoMenu::OnPlayerChanged(infoScene,pPlayer,leaving);
 
-	if(leaving && pPlayer != nullptr && pPlayer->GetSmallId() == scene->m_networkSmallId)
+	if(leaving && pPlayer != NULL && pPlayer->GetSmallId() == scene->m_networkSmallId)
 	{
 		scene->m_bShouldNavBack = true;
 	}
@@ -496,7 +497,7 @@ void UIScene_InGamePlayerOptionsMenu::resetCheatCheckboxes()
 
 void UIScene_InGamePlayerOptionsMenu::handleCheckboxToggled(F64 controlId, bool selected)
 {
-	switch(static_cast<int>(controlId))
+	switch((int)controlId)
 	{
 	case eControl_Op:
 		// flag that the moderator state has changed

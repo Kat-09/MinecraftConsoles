@@ -229,11 +229,11 @@ int NotGateTile::cloneTileId(Level *level, int x, int y, int z)
 	return Tile::redstoneTorch_on_Id;
 }
 
-void NotGateTile::levelTimeChanged(Level *level, int64_t delta, int64_t newTime)
+void NotGateTile::levelTimeChanged(Level *level, __int64 delta, __int64 newTime)
 {
 	deque<Toggle> *toggles = recentToggles[level];
 
-	if (toggles != nullptr)
+	if (toggles != NULL)
 	{
 		for (auto& toggle : *toggles)
 		{

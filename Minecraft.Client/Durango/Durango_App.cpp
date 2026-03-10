@@ -12,7 +12,6 @@
 #include "ServiceConfig\Events-XBLA.8-149E11AEEvents.h"
 #include "..\..\Minecraft.World\DurangoStats.h"
 #include "..\..\Minecraft.Client\Durango\XML\xmlFilesCallback.h"
-#include "Common/UI/UI.h"
 
 CConsoleMinecraftApp app;
 
@@ -43,7 +42,7 @@ void CConsoleMinecraftApp::HandleDLCLicenseChange()
 
 		XCONTENT_DATA *pContentData=StorageManager.GetInstalledDLC(xOffer.wszProductID);
 
-		if((pContentData!=nullptr) &&(pContentData->bTrialLicense==false))
+		if((pContentData!=NULL) &&(pContentData->bTrialLicense==false))
 		{
 			DLCPack *pack = app.m_dlcManager.getPackFromProductID(xOffer.wszProductID);
 			if(pack)
@@ -51,7 +50,7 @@ void CConsoleMinecraftApp::HandleDLCLicenseChange()
 				// Clear the DLC installed flag so the scenes will pick up the new dlc (could be a full pack install)
 				app.ClearDLCInstalled();
 				app.DebugPrintf(">>> HandleDLCLicenseChange - Updating license for DLC [%ls]\n",xOffer.wszOfferName);
-				pack->updateLicenseMask(1);
+				pack->updateLicenseMask(1);			
 			}
 			else
 			{
@@ -101,7 +100,7 @@ void CConsoleMinecraftApp::ExitGame()
 }
 void CConsoleMinecraftApp::FatalLoadError()
 {
-	// 4J-PB -
+	// 4J-PB - 
 	//for(int i=0;i<10;i++)
 	{
 #ifndef _CONTENT_PACKAGE
@@ -194,7 +193,7 @@ void CConsoleMinecraftApp::FreeLocalDLCImages()
 		{
 			free(pDLCInfo->pbImageData);
 			pDLCInfo->dwImageBytes=0;
-			pDLCInfo->pbImageData=nullptr;
+			pDLCInfo->pbImageData=NULL;
 		}
 	}
 }
@@ -205,10 +204,10 @@ int CConsoleMinecraftApp::LoadLocalDLCImage(WCHAR *wchName,PBYTE *ppbImageData,D
 	// load the local file
 	WCHAR wchFilename[64];
 
-
+	
 	// 4J-PB - Read the file containing the product codes. This will be different for the SCEE/SCEA/SCEJ builds
 	swprintf(wchFilename,L"DLCImages/%s",wchName);
-	HANDLE hFile = CreateFile(wchFilename, GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+	HANDLE hFile = CreateFile(wchFilename, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
 	if( hFile == INVALID_HANDLE_VALUE )
 	{
@@ -222,9 +221,9 @@ int CConsoleMinecraftApp::LoadLocalDLCImage(WCHAR *wchName,PBYTE *ppbImageData,D
 	if(*pdwBytes!=0)
 	{
 		DWORD dwBytesRead;
-		PBYTE pbImageData=static_cast<PBYTE>(malloc(*pdwBytes));
+		PBYTE pbImageData=(PBYTE)malloc(*pdwBytes);
 
-		if(ReadFile(hFile,pbImageData,*pdwBytes,&dwBytesRead,nullptr)==FALSE)
+		if(ReadFile(hFile,pbImageData,*pdwBytes,&dwBytesRead,NULL)==FALSE)
 		{
 			// failed
 			free(pbImageData);
@@ -245,7 +244,7 @@ void CConsoleMinecraftApp::TemporaryCreateGameStart()
 {
 	////////////////////////////////////////////////////////////////////////////////////////////// From CScene_Main::OnInit
 
-	app.setLevelGenerationOptions(nullptr);
+	app.setLevelGenerationOptions(NULL);
 
 	// From CScene_Main::RunPlayGame
 	Minecraft *pMinecraft=Minecraft::GetInstance();
@@ -270,11 +269,11 @@ void CConsoleMinecraftApp::TemporaryCreateGameStart()
 	StorageManager.SetSaveTitle(wWorldName.c_str());
 
 	bool isFlat = false;
-	int64_t seedValue = BiomeSource::findSeed(isFlat?LevelType::lvl_flat:LevelType::lvl_normal);	// 4J - was (new Random())->nextLong() - now trying to actually find a seed to suit our requirements
+	__int64 seedValue = BiomeSource::findSeed(isFlat?LevelType::lvl_flat:LevelType::lvl_normal);	// 4J - was (new Random())->nextLong() - now trying to actually find a seed to suit our requirements
 
 	NetworkGameInitData *param = new NetworkGameInitData();
 	param->seed = seedValue;
-	param->saveData = nullptr;
+	param->saveData = NULL;
 
 	app.SetGameHostOption(eGameHostOption_Difficulty,0);
 	app.SetGameHostOption(eGameHostOption_FriendsOfFriends,0);
@@ -300,7 +299,7 @@ void CConsoleMinecraftApp::TemporaryCreateGameStart()
 
 	LoadingInputParams *loadingParams = new LoadingInputParams();
 	loadingParams->func = &CGameNetworkManager::RunNetworkGameThreadProc;
-	loadingParams->lpParam = static_cast<LPVOID>(param);
+	loadingParams->lpParam = (LPVOID)param;
 
 	// Reset the autosave time
 	app.SetAutosaveTimerTime();
@@ -309,7 +308,7 @@ void CConsoleMinecraftApp::TemporaryCreateGameStart()
 	thread->Run();
 }
 
-typedef struct
+typedef struct  
 {
 	eDLCContentType e_DLC_Type;
 	//WCHAR *wchDisplayName;
@@ -387,7 +386,7 @@ bool CConsoleMinecraftApp::UpdateProductId(XCONTENT_DATA &Data)
 	// Do we have a product id for this?
 	DLC_INFO *pDLCInfo=app.GetDLCInfoForProductName(Data.wszDisplayName);
 
-	if(pDLCInfo!=nullptr)
+	if(pDLCInfo!=NULL)
 	{
 		app.DebugPrintf("Updating product id for %ls\n",Data.wszDisplayName);
 		swprintf_s(Data.wszProductID, 64,L"%ls",pDLCInfo->wsProductId.c_str());
@@ -398,7 +397,7 @@ bool CConsoleMinecraftApp::UpdateProductId(XCONTENT_DATA &Data)
 		app.DebugPrintf("Couldn't find %ls\n",Data.wszDisplayName);
 	}
 
-	return false;
+	return false;	
 }
 
 void CConsoleMinecraftApp::Shutdown()
@@ -455,9 +454,9 @@ bool CConsoleMinecraftApp::TMSPP_ReadBannedList(int iPad,eTMSAction NextAction)
 int CConsoleMinecraftApp::Callback_TMSPPReadBannedList(void *pParam,int iPad, int iUserData, LPVOID lpvData,WCHAR *wchFilename)
 {
 	app.DebugPrintf("CConsoleMinecraftApp::Callback_TMSPPReadBannedList\n");
-	C4JStorage::PTMSPP_FILEDATA pFileData=static_cast<C4JStorage::PTMSPP_FILEDATA>(lpvData);
-
-	CConsoleMinecraftApp* pClass = static_cast<CConsoleMinecraftApp *>(pParam);
+	C4JStorage::PTMSPP_FILEDATA pFileData=(C4JStorage::PTMSPP_FILEDATA)lpvData;
+	
+	CConsoleMinecraftApp* pClass = (CConsoleMinecraftApp*)pParam;
 
 	if(pFileData)
 	{
@@ -472,7 +471,7 @@ int CConsoleMinecraftApp::Callback_TMSPPReadBannedList(void *pParam,int iPad, in
 		// mark the level as not checked against banned levels - it'll be checked once the level starts
 		app.SetBanListCheck(iPad,false);
 
-		// Xbox One will clear things within the DownloadBlob
+		// Xbox One will clear things within the DownloadBlob 
 #ifndef _XBOX_ONE
 		delete [] pFileData->pbData;
 		delete [] pFileData;
@@ -487,7 +486,7 @@ int CConsoleMinecraftApp::Callback_TMSPPReadBannedList(void *pParam,int iPad, in
 	}
 
 	// change the state to the next action
-	pClass->SetTMSAction(iPad,static_cast<eTMSAction>(iUserData));
+	pClass->SetTMSAction(iPad,(eTMSAction)iUserData);
 
 	return 0;
 }
@@ -556,14 +555,14 @@ void CConsoleMinecraftApp::TMSPP_RetrieveFileList(int iPad,C4JStorage::eGlobalSt
 
 int CConsoleMinecraftApp::Callback_TMSPPRetrieveFileList(void *pParam,int iPad, int iUserData, LPVOID lpvData, WCHAR *wchFilename)
 {
-	CConsoleMinecraftApp* pClass = static_cast<CConsoleMinecraftApp *>(pParam);
+	CConsoleMinecraftApp* pClass = (CConsoleMinecraftApp*)pParam;
 	app.DebugPrintf("CConsoleMinecraftApp::Callback_TMSPPRetrieveFileList\n");
-	if(lpvData!= nullptr)
-	{
-		vector<C4JStorage::PTMSPP_FILE_DETAILS> *pvTmsFileDetails=static_cast<vector<C4JStorage::PTMSPP_FILE_DETAILS> *>(lpvData);
+	if(lpvData!=NULL)
+	{	
+		vector<C4JStorage::PTMSPP_FILE_DETAILS> *pvTmsFileDetails=(vector<C4JStorage::PTMSPP_FILE_DETAILS> *)lpvData;
 
 		if(pvTmsFileDetails->size()>0)
-		{
+		{	
 	#ifdef _DEBUG
 			// dump out the file list
 			app.DebugPrintf("TMSPP filecount - %d\nFiles - \n",pvTmsFileDetails->size());
@@ -579,7 +578,7 @@ int CConsoleMinecraftApp::Callback_TMSPPRetrieveFileList(void *pParam,int iPad, 
 		}
 	}
 	// change the state to the next action
-	pClass->SetTMSAction(iPad,static_cast<eTMSAction>(iUserData));
+	pClass->SetTMSAction(iPad,(eTMSAction)iUserData);
 	return 0;
 }
 
@@ -587,8 +586,8 @@ int CConsoleMinecraftApp::Callback_TMSPPRetrieveFileList(void *pParam,int iPad, 
 int CConsoleMinecraftApp::Callback_TMSPPReadDLCFile(void *pParam,int iPad, int iUserData, LPVOID lpvData ,WCHAR *pwchFilename)
 {
 	app.DebugPrintf("CConsoleMinecraftApp::Callback_TMSPPReadDLCFile\n");
-	C4JStorage::PTMSPP_FILEDATA pFileData= static_cast<C4JStorage::PTMSPP_FILEDATA>(lpvData);
-	CConsoleMinecraftApp* pClass = static_cast<CConsoleMinecraftApp *>(pParam);
+	C4JStorage::PTMSPP_FILEDATA pFileData= (C4JStorage::PTMSPP_FILEDATA)lpvData;
+	CConsoleMinecraftApp* pClass = (CConsoleMinecraftApp*)pParam;
 
 #ifdef WRITE_DLCINFO
 	if(0)
@@ -636,7 +635,7 @@ int CConsoleMinecraftApp::Callback_TMSPPReadDLCFile(void *pParam,int iPad, int i
 
 		// hack for now to upload the file
 		// open the local file
-		file = CreateFile(L"DLCXbox1.cmp", GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+		file = CreateFile(L"DLCXbox1.cmp", GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 		if( file == INVALID_HANDLE_VALUE )
 		{
 			DWORD error = GetLastError();
@@ -654,12 +653,12 @@ int CConsoleMinecraftApp::Callback_TMSPPReadDLCFile(void *pParam,int iPad, int i
 
 			PBYTE pbData= new BYTE [dwFileSize];
 
-			ReadFile(file,pbData,dwFileSize,&bytesRead,nullptr);
+			ReadFile(file,pbData,dwFileSize,&bytesRead,NULL);
 
 			if(bytesRead==dwFileSize)
 			{
-				//StorageManager.TMSPP_WriteFile(iPad,C4JStorage::eGlobalStorage_TitleUser,C4JStorage::TMS_FILETYPE_BINARY,L"DLCXbox1.cmp",(PBYTE) pbData, dwFileSize,nullptr,nullptr, 0);
-				StorageManager.TMSPP_WriteFile(iPad,C4JStorage::eGlobalStorage_TitleUser,C4JStorage::TMS_FILETYPE_BINARY,L"TP06.cmp",(PBYTE) pbData, dwFileSize,nullptr,nullptr, 0);
+				//StorageManager.TMSPP_WriteFile(iPad,C4JStorage::eGlobalStorage_TitleUser,C4JStorage::TMS_FILETYPE_BINARY,L"DLCXbox1.cmp",(PBYTE) pbData, dwFileSize,NULL,NULL, 0);
+				StorageManager.TMSPP_WriteFile(iPad,C4JStorage::eGlobalStorage_TitleUser,C4JStorage::TMS_FILETYPE_BINARY,L"TP06.cmp",(PBYTE) pbData, dwFileSize,NULL,NULL, 0);
 			}
 			Sleep(5000);
 		}
@@ -668,7 +667,7 @@ int CConsoleMinecraftApp::Callback_TMSPPReadDLCFile(void *pParam,int iPad, int i
 
 		/*
 		// now the icon
-		file = CreateFile(L"TP06.png", GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+		file = CreateFile(L"TP06.png", GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 		if( file == INVALID_HANDLE_VALUE )
 		{
 			DWORD error = GetLastError();
@@ -685,11 +684,11 @@ int CConsoleMinecraftApp::Callback_TMSPPReadDLCFile(void *pParam,int iPad, int i
 
 			PBYTE pbData= new BYTE [dwFileSize];
 
-			ReadFile(file,pbData,dwFileSize,&bytesRead,nullptr);
+			ReadFile(file,pbData,dwFileSize,&bytesRead,NULL);
 
 			if(bytesRead==dwFileSize)
 			{
-				StorageManager.TMSPP_WriteFile(iPad,C4JStorage::eGlobalStorage_TitleUser,C4JStorage::TMS_FILETYPE_BINARY,L"TP06.png",(PBYTE) pbData, dwFileSize,nullptr,nullptr, 0);
+				StorageManager.TMSPP_WriteFile(iPad,C4JStorage::eGlobalStorage_TitleUser,C4JStorage::TMS_FILETYPE_BINARY,L"TP06.png",(PBYTE) pbData, dwFileSize,NULL,NULL, 0);
 			}
 			Sleep(5000);
 		}
@@ -699,16 +698,16 @@ int CConsoleMinecraftApp::Callback_TMSPPReadDLCFile(void *pParam,int iPad, int i
 	}
 
 	// change the state to the next action
-	pClass->SetTMSAction(iPad,static_cast<eTMSAction>(iUserData));
+	pClass->SetTMSAction(iPad,(eTMSAction)iUserData);
 
 	return 0;
 }
 
 void CConsoleMinecraftApp::Callback_SaveGameIncomplete(void *pParam, C4JStorage::ESaveIncompleteType saveIncompleteType)
 {
-	CConsoleMinecraftApp* pClass = static_cast<CConsoleMinecraftApp *>(pParam);
+	CConsoleMinecraftApp* pClass = (CConsoleMinecraftApp*)pParam;
 
-	if (	saveIncompleteType == C4JStorage::ESaveIncomplete_OutOfQuota
+	if (	saveIncompleteType == C4JStorage::ESaveIncomplete_OutOfQuota 
 		||	saveIncompleteType == C4JStorage::ESaveIncomplete_OutOfLocalStorage )
 	{
 		StorageManager.SetSaveDisabled(true);
@@ -719,10 +718,10 @@ void CConsoleMinecraftApp::Callback_SaveGameIncomplete(void *pParam, C4JStorage:
 		else																message = IDS_SAVE_INCOMPLETE_EXPLANATION_LOCAL_STORAGE;
 
 		UINT uiIDA[3] =
-		{
-			IDS_SAVE_INCOMPLETE_RETRY_SAVING,
-			IDS_SAVE_INCOMPLETE_DISABLE_SAVING,
-			IDS_SAVE_INCOMPLETE_DELETE_SAVES
+		{ 
+			IDS_SAVE_INCOMPLETE_RETRY_SAVING, 
+			IDS_SAVE_INCOMPLETE_DISABLE_SAVING, 
+			IDS_SAVE_INCOMPLETE_DELETE_SAVES 
 		};
 
 		if ( ui.RequestMessageBox( IDS_SAVE_INCOMPLETE_TITLE, message, uiIDA,3,0,Callback_SaveGameIncompleteMessageBoxReturned,pClass, app.GetStringTable()) == C4JStorage::EMessage_Busy)
@@ -741,7 +740,7 @@ void CConsoleMinecraftApp::Callback_SaveGameIncomplete(void *pParam, C4JStorage:
 
 int CConsoleMinecraftApp::Callback_SaveGameIncompleteMessageBoxReturned(void *pParam,int iPad,C4JStorage::EMessageResult result)
 {
-	CConsoleMinecraftApp* pClass = static_cast<CConsoleMinecraftApp *>(pParam);
+	CConsoleMinecraftApp* pClass = (CConsoleMinecraftApp*)pParam;
 
 	switch(result)
 	{
@@ -758,7 +757,7 @@ int CConsoleMinecraftApp::Callback_SaveGameIncompleteMessageBoxReturned(void *pP
 			StorageManager.CancelIncompleteOperation();
 			break;
 		case C4JStorage::EMessage_ResultThirdOption:
-			ui.NavigateToScene(iPad, eUIScene_InGameSaveManagementMenu, nullptr, eUILayer_Error, eUIGroup_Fullscreen);
+			ui.NavigateToScene(iPad, eUIScene_InGameSaveManagementMenu, NULL, eUILayer_Error, eUIGroup_Fullscreen);
 			break;
 	}
 	return 0;

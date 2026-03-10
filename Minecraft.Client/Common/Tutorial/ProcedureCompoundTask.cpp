@@ -11,7 +11,7 @@ ProcedureCompoundTask::~ProcedureCompoundTask()
 
 void ProcedureCompoundTask::AddTask(TutorialTask *task)
 {
-	if(task != nullptr)
+	if(task != NULL)
 	{
 		m_taskSequence.push_back(task);
 	}

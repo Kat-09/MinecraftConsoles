@@ -139,9 +139,9 @@ public:
 	bool getCompleted( int completableId );
 
 #ifdef _XBOX
-	void changeTutorialState(eTutorial_State newState, CXuiScene *scene = nullptr);
+	void changeTutorialState(eTutorial_State newState, CXuiScene *scene = NULL);
 #else
-	void changeTutorialState(eTutorial_State newState, UIScene *scene = nullptr);
+	void changeTutorialState(eTutorial_State newState, UIScene *scene = NULL);
 #endif
 	bool isSelectedItemState();
 

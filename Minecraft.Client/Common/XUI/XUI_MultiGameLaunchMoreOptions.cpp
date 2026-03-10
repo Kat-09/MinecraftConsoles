@@ -28,7 +28,7 @@ HRESULT CScene_MultiGameLaunchMoreOptions::OnInit( XUIMessageInit* pInitData, BO
 	XuiControlSetText(m_CheckboxFlatWorld,app.GetString(IDS_SUPERFLAT_WORLD));
 	XuiControlSetText(m_CheckboxBonusChest,app.GetString(IDS_BONUS_CHEST));
 
-	m_params = static_cast<LaunchMoreOptionsMenuInitData *>(pInitData->pvInitData);
+	m_params = (LaunchMoreOptionsMenuInitData *)pInitData->pvInitData;
 
 	if(m_params->bGenerateOptions)
 	{
@@ -231,7 +231,7 @@ HRESULT CScene_MultiGameLaunchMoreOptions::OnControlNavigate(XUIMessageControlNa
 {
 	pControlNavigateData->hObjDest=XuiControlGetNavigation(pControlNavigateData->hObjSource,pControlNavigateData->nControlNavigate,TRUE,TRUE);
 	
-	if(pControlNavigateData->hObjDest!=nullptr)
+	if(pControlNavigateData->hObjDest!=NULL)
 	{
 		bHandled=TRUE;
 	}

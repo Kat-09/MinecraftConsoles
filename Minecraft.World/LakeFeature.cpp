@@ -24,8 +24,8 @@ bool LakeFeature::place(Level *level, Random *random, int x, int y, int z)
 
 	bool grid[16*16*8] = {0};
 
-	LevelGenerationOptions *levelGenOptions = nullptr;
-	if( app.getLevelGenerationOptions() != nullptr )
+	LevelGenerationOptions *levelGenOptions = NULL;
+	if( app.getLevelGenerationOptions() != NULL )
 	{
 		levelGenOptions = app.getLevelGenerationOptions();
 

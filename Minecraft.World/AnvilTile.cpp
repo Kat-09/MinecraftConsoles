@@ -21,7 +21,7 @@ AnvilTile::AnvilTile(int id) : HeavyTile(id, Material::heavyMetal, isSolidRender
 {
 	part = PART_BASE;
 	setLightBlock(0);
-	icons = nullptr;
+	icons = NULL;
 }
 
 bool AnvilTile::isCubeShaped()

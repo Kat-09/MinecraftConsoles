@@ -11,7 +11,7 @@ void DeathScreen::init()
     buttons.push_back(new Button(1, width / 2 - 100, height / 4 + 24 * 3, L"Respawn"));
     buttons.push_back(new Button(2, width / 2 - 100, height / 4 + 24 * 4, L"Title menu"));
 
-    if (minecraft->user == nullptr)
+    if (minecraft->user == NULL)
 	{
         buttons[1]->active = false;
     }
@@ -30,12 +30,12 @@ void DeathScreen::buttonClicked(Button *button)
     if (button->id == 1)
 	{
         minecraft->player->respawn();
-        minecraft->setScreen(nullptr);
+        minecraft->setScreen(NULL);
         //          minecraft.setScreen(new NewLevelScreen(this));
     }
     if (button->id == 2)
 	{
-        minecraft->setLevel(nullptr);
+        minecraft->setLevel(NULL);
         minecraft->setScreen(new TitleScreen());
     }
 }

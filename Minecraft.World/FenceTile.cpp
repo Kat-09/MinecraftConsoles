@@ -122,7 +122,7 @@ bool FenceTile::connectsTo(LevelSource *level, int x, int y, int z)
 		return true;
 	}
 	Tile *tileInstance = Tile::tiles[tile];
-	if (tileInstance != nullptr)
+	if (tileInstance != NULL)
 	{
 		if (tileInstance->material->isSolidBlocking() && tileInstance->isCubeShaped())
 		{

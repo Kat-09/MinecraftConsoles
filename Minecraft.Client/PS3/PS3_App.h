@@ -88,7 +88,7 @@ public:
 // 	void SetVoiceChatAndUGCRestricted(bool bRestricted);
 // 	bool GetVoiceChatAndUGCRestricted(void);
 
-	StringTable *GetStringTable()																									{ return nullptr;}
+	StringTable *GetStringTable()																									{ return NULL;}
 
 	// original code
 	virtual void TemporaryCreateGameStart();

@@ -19,8 +19,8 @@ UpdateMobEffectPacket::UpdateMobEffectPacket()
 UpdateMobEffectPacket::UpdateMobEffectPacket(int entityId, MobEffectInstance *effect)
 {
 	this->entityId = entityId;
-	effectId = static_cast<BYTE>(effect->getId() & 0xff);
-	effectAmplifier = static_cast<char>(effect->getAmplifier() & 0xff);
+	effectId = (BYTE) (effect->getId() & 0xff);
+	effectAmplifier = (char) (effect->getAmplifier() & 0xff);
 
 	if (effect->getDuration() > Short::MAX_VALUE)
 	{
@@ -28,7 +28,7 @@ UpdateMobEffectPacket::UpdateMobEffectPacket(int entityId, MobEffectInstance *ef
 	}
 	else
 	{
-		effectDurationTicks = static_cast<short>(effect->getDuration());
+		effectDurationTicks = (short) effect->getDuration();
 	}
 }
 

@@ -27,7 +27,7 @@ Tag::Tag(const wstring &name)
 // 4J - Was Object obj
 bool Tag::equals(Tag *obj)
 {
-	if (obj == nullptr )// || !(obj instanceof Tag))
+	if (obj == NULL )// || !(obj instanceof Tag))
 	{
 		return false;
 	}
@@ -150,10 +150,10 @@ Tag *Tag::newTag(byte type, const wstring &name)
 	case TAG_Compound:
 		return new CompoundTag(name);
 	}
-	return nullptr;
+	return NULL;
 }
 
-const wchar_t *Tag::getTagName(byte type)
+wchar_t *Tag::getTagName(byte type)
 {
 	switch (type)
 	{

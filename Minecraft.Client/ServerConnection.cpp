@@ -46,30 +46,19 @@ void ServerConnection::handleConnection(shared_ptr<PendingConnection> uc)
 
 void ServerConnection::stop()
 {
-	std::vector<shared_ptr<PendingConnection> > pendingSnapshot;
 	EnterCriticalSection(&pending_cs);
-	pendingSnapshot = pending;
+    for (unsigned int i = 0; i < pending.size(); i++)
+	{
+        shared_ptr<PendingConnection> uc = pending[i];
+        uc->connection->close(DisconnectPacket::eDisconnect_Closed);
+    }
 	LeaveCriticalSection(&pending_cs);
 
-	for (unsigned int i = 0; i < pendingSnapshot.size(); i++)
+    for (unsigned int i = 0; i < players.size(); i++)
 	{
-		shared_ptr<PendingConnection> uc = pendingSnapshot[i];
-		if (uc != NULL && !uc->done)
-		{
-			uc->disconnect(DisconnectPacket::eDisconnect_Closed);
-		}
-	}
-
-	// Snapshot to avoid iterator invalidation if disconnect modifies the vector.
-	std::vector<shared_ptr<PlayerConnection> > playerSnapshot = players;
-	for (unsigned int i = 0; i < playerSnapshot.size(); i++)
-	{
-		shared_ptr<PlayerConnection> player = playerSnapshot[i];
-		if (player != NULL && !player->done)
-		{
-			player->disconnect(DisconnectPacket::eDisconnect_Quitting);
-		}
-	}
+        shared_ptr<PlayerConnection> player = players[i];
+        player->connection->close(DisconnectPacket::eDisconnect_Closed);
+    }
 }
 
 void ServerConnection::tick()
@@ -89,7 +78,7 @@ void ServerConnection::tick()
 	//            uc.disconnect("Internal server error");
 	//            logger.log(Level.WARNING, "Failed to handle packet: " + e, e);
 	//        }
-			if(uc->connection != nullptr) uc->connection->flush();
+			if(uc->connection != NULL) uc->connection->flush();
 		}
 	}
 
@@ -118,10 +107,7 @@ void ServerConnection::tick()
             players.erase(players.begin()+i);
 			i--;
         }
-        else
-        {
-            player->connection->flush();
-        }
+        player->connection->flush();
     }
 
 }
@@ -181,7 +167,7 @@ void ServerConnection::handleServerSettingsChanged(shared_ptr<ServerSettingsChan
 	{
 		for(unsigned int i = 0; i < pMinecraft->levels.length; ++i)
 		{
-			if( pMinecraft->levels[i] != nullptr )
+			if( pMinecraft->levels[i] != NULL )
 			{
 				app.DebugPrintf("ClientConnection::handleServerSettingsChanged - Difficulty = %d",packet->data);
 				pMinecraft->levels[i]->difficulty = packet->data;

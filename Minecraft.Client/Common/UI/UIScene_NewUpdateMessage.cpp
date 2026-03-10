@@ -19,8 +19,8 @@ UIScene_NewUpdateMessage::UIScene_NewUpdateMessage(int iPad, void *initData, UIL
 	message=app.FormatHTMLString(m_iPad,message);
 
 	vector<wstring> paragraphs;
-	size_t lastIndex = 0;
-	for (	size_t index = message.find(L"\r\n", lastIndex, 2);
+	int lastIndex = 0;
+	for (	int index = message.find(L"\r\n", lastIndex, 2);
 			index != wstring::npos; 
 			index = message.find(L"\r\n", lastIndex, 2)
 		)
@@ -100,7 +100,7 @@ void UIScene_NewUpdateMessage::handleInput(int iPad, int key, bool repeat, bool 
 
 void UIScene_NewUpdateMessage::handlePress(F64 controlId, F64 childId)
 {
-	switch(static_cast<int>(controlId))
+	switch((int)controlId)
 	{
 	case eControl_Confirm:
 		{

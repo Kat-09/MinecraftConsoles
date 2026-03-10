@@ -10,7 +10,7 @@ UIScene_FurnaceMenu::UIScene_FurnaceMenu(int iPad, void *_initData, UILayer *par
 	// Setup all the Iggy references we need for this scene
 	initialiseMovie();
 
-	FurnaceScreenInput *initData = static_cast<FurnaceScreenInput *>(_initData);
+	FurnaceScreenInput *initData = (FurnaceScreenInput *)_initData;
 	m_furnace = initData->furnace;
 
 	m_labelFurnace.init(m_furnace->getName());
@@ -21,9 +21,9 @@ UIScene_FurnaceMenu::UIScene_FurnaceMenu(int iPad, void *_initData, UILayer *par
 	m_progressFurnaceArrow.init(L"",0,0,24,0);
 
 	Minecraft *pMinecraft = Minecraft::GetInstance();
-	if( pMinecraft->localgameModes[initData->iPad] != nullptr )
+	if( pMinecraft->localgameModes[initData->iPad] != NULL )
 	{
-		TutorialMode *gameMode = static_cast<TutorialMode *>(pMinecraft->localgameModes[initData->iPad]);
+		TutorialMode *gameMode = (TutorialMode *)pMinecraft->localgameModes[initData->iPad];
 		m_previousTutorialState = gameMode->getTutorial()->getCurrentState();
 		gameMode->getTutorial()->changeTutorialState(e_Tutorial_State_Furnace_Menu, this);
 	}
@@ -202,7 +202,7 @@ void UIScene_FurnaceMenu::setSectionSelectedSlot(ESceneSection eSection, int x, 
 
 	int index = (y * cols) + x;
 
-	UIControl_SlotList *slotList = nullptr;
+	UIControl_SlotList *slotList = NULL;
 	switch( eSection )
 	{
 	case eSectionFurnaceResult:
@@ -230,7 +230,7 @@ void UIScene_FurnaceMenu::setSectionSelectedSlot(ESceneSection eSection, int x, 
 
 UIControl *UIScene_FurnaceMenu::getSection(ESceneSection eSection)
 {
-	UIControl *control = nullptr;
+	UIControl *control = NULL;
 	switch( eSection )
 	{
 	case eSectionFurnaceResult:

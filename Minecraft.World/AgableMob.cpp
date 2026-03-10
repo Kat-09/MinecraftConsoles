@@ -17,7 +17,7 @@ bool AgableMob::mobInteract(shared_ptr<Player> player)
 {
 	shared_ptr<ItemInstance> item = player->inventory->getSelected();
 
-	if (item != nullptr && item->id == Item::spawnEgg_Id)
+	if (item != NULL && item->id == Item::spawnEgg_Id)
 	{
 		if (!level->isClientSide)
 		{
@@ -27,10 +27,10 @@ bool AgableMob::mobInteract(shared_ptr<Player> player)
 				int error;
 				shared_ptr<Entity> result = SpawnEggItem::canSpawn(item->getAuxValue(), level, &error);
 
-				if (result != nullptr)
+				if (result != NULL)
 				{
 					shared_ptr<AgableMob> offspring = getBreedOffspring(dynamic_pointer_cast<AgableMob>(shared_from_this()));
-					if (offspring != nullptr)
+					if (offspring != NULL)
 					{
 						offspring->setAge(BABY_START_AGE);
 						offspring->moveTo(x, y, z, 0, 0);

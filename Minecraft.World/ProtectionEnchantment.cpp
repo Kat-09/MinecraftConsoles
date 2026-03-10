@@ -54,7 +54,7 @@ int ProtectionEnchantment::getDescriptionId()
 bool ProtectionEnchantment::isCompatibleWith(Enchantment *other) const
 {		
 	ProtectionEnchantment *pe = dynamic_cast<ProtectionEnchantment *>( other );
-	if (pe != nullptr)
+	if (pe != NULL)
 	{
 		if (pe->type == type)
 		{

@@ -38,13 +38,13 @@ RegionFile *RegionFileCache::_getRegionFile(ConsoleSaveFile *saveFile, const wst
 	}
 	MemSect(0);
 
-	RegionFile *ref = nullptr;
+	RegionFile *ref = NULL;
     auto it = cache.find(file);
     if( it != cache.end() )
 		ref = it->second;
 
 	// 4J Jev, put back in.
-    if (ref != nullptr)
+    if (ref != NULL)
 	{
 		return ref;
     }
@@ -72,7 +72,7 @@ void RegionFileCache::_clear()															// 4J - TODO was synchronized
 	for(auto& it : cache)
 	{
         RegionFile *regionFile = it.second;
-        if (regionFile != nullptr)
+        if (regionFile != NULL)
 		{
             regionFile->close();
         }

@@ -20,7 +20,7 @@ CTelemetryManager *TelemetryManager = new CSentientManager();
 HRESULT CSentientManager::Init()
 {
 	Sentient::SenSysTitleID sentitleID;
-	sentitleID = static_cast<Sentient::SenSysTitleID>(TITLEID_MINECRAFT);
+	sentitleID = (Sentient::SenSysTitleID)TITLEID_MINECRAFT;
 
 	HRESULT hr = SentientInitialize( sentitleID ); 
 
@@ -52,7 +52,7 @@ HRESULT CSentientManager::Tick()
 					m_lastHeartbeat = currentTime;
 					for(DWORD i = 0; i < XUSER_MAX_COUNT; ++i)
 					{
-						if(Minecraft::GetInstance()->localplayers[i] != nullptr)
+						if(Minecraft::GetInstance()->localplayers[i] != NULL)
 						{
 							SenStatHeartBeat(i, m_lastHeartbeat - m_initialiseTime);
 						}
@@ -63,7 +63,7 @@ HRESULT CSentientManager::Tick()
 				{
 					for(DWORD i = 0; i < XUSER_MAX_COUNT; ++i)
 					{
-						if(Minecraft::GetInstance()->localplayers[i] != nullptr && m_fLevelStartTime[i] - currentTime > 60)
+						if(Minecraft::GetInstance()->localplayers[i] != NULL && m_fLevelStartTime[i] - currentTime > 60)
 						{
 							Flush();
 						}
@@ -123,7 +123,7 @@ HRESULT CSentientManager::Flush()
 
 BOOL CSentientManager::RecordPlayerSessionStart(DWORD dwUserId)
 {
-	return SenStatPlayerSessionStart( dwUserId, GetSecondsSinceInitialize(), GetMode(dwUserId), GetSubMode(dwUserId), GetLevelId(dwUserId), GetSubLevelId(dwUserId), GetTitleBuildId(), 0, 0, 0, static_cast<INT>(app.getDeploymentType()) );
+	return SenStatPlayerSessionStart( dwUserId, GetSecondsSinceInitialize(), GetMode(dwUserId), GetSubMode(dwUserId), GetLevelId(dwUserId), GetSubLevelId(dwUserId), GetTitleBuildId(), 0, 0, 0, (INT)app.getDeploymentType() );
 }
 
 BOOL CSentientManager::RecordPlayerSessionExit(DWORD dwUserId, int _)
@@ -149,13 +149,13 @@ BOOL CSentientManager::RecordLevelStart(DWORD dwUserId, ESen_FriendOrMatch frien
 BOOL CSentientManager::RecordLevelExit(DWORD dwUserId, ESen_LevelExitStatus levelExitStatus)
 {
 	float levelDuration = app.getAppTime() - m_fLevelStartTime[dwUserId];
-	return SenStatLevelExit( dwUserId, GetSecondsSinceInitialize(), GetMode(dwUserId), GetSubMode(dwUserId), GetLevelId(dwUserId), GetSubLevelId(dwUserId), GetLevelInstanceID(), GetMultiplayerInstanceID(), levelExitStatus, GetLevelExitProgressStat1(), GetLevelExitProgressStat2(), static_cast<INT>(levelDuration) );
+	return SenStatLevelExit( dwUserId, GetSecondsSinceInitialize(), GetMode(dwUserId), GetSubMode(dwUserId), GetLevelId(dwUserId), GetSubLevelId(dwUserId), GetLevelInstanceID(), GetMultiplayerInstanceID(), levelExitStatus, GetLevelExitProgressStat1(), GetLevelExitProgressStat2(), (INT)levelDuration );
 }
 
 BOOL CSentientManager::RecordLevelSaveOrCheckpoint(DWORD dwUserId, INT saveOrCheckPointID, INT saveSizeInBytes)
 {
 	float levelDuration = app.getAppTime() - m_fLevelStartTime[dwUserId];
-	return SenStatLevelSaveOrCheckpoint( dwUserId, GetSecondsSinceInitialize(), GetMode(dwUserId), GetSubMode(dwUserId), GetLevelId(dwUserId), GetSubLevelId(dwUserId), GetLevelInstanceID(), GetMultiplayerInstanceID(), GetLevelExitProgressStat1(), GetLevelExitProgressStat2(), static_cast<INT>(levelDuration), saveOrCheckPointID, saveSizeInBytes );
+	return SenStatLevelSaveOrCheckpoint( dwUserId, GetSecondsSinceInitialize(), GetMode(dwUserId), GetSubMode(dwUserId), GetLevelId(dwUserId), GetSubLevelId(dwUserId), GetLevelInstanceID(), GetMultiplayerInstanceID(), GetLevelExitProgressStat1(), GetLevelExitProgressStat2(), (INT)levelDuration, saveOrCheckPointID, saveSizeInBytes );
 }
 
 BOOL CSentientManager::RecordLevelResume(DWORD dwUserId, ESen_FriendOrMatch friendsOrMatch, ESen_CompeteOrCoop competeOrCoop, int difficulty, DWORD numberOfLocalPlayers, DWORD numberOfOnlinePlayers, INT saveOrCheckPointID)
@@ -240,7 +240,7 @@ This should be tracked independently of saved games (restoring a save should not
 */
 INT CSentientManager::GetSecondsSinceInitialize()
 {
-	return static_cast<INT>(app.getAppTime() - m_initialiseTime);
+	return (INT)(app.getAppTime() - m_initialiseTime);
 }
 
 /*
@@ -257,21 +257,21 @@ INT CSentientManager::GetMode(DWORD dwUserId)
 	
 	Minecraft *pMinecraft = Minecraft::GetInstance();
 
-	if( pMinecraft->localplayers[dwUserId] != nullptr && pMinecraft->localplayers[dwUserId]->level != nullptr && pMinecraft->localplayers[dwUserId]->level->getLevelData() != nullptr )
+	if( pMinecraft->localplayers[dwUserId] != NULL && pMinecraft->localplayers[dwUserId]->level != NULL && pMinecraft->localplayers[dwUserId]->level->getLevelData() != NULL )
 	{
 		GameType *gameType = pMinecraft->localplayers[dwUserId]->level->getLevelData()->getGameType();
 
 		if (gameType->isSurvival())
 		{
-			mode = static_cast<INT>(eTelem_ModeId_Survival);
+			mode = (INT)eTelem_ModeId_Survival;
 		}
 		else if (gameType->isCreative())
 		{
-			mode = static_cast<INT>(eTelem_ModeId_Creative);
+			mode = (INT)eTelem_ModeId_Creative;
 		}
 		else
 		{
-			mode = static_cast<INT>(eTelem_ModeId_Undefined);
+			mode = (INT)eTelem_ModeId_Undefined;
 		}
 	}
 	return mode;
@@ -290,11 +290,11 @@ INT CSentientManager::GetSubMode(DWORD dwUserId)
 
 	if(Minecraft::GetInstance()->isTutorial())
 	{
-		subMode = static_cast<INT>(eTelem_SubModeId_Tutorial);
+		subMode = (INT)eTelem_SubModeId_Tutorial;
 	}
 	else
 	{
-		subMode = static_cast<INT>(eTelem_SubModeId_Normal);
+		subMode = (INT)eTelem_SubModeId_Normal;
 	}
 
 	return subMode;
@@ -312,7 +312,7 @@ INT CSentientManager::GetLevelId(DWORD dwUserId)
 {
 	INT levelId = (INT)eTelem_LevelId_Undefined;
 
-	levelId = static_cast<INT>(eTelem_LevelId_PlayerGeneratedLevel);
+	levelId = (INT)eTelem_LevelId_PlayerGeneratedLevel;
 
 	return levelId;
 }
@@ -329,18 +329,18 @@ INT CSentientManager::GetSubLevelId(DWORD dwUserId)
 
 	Minecraft *pMinecraft = Minecraft::GetInstance();
 
-	if(pMinecraft->localplayers[dwUserId] != nullptr)
+	if(pMinecraft->localplayers[dwUserId] != NULL)
 	{
 		switch(pMinecraft->localplayers[dwUserId]->dimension)
 		{
 		case 0:
-			subLevelId = static_cast<INT>(eTelem_SubLevelId_Overworld);
+			subLevelId = (INT)eTelem_SubLevelId_Overworld;
 			break;
 		case -1:
-			subLevelId = static_cast<INT>(eTelem_SubLevelId_Nether);
+			subLevelId = (INT)eTelem_SubLevelId_Nether;
 			break;
 		case 1:
-			subLevelId = static_cast<INT>(eTelem_SubLevelId_End);
+			subLevelId = (INT)eTelem_SubLevelId_End;
 			break;
 		};
 	}
@@ -364,7 +364,7 @@ Helps differentiate level attempts when a play plays the same mode/level - espec
 */
 INT CSentientManager::GetLevelInstanceID()
 {
-	return static_cast<INT>(m_levelInstanceID);
+	return (INT)m_levelInstanceID;
 }
 
 /*
@@ -403,19 +403,19 @@ INT CSentientManager::GetSingleOrMultiplayer()
 
 	if(app.GetLocalPlayerCount() == 1 && g_NetworkManager.GetOnlinePlayerCount() == 0)
 	{
-		singleOrMultiplayer = static_cast<INT>(eSen_SingleOrMultiplayer_Single_Player);
+		singleOrMultiplayer = (INT)eSen_SingleOrMultiplayer_Single_Player;
 	}
 	else if(app.GetLocalPlayerCount() > 1 && g_NetworkManager.GetOnlinePlayerCount() == 0)
 	{
-		singleOrMultiplayer = static_cast<INT>(eSen_SingleOrMultiplayer_Multiplayer_Local);
+		singleOrMultiplayer = (INT)eSen_SingleOrMultiplayer_Multiplayer_Local;
 	}
 	else if(app.GetLocalPlayerCount() == 1 && g_NetworkManager.GetOnlinePlayerCount() > 0)
 	{
-		singleOrMultiplayer = static_cast<INT>(eSen_SingleOrMultiplayer_Multiplayer_Live);
+		singleOrMultiplayer = (INT)eSen_SingleOrMultiplayer_Multiplayer_Live;
 	}
 	else if(app.GetLocalPlayerCount() > 1 && g_NetworkManager.GetOnlinePlayerCount() > 0)
 	{
-		singleOrMultiplayer = static_cast<INT>(eSen_SingleOrMultiplayer_Multiplayer_Both_Local_and_Live);
+		singleOrMultiplayer = (INT)eSen_SingleOrMultiplayer_Multiplayer_Both_Local_and_Live;
 	}
 
 	return singleOrMultiplayer;
@@ -432,16 +432,16 @@ INT CSentientManager::GetDifficultyLevel(INT diff)
 	switch(diff)
 	{
 	case 0:
-		difficultyLevel = static_cast<INT>(eSen_DifficultyLevel_Easiest);
+		difficultyLevel = (INT)eSen_DifficultyLevel_Easiest;
 		break;
 	case 1:
-		difficultyLevel = static_cast<INT>(eSen_DifficultyLevel_Easier);
+		difficultyLevel = (INT)eSen_DifficultyLevel_Easier;
 		break;
 	case 2:
-		difficultyLevel = static_cast<INT>(eSen_DifficultyLevel_Normal);
+		difficultyLevel = (INT)eSen_DifficultyLevel_Normal;
 		break;
 	case 3:
-		difficultyLevel = static_cast<INT>(eSen_DifficultyLevel_Harder);
+		difficultyLevel = (INT)eSen_DifficultyLevel_Harder;
 		break;
 	}
 
@@ -461,11 +461,11 @@ INT CSentientManager::GetLicense()
 
 	if(ProfileManager.IsFullVersion())
 	{
-		license = static_cast<INT>(eSen_License_Full_Purchased_Title);
+		license = (INT)eSen_License_Full_Purchased_Title;
 	}
 	else
 	{
-		license = static_cast<INT>(eSen_License_Trial_or_Demo);
+		license = (INT)eSen_License_Trial_or_Demo;
 	}
 	return license;
 }
@@ -500,15 +500,15 @@ INT CSentientManager::GetAudioSettings(DWORD dwUserId)
 
 		if(volume == 0)
 		{
-			audioSettings = static_cast<INT>(eSen_AudioSettings_Off);
+			audioSettings = (INT)eSen_AudioSettings_Off;
 		}
 		else if(volume == DEFAULT_VOLUME_LEVEL)
 		{
-			audioSettings = static_cast<INT>(eSen_AudioSettings_On_Default);
+			audioSettings = (INT)eSen_AudioSettings_On_Default;
 		}
 		else
 		{
-			audioSettings = static_cast<INT>(eSen_AudioSettings_On_CustomSetting);
+			audioSettings = (INT)eSen_AudioSettings_On_CustomSetting;
 		}
 	}
 	return audioSettings;

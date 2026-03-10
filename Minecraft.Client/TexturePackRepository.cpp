@@ -8,9 +8,8 @@
 #include "..\Minecraft.World\File.h"
 #include "..\Minecraft.World\StringHelpers.h"
 #include "Minimap.h"
-#include "Common/UI/UI.h"
 
-TexturePack *TexturePackRepository::DEFAULT_TEXTURE_PACK = nullptr;
+TexturePack *TexturePackRepository::DEFAULT_TEXTURE_PACK = NULL;
 
 TexturePackRepository::TexturePackRepository(File workingDirectory, Minecraft *minecraft)
 {
@@ -18,7 +17,7 @@ TexturePackRepository::TexturePackRepository(File workingDirectory, Minecraft *m
 
 	// 4J - added
 	usingWeb = false;
-	selected = nullptr;
+	selected = NULL;
 	texturePacks = new vector<TexturePack *>;
 
     this->minecraft = minecraft;
@@ -29,9 +28,9 @@ TexturePackRepository::TexturePackRepository(File workingDirectory, Minecraft *m
 
 	DEFAULT_TEXTURE_PACK->loadColourTable();
 
-	m_dummyTexturePack = nullptr;
-	m_dummyDLCTexturePack = nullptr;
-	lastSelected = nullptr;
+	m_dummyTexturePack = NULL;
+	m_dummyDLCTexturePack = NULL;
+	lastSelected = NULL;
 
     updateList();
 }
@@ -50,13 +49,13 @@ void TexturePackRepository::addDebugPacks()
 	{
 		DLCPack *pack = app.m_dlcManager.getPack(L"DLCTestPack");
 
-		if( pack != nullptr && pack->IsCorrupt() )
+		if( pack != NULL && pack->IsCorrupt() )
 		{
 			app.m_dlcManager.removePack(pack);
-			pack = nullptr;
+			pack = NULL;
 		}
 
-		if(pack == nullptr)
+		if(pack == NULL)
 		{
 			wprintf(L"Pack \"%ls\" is not installed, so adding it\n", L"DLCTestPack");
 			pack = new DLCPack(L"DLCTestPack",0xffffffff);
@@ -165,7 +164,7 @@ void TexturePackRepository::updateList()
 	currentPacks->push_back(m_dummyTexturePack);
 	cacheById[m_dummyTexturePack->getId()] = m_dummyTexturePack;
 
-	if(m_dummyDLCTexturePack != nullptr)
+	if(m_dummyDLCTexturePack != NULL)
 	{
 		currentPacks->push_back(m_dummyDLCTexturePack);
 		cacheById[m_dummyDLCTexturePack->getId()] = m_dummyDLCTexturePack;
@@ -228,7 +227,7 @@ wstring TexturePackRepository::getIdOrNull(File file)
 		return file.getName() + ":folder:" + file.lastModified();
 	}
 
-	return nullptr;
+	return NULL;
 #endif
 	return L"";
 }
@@ -358,17 +357,17 @@ TexturePack *TexturePackRepository::getTexturePackById(DWORD id)
 		return it->second;
 	}
 
-	return nullptr;
+	return NULL;
 }
 
 TexturePack *TexturePackRepository::addTexturePackFromDLC(DLCPack *dlcPack, DWORD id)
 {
-	TexturePack *newPack = nullptr;
+	TexturePack *newPack = NULL;
 	// 4J-PB - The City texture pack went out with a child id for the texture pack of 1 instead of zero
 	// we need to mask off the child id here to deal with this
 	DWORD dwParentID=id&0xFFFFFF; // child id is <<24 and Or'd with parent
 
-	if(dlcPack != nullptr)
+	if(dlcPack != NULL)
 	{
 		newPack = new DLCTexturePack(dwParentID, dlcPack, DEFAULT_TEXTURE_PACK);
 		texturePacks->push_back(newPack);
@@ -409,7 +408,7 @@ void TexturePackRepository::removeTexturePackById(DWORD id)
 			texturePacks->erase(it2);
 			if(lastSelected == oldPack)
 			{
-				lastSelected = nullptr;
+				lastSelected = NULL;
 			}
 		}
 		m_texturePacksToDelete.push_back(oldPack);
@@ -418,19 +417,19 @@ void TexturePackRepository::removeTexturePackById(DWORD id)
 
 void TexturePackRepository::updateUI()
 {
-	if(lastSelected != nullptr && lastSelected != selected)
+	if(lastSelected != NULL && lastSelected != selected)
 	{
 		lastSelected->unloadUI();
 		selected->loadUI();
 		Minimap::reloadColours();
 		ui.StartReloadSkinThread();
-		lastSelected = nullptr;
+		lastSelected = NULL;
 	}
 }
 
 bool TexturePackRepository::needsUIUpdate()
 {
-	return lastSelected != nullptr && lastSelected != selected;
+	return lastSelected != NULL && lastSelected != selected;
 }
 
 unsigned int TexturePackRepository::getTexturePackCount()
@@ -440,7 +439,7 @@ unsigned int TexturePackRepository::getTexturePackCount()
 
 TexturePack *TexturePackRepository::getTexturePackByIndex(unsigned int index)
 {
-	TexturePack *pack = nullptr;
+	TexturePack *pack = NULL;
 	if(index < texturePacks->size())
 	{
 		pack = texturePacks->at(index);

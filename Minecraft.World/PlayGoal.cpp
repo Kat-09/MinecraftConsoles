@@ -40,22 +40,22 @@ bool PlayGoal::canUse()
 	}
 	delete children;
 
-	if (followFriend.lock() == nullptr)
+	if (followFriend.lock() == NULL)
 	{
 		Vec3 *pos = RandomPos::getPos(dynamic_pointer_cast<PathfinderMob>(mob->shared_from_this()), 16, 3);
-		if (pos == nullptr) return false;
+		if (pos == NULL) return false;
 	}
 	return true;
 }
 
 bool PlayGoal::canContinueToUse()
 {
-	return playTime > 0 && followFriend.lock() != nullptr;
+	return playTime > 0 && followFriend.lock() != NULL;
 }
 
 void PlayGoal::start()
 {
-	if (followFriend.lock() != nullptr) mob->setChasing(true);
+	if (followFriend.lock() != NULL) mob->setChasing(true);
 	playTime = 1000;
 }
 
@@ -68,7 +68,7 @@ void PlayGoal::stop()
 void PlayGoal::tick()
 {
 	--playTime;
-	if (followFriend.lock() != nullptr)
+	if (followFriend.lock() != NULL)
 	{
 		if (mob->distanceToSqr(followFriend.lock()) > 2 * 2) mob->getNavigation()->moveTo(followFriend.lock(), speedModifier);
 	}
@@ -77,7 +77,7 @@ void PlayGoal::tick()
 		if (mob->getNavigation()->isDone())
 		{
 			Vec3 *pos = RandomPos::getPos(dynamic_pointer_cast<PathfinderMob>(mob->shared_from_this()), 16, 3);
-			if (pos == nullptr) return;
+			if (pos == NULL) return;
 			mob->getNavigation()->moveTo(pos->x, pos->y, pos->z, speedModifier);
 		}
 	}

@@ -27,6 +27,6 @@ class PlayerInfoPacket : public Packet, public enable_shared_from_this<PlayerInf
 		virtual int getEstimatedSize();
 
 public:
-	static shared_ptr<Packet> create() { return std::make_shared<PlayerInfoPacket>(); }
+	static shared_ptr<Packet> create() { return shared_ptr<Packet>(new PlayerInfoPacket()); }
 	virtual int getId() { return 201; }
 };

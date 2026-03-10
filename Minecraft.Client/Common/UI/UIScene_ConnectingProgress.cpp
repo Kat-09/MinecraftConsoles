@@ -15,7 +15,7 @@ UIScene_ConnectingProgress::UIScene_ConnectingProgress(int iPad, void *_initData
 	m_progressBar.setVisible( false );
 	m_labelTip.setVisible( false );
 
-	ConnectionProgressParams *param = static_cast<ConnectionProgressParams *>(_initData);
+	ConnectionProgressParams *param = (ConnectionProgressParams *)_initData;
 
 	if( param->stringId >= 0 )
 	{
@@ -210,7 +210,7 @@ void UIScene_ConnectingProgress::handleInput(int iPad, int key, bool repeat, boo
 // 4J-PB - Removed the option to cancel join - it didn't work anyway
 // 		case ACTION_MENU_CANCEL:
 // 			{
-// 				if(m_cancelFunc != nullptr)
+// 				if(m_cancelFunc != NULL)
 // 				{
 // 					m_cancelFunc(m_cancelFuncParam);
 // 				}
@@ -245,7 +245,7 @@ void UIScene_ConnectingProgress::handleInput(int iPad, int key, bool repeat, boo
 
 void UIScene_ConnectingProgress::handlePress(F64 controlId, F64 childId)
 {
-	switch(static_cast<int>(controlId))
+	switch((int)controlId)
 	{
 	case eControl_Confirm:
 		if(m_showingButton)

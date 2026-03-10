@@ -24,7 +24,7 @@ private:
 public:
 	UIControl_TextInput();
 
-	virtual bool setupControl(UIScene *scene, IggyValuePath *parent, const string &controlName);
+	virtual bool setupControl(UIScene* scene, IggyValuePath* parent, const string& controlName);
 
 	void init(UIString label, int id);
 	void ReInit();

@@ -8,16 +8,16 @@ public:
 	class PortalPosition : public Pos
 	{
 	public:
-		int64_t lastUsed;
+		__int64 lastUsed;
 
-		PortalPosition(int x, int y, int z, int64_t time);
+		PortalPosition(int x, int y, int z, __int64 time);
 	};
 
 private:
 	ServerLevel *level;
 	Random *random;
-	unordered_map<int64_t, PortalPosition *> cachedPortals;
-	vector<int64_t> cachedPortalKeys;
+	unordered_map<__int64, PortalPosition *> cachedPortals;
+	vector<__int64> cachedPortalKeys;
 
 public:
 	PortalForcer(ServerLevel *level);
@@ -26,5 +26,5 @@ public:
 	void force(shared_ptr<Entity> e, double xOriginal, double yOriginal, double zOriginal, float yRotOriginal);
 	bool findPortal(shared_ptr<Entity> e, double xOriginal, double yOriginal, double zOriginal, float yRotOriginal);
 	bool createPortal(shared_ptr<Entity> e);
-	void tick(int64_t time);
+	void tick(__int64 time);
 };

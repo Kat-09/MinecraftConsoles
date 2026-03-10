@@ -6,8 +6,6 @@
 #include "..\..\LocalPlayer.h"
 #include "IUIScene_CraftingMenu.h"
 
-#include "UI.h"
-
 Recipy::_eGroupType IUIScene_CraftingMenu::m_GroupTypeMapping4GridA[IUIScene_CraftingMenu::m_iMaxGroup2x2]=
 {
 	Recipy::eGroupType_Structure,
@@ -156,10 +154,10 @@ bool IUIScene_CraftingMenu::handleKeyDown(int iPad, int iAction, bool bRepeat)
 
 	Minecraft *pMinecraft = Minecraft::GetInstance();
 
-	if( pMinecraft->localgameModes[getPad()] != nullptr )
+	if( pMinecraft->localgameModes[getPad()] != NULL )
 	{
 		Tutorial *tutorial = pMinecraft->localgameModes[getPad()]->getTutorial();
-		if(tutorial != nullptr)
+		if(tutorial != NULL)
 		{
 			tutorial->handleUIInput(iAction);
 			if(ui.IsTutorialVisible(getPad()) && !tutorial->isInputAllowed(iAction))
@@ -213,10 +211,10 @@ bool IUIScene_CraftingMenu::handleKeyDown(int iPad, int iAction, bool bRepeat)
 					shared_ptr<ItemInstance> pTempItemInst=pRecipeIngredientsRequired[iRecipe].pRecipy->assemble(nullptr);
 					//int iIcon=pTempItemInst->getItem()->getIcon(pTempItemInst->getAuxValue());
 
-					if( pMinecraft->localgameModes[iPad] != nullptr)
+					if( pMinecraft->localgameModes[iPad] != NULL)
 					{
 						Tutorial *tutorial = pMinecraft->localgameModes[iPad]->getTutorial();
-						if(tutorial != nullptr)
+						if(tutorial != NULL)
 						{
 							tutorial->onCrafted(pTempItemInst);
 						}
@@ -249,10 +247,10 @@ bool IUIScene_CraftingMenu::handleKeyDown(int iPad, int iAction, bool bRepeat)
 				shared_ptr<ItemInstance> pTempItemInst=pRecipeIngredientsRequired[iRecipe].pRecipy->assemble(nullptr);
 				//int iIcon=pTempItemInst->getItem()->getIcon(pTempItemInst->getAuxValue());
 
-				if( pMinecraft->localgameModes[iPad] != nullptr )
+				if( pMinecraft->localgameModes[iPad] != NULL )
 				{
 					Tutorial *tutorial = pMinecraft->localgameModes[iPad]->getTutorial();
-					if(tutorial != nullptr)
+					if(tutorial != NULL)
 					{
 						tutorial->createItemSelected(pTempItemInst, pRecipeIngredientsRequired[iRecipe].bCanMake[iPad]);
 					}
@@ -290,12 +288,12 @@ bool IUIScene_CraftingMenu::handleKeyDown(int iPad, int iAction, bool bRepeat)
 								}
 
 								// 4J Stu - Fix for #13097 - Bug: Milk Buckets are removed when crafting Cake
-								if (ingItemInst != nullptr)
+								if (ingItemInst != NULL)
 								{
 									if (ingItemInst->getItem()->hasCraftingRemainingItem())
 									{
 										// replace item with remaining result
-										m_pPlayer->inventory->add(std::make_shared<ItemInstance>(ingItemInst->getItem()->getCraftingRemainingItem()));
+										m_pPlayer->inventory->add( shared_ptr<ItemInstance>( new ItemInstance(ingItemInst->getItem()->getCraftingRemainingItem()) ) );
 									}
 
 								}
@@ -610,7 +608,7 @@ void IUIScene_CraftingMenu::CheckRecipesAvailable()
 		// dump out the inventory
 		/*		for (unsigned int k = 0; k < m_pPlayer->inventory->items.length; k++)
 		{
-		if (m_pPlayer->inventory->items[k] != nullptr)
+		if (m_pPlayer->inventory->items[k] != NULL)
 		{
 		wstring itemstring=m_pPlayer->inventory->items[k]->toString();
 
@@ -622,15 +620,15 @@ void IUIScene_CraftingMenu::CheckRecipesAvailable()
 		*/
 		RecipyList *recipes = ((Recipes *)Recipes::getInstance())->getRecipies();
 		Recipy::INGREDIENTS_REQUIRED *pRecipeIngredientsRequired=Recipes::getInstance()->getRecipeIngredientsArray();
-		int iRecipeC=static_cast<int>(recipes->size());
+		int iRecipeC=(int)recipes->size();
         auto itRecipe = recipes->begin();
 
         // dump out the recipe products
 
 		// 		for (int i = 0; i < iRecipeC; i++)
 		// 		{
-		// 			shared_ptr<ItemInstance> pTempItemInst=pRecipeIngredientsRequired[i].pRecipy->assemble(nullptr);
-		// 			if (pTempItemInst != nullptr)
+		// 			shared_ptr<ItemInstance> pTempItemInst=pRecipeIngredientsRequired[i].pRecipy->assemble(NULL);
+		// 			if (pTempItemInst != NULL)
 		// 			{
 		// 				wstring itemstring=pTempItemInst->toString();
 		//
@@ -685,7 +683,7 @@ void IUIScene_CraftingMenu::CheckRecipesAvailable()
 				// Does the player have this ingredient?
 				for (unsigned int k = 0; k < m_pPlayer->inventory->items.length; k++)
 				{
-					if (m_pPlayer->inventory->items[k] != nullptr)
+					if (m_pPlayer->inventory->items[k] != NULL)
 					{
 						// do they have the ingredient, and the aux value matches, and enough off it?
 						if((m_pPlayer->inventory->items[k]->id == pRecipeIngredientsRequired[i].iIngIDA[j]) &&
@@ -705,7 +703,7 @@ void IUIScene_CraftingMenu::CheckRecipesAvailable()
 
 								for(unsigned int l=0;l<m_pPlayer->inventory->items.length;l++)
 								{
-									if (m_pPlayer->inventory->items[l] != nullptr)
+									if (m_pPlayer->inventory->items[l] != NULL)
 									{
 										if(
 											(m_pPlayer->inventory->items[l]->id == pRecipeIngredientsRequired[i].iIngIDA[j]) &&
@@ -1073,7 +1071,7 @@ void IUIScene_CraftingMenu::DisplayIngredients()
 			int iAuxVal=pRecipeIngredientsRequired[iRecipe].iIngAuxValA[i];
 			Item *item = Item::items[id];
 
-			shared_ptr<ItemInstance> itemInst= std::make_shared<ItemInstance>(item, pRecipeIngredientsRequired[iRecipe].iIngValA[i], iAuxVal);
+			shared_ptr<ItemInstance> itemInst= shared_ptr<ItemInstance>(new ItemInstance(item,pRecipeIngredientsRequired[iRecipe].iIngValA[i],iAuxVal));
 
 			// 4J-PB - a very special case - the bed can use any kind of wool, so we can't use the item description
 			// and the same goes for the painting
@@ -1158,7 +1156,7 @@ void IUIScene_CraftingMenu::DisplayIngredients()
 					{
 						iAuxVal = 1;
 					}
-					shared_ptr<ItemInstance> itemInst= std::make_shared<ItemInstance>(id, 1, iAuxVal);
+					shared_ptr<ItemInstance> itemInst= shared_ptr<ItemInstance>(new ItemInstance(id,1,iAuxVal));
 					setIngredientSlotItem(getPad(),index,itemInst);
 					// show the ingredients we don't have if we can't make the recipe
 					if(app.DebugSettingsOn() && app.GetGameSettingsDebugMask(ProfileManager.GetPrimaryPad())&(1L<<eDebugSetting_CraftAnything))

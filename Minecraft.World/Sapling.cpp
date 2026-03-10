@@ -17,7 +17,7 @@ const wstring Sapling::TEXTURE_NAMES[] = {L"sapling", L"sapling_spruce", L"sapli
 Sapling::Sapling(int id) : Bush( id )
 {
 	this->updateDefaultShape();
-	icons = nullptr;
+	icons = NULL;
 }
 
 // 4J Added override
@@ -65,7 +65,7 @@ void Sapling::growTree(Level *level, int x, int y, int z, Random *random)
 {
 	int data = level->getData(x, y, z) & TYPE_MASK;
 
-	Feature *f = nullptr;
+	Feature *f = NULL;
 
 	int ox = 0, oz = 0;
 	bool multiblock = false;
@@ -93,12 +93,12 @@ void Sapling::growTree(Level *level, int x, int y, int z, Random *random)
 					break;
 				}
 			}
-			if (f != nullptr)
+			if (f != NULL)
 			{
 				break;
 			}
 		}
-		if (f == nullptr)
+		if (f == NULL)
 		{
 			ox = oz = 0;
 			f = new TreeFeature(true, 4 + random->nextInt(7), TreeTile::JUNGLE_TRUNK, LeafTile::JUNGLE_LEAF, false);
@@ -138,7 +138,7 @@ void Sapling::growTree(Level *level, int x, int y, int z, Random *random)
 			level->setTileAndData(x, y, z, id, data, Tile::UPDATE_NONE);
 		}
 	}
-	if( f != nullptr )
+	if( f != NULL )
 		delete f;
 }
 

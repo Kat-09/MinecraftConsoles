@@ -10,6 +10,6 @@ private:
 public:
 	DLCGameRulesFile(const wstring &path);
 
-    void addData(PBYTE pbData, DWORD dwBytes) override;
-    PBYTE getData(DWORD &dwBytes) override;
+	virtual void addData(PBYTE pbData, DWORD dwBytes);
+	virtual PBYTE getData(DWORD &dwBytes);
 };

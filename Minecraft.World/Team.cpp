@@ -4,7 +4,7 @@
 
 bool Team::isAlliedTo(Team *other)
 {
-	if (other == nullptr)
+	if (other == NULL)
 	{
 		return false;
 	}

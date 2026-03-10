@@ -10,7 +10,7 @@ LeverTile::LeverTile(int id) : Tile(id, Material::decoration,isSolidRender())
 
 AABB *LeverTile::getAABB(Level *level, int x, int y, int z)
 {
-	return nullptr;
+	return NULL;
 }
 
 bool LeverTile::blocksLight()

@@ -11,9 +11,9 @@ UITTFFont::UITTFFont(const string &name, const string &path, S32 fallbackCharact
 
 #ifdef _UNICODE
 	wstring wPath = convStringToWstring(path);
-	HANDLE file = CreateFile(wPath.c_str(), GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+	HANDLE file = CreateFile(wPath.c_str(), GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 #else
-	HANDLE file = CreateFile(path.c_str(), GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+	HANDLE file = CreateFile(path.c_str(), GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 #endif
 	if( file == INVALID_HANDLE_VALUE )
 	{
@@ -30,7 +30,7 @@ UITTFFont::UITTFFont(const string &name, const string &path, S32 fallbackCharact
 		DWORD bytesRead;
 
 		pbData =  (PBYTE) new BYTE[dwFileSize];
-		BOOL bSuccess = ReadFile(file,pbData,dwFileSize,&bytesRead,nullptr);
+		BOOL bSuccess = ReadFile(file,pbData,dwFileSize,&bytesRead,NULL);
 		if(bSuccess==FALSE)
 		{
 			app.FatalLoadError();

@@ -12,7 +12,7 @@
 DetectorRailTile::DetectorRailTile(int id) : BaseRailTile(id, true)
 {
 	setTicking(true);
-	icons = nullptr;
+	icons = NULL;
 }
 
 int DetectorRailTile::getTickDelay(Level *level)

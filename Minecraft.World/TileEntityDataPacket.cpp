@@ -10,7 +10,7 @@ void TileEntityDataPacket::_init()
 {
 	x = y = z = 0;
 	type = TYPE_MOB_SPAWNER;
-	tag = nullptr;
+	tag = NULL;
 }
 
 
@@ -50,7 +50,7 @@ void TileEntityDataPacket::write(DataOutputStream *dos)
 	dos->writeInt(x);
 	dos->writeShort(y);
 	dos->writeInt(z);
-	dos->writeByte(static_cast<byte>(type));
+	dos->writeByte((byte) type);
 	writeNbt(tag, dos);
 }
 

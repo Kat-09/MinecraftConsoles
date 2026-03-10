@@ -79,7 +79,7 @@ void BufferedOutputStream::write(byteArray b)
 //b - the byte to be written.
 void BufferedOutputStream::write(unsigned int b)
 {
-	buf[count++] = static_cast<byte>(b);
+	buf[count++] = (byte) b;
 	if( count == buf.length )
 	{
 		flush();

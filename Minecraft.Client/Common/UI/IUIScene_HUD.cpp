@@ -7,8 +7,6 @@
 #include "..\..\..\Minecraft.World\net.minecraft.world.entity.monster.h"
 #include "IUIScene_HUD.h"
 
-#include "UI.h"
-
 IUIScene_HUD::IUIScene_HUD()
 {
 	m_lastActiveSlot = -1;
@@ -81,7 +79,7 @@ void IUIScene_HUD::updateFrameTick()
 	{
 		//SetRidingHorse(false, 0);
 		shared_ptr<Entity> riding = pMinecraft->localplayers[iPad]->riding;
-		if(riding == nullptr)
+		if(riding == NULL)
 		{
 			SetRidingHorse(false, false, 0);
 		}
@@ -148,8 +146,8 @@ void IUIScene_HUD::updateFrameTick()
 		{
 			if(uiOpacityTimer<10)
 			{
-				float fStep=(80.0f-static_cast<float>(ucAlpha))/10.0f;
-				fVal=0.01f*(80.0f-((10.0f-static_cast<float>(uiOpacityTimer))*fStep));
+				float fStep=(80.0f-(float)ucAlpha)/10.0f;
+				fVal=0.01f*(80.0f-((10.0f-(float)uiOpacityTimer)*fStep));
 			}
 			else
 			{
@@ -158,7 +156,7 @@ void IUIScene_HUD::updateFrameTick()
 		}
 		else
 		{
-			fVal=0.01f*static_cast<float>(ucAlpha);
+			fVal=0.01f*(float)ucAlpha;
 		}
 	}
 	else
@@ -168,12 +166,12 @@ void IUIScene_HUD::updateFrameTick()
 		{
 			ucAlpha=15;
 		}
-		fVal=0.01f*static_cast<float>(ucAlpha);
+		fVal=0.01f*(float)ucAlpha;
 	}
 	SetOpacity(fVal);
 
 	bool bDisplayGui=app.GetGameStarted() && !ui.GetMenuDisplayed(iPad) && !(app.GetXuiAction(iPad)==eAppAction_AutosaveSaveGameCapturedThumbnail) && app.GetGameSettings(iPad,eGameSetting_DisplayHUD)!=0;
-	if(bDisplayGui && pMinecraft->localplayers[iPad] != nullptr)
+	if(bDisplayGui && pMinecraft->localplayers[iPad] != NULL)
 	{
 		SetVisible(true);			
 	}
@@ -200,7 +198,7 @@ void IUIScene_HUD::renderPlayerHealth()
 	bool bHasPoison = pMinecraft->localplayers[iPad]->hasEffect(MobEffect::poison);
 	bool bHasWither = pMinecraft->localplayers[iPad]->hasEffect(MobEffect::wither);
 	AttributeInstance *maxHealthAttribute = pMinecraft->localplayers[iPad]->getAttribute(SharedMonsterAttributes::MAX_HEALTH);
-	float maxHealth = static_cast<float>(maxHealthAttribute->getValue());
+	float maxHealth = (float)maxHealthAttribute->getValue();
 	float totalAbsorption = pMinecraft->localplayers[iPad]->getAbsorptionAmount();
 
 	// Update armour
@@ -221,7 +219,7 @@ void IUIScene_HUD::renderPlayerHealth()
 
 	shared_ptr<Entity> riding = pMinecraft->localplayers[iPad]->riding;
 
-	if(riding == nullptr || riding && !riding->instanceof(eTYPE_LIVINGENTITY))
+	if(riding == NULL || riding && !riding->instanceof(eTYPE_LIVINGENTITY))
 	{
 		SetRidingHorse(false, false, 0);
 
@@ -244,8 +242,8 @@ void IUIScene_HUD::renderPlayerHealth()
 		if (pMinecraft->localplayers[iPad]->isUnderLiquid(Material::water))
 		{
 			ShowAir(true);
-			int count = static_cast<int>(ceil((pMinecraft->localplayers[iPad]->getAirSupply() - 2) * 10.0f / Player::TOTAL_AIR_SUPPLY));
-			int extra = static_cast<int>(ceil((pMinecraft->localplayers[iPad]->getAirSupply()) * 10.0f / Player::TOTAL_AIR_SUPPLY)) - count;
+			int count = (int) ceil((pMinecraft->localplayers[iPad]->getAirSupply() - 2) * 10.0f / Player::TOTAL_AIR_SUPPLY);
+			int extra = (int) ceil((pMinecraft->localplayers[iPad]->getAirSupply()) * 10.0f / Player::TOTAL_AIR_SUPPLY) - count;
 			SetAir(count, extra);
 		}
 		else
@@ -256,7 +254,7 @@ void IUIScene_HUD::renderPlayerHealth()
 	else if(riding->instanceof(eTYPE_LIVINGENTITY) )
 	{
 		shared_ptr<LivingEntity> living = dynamic_pointer_cast<LivingEntity>(riding);
-		int riderCurrentHealth = static_cast<int>(ceil(living->getHealth()));
+		int riderCurrentHealth = (int) ceil(living->getHealth());
 		float maxRiderHealth = living->getMaxHealth();
 
 		SetRidingHorse(true, pMinecraft->localplayers[iPad]->isRidingJumpable(), maxRiderHealth);

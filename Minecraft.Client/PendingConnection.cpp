@@ -45,7 +45,7 @@ PendingConnection::~PendingConnection()
 
 void PendingConnection::tick()
 {
-	if (acceptedLogin != nullptr)
+	if (acceptedLogin != NULL)
 	{
 		this->handleAcceptedLogin(acceptedLogin);
 		acceptedLogin = nullptr;
@@ -65,7 +65,7 @@ void PendingConnection::disconnect(DisconnectPacket::eDisconnectReason reason)
 	//   try {	// 4J - removed try/catch
 	//        logger.info("Disconnecting " + getName() + ": " + reason);
 	app.DebugPrintf("Pending connection disconnect: %d\n", reason );
-	connection->send(std::make_shared<DisconnectPacket>(reason));
+	connection->send( shared_ptr<DisconnectPacket>( new DisconnectPacket(reason) ) );
 	connection->sendAndQuit();
 	done = true;
 	//    } catch (Exception e) {
@@ -121,7 +121,7 @@ void PendingConnection::sendPreLoginResponse()
 			// Need to use the online XUID otherwise friend checks will fail on the client
 			ugcXuids[ugcXuidCount] = player->connection->m_onlineXUID;
 
-			if( player->connection->getNetworkPlayer() != nullptr && player->connection->getNetworkPlayer()->IsHost() ) hostIndex = ugcXuidCount;
+			if( player->connection->getNetworkPlayer() != NULL && player->connection->getNetworkPlayer()->IsHost() ) hostIndex = ugcXuidCount;
 
 			++ugcXuidCount;
 		}
@@ -136,9 +136,9 @@ void PendingConnection::sendPreLoginResponse()
 	else
 #endif
 	{
-		DWORD cappedCount = (ugcXuidCount > 255u) ? 255u : ugcXuidCount;
+		DWORD cappedCount = (ugcXuidCount > 255u) ? 255u : static_cast<DWORD>(ugcXuidCount);
 		BYTE cappedHostIndex = (hostIndex >= 255u) ? 254 : static_cast<BYTE>(hostIndex);
-		connection->send(std::make_shared<PreLoginPacket>(L"-", ugcXuids, cappedCount, ugcFriendsOnlyBits, server->m_ugcPlayersVersion, szUniqueMapName, app.GetGameHostOption(eGameHostOption_All), cappedHostIndex, server->m_texturePackId));
+		connection->send(shared_ptr<PreLoginPacket>(new PreLoginPacket(L"-", ugcXuids, cappedCount, ugcFriendsOnlyBits, server->m_ugcPlayersVersion, szUniqueMapName, app.GetGameHostOption(eGameHostOption_All), cappedHostIndex, server->m_texturePackId)));
 	}
 }
 
@@ -163,37 +163,14 @@ void PendingConnection::handleLogin(shared_ptr<LoginPacket> packet)
 	//if (true)// 4J removed !server->onlineMode)
 	bool sentDisconnect = false;
 
-	// Use the same Xuid choice as handleAcceptedLogin (offline first, online fallback).
-	// 
-	PlayerUID loginXuid = packet->m_offlineXuid;
-	if (loginXuid == INVALID_XUID) loginXuid = packet->m_onlineXuid;
-
-	bool duplicateXuid = false;
-	if (loginXuid != INVALID_XUID && server->getPlayers()->getPlayer(loginXuid) != nullptr)
-	{
-		duplicateXuid = true;
-	}
-	else if (packet->m_onlineXuid != INVALID_XUID &&
-		packet->m_onlineXuid != loginXuid &&
-		server->getPlayers()->getPlayer(packet->m_onlineXuid) != nullptr)
-	{
-		duplicateXuid = true;
-	}
+	
 
 	if( sentDisconnect )
 	{
 		// Do nothing
 	}
-	else if( server->getPlayers()->isXuidBanned( packet->m_onlineXuid ) )
+	else if( server->getPlayers()->isXuidBanned( packet->m_onlineXuid ) || server->IsUsernameBanned(packet->userName) )
 	{
-		disconnect(DisconnectPacket::eDisconnect_Banned);
-	}
-	else if (duplicateXuid)
-	{
-		// Reject the incoming connection — a player with this UID is already
-		// on the server.  Allowing duplicates causes invisible players and
-		// other undefined behaviour.
-		app.DebugPrintf("LOGIN: Rejecting duplicate xuid for name: %ls\n", name.c_str());
 		disconnect(DisconnectPacket::eDisconnect_Banned);
 	}
 #ifdef _WINDOWS64
@@ -203,7 +180,7 @@ void PendingConnection::handleLogin(shared_ptr<LoginPacket> packet)
 		vector<shared_ptr<ServerPlayer> >& pl = server->getPlayers()->players;
 		for (const auto& i : pl)
 		{
-			if (i != nullptr && i->name == name)
+			if (i != NULL && i->name == name)
 			{
 				nameTaken = true;
 				break;
@@ -266,10 +243,10 @@ void PendingConnection::handleAcceptedLogin(shared_ptr<LoginPacket> packet)
 	if(playerXuid == INVALID_XUID) playerXuid = packet->m_onlineXuid;
 
 	shared_ptr<ServerPlayer> playerEntity = server->getPlayers()->getPlayerForLogin(this, name, playerXuid,packet->m_onlineXuid);
-	if (playerEntity != nullptr)
+	if (playerEntity != NULL)
 	{
 		server->getPlayers()->placeNewPlayer(connection, playerEntity, packet);
-		connection = nullptr;	// We've moved responsibility for this over to the new PlayerConnection, nullptr so we don't delete our reference to it here in our dtor
+		connection = NULL;	// We've moved responsibility for this over to the new PlayerConnection, NULL so we don't delete our reference to it here in our dtor
 	}
 	done = true;
 
@@ -286,7 +263,7 @@ void PendingConnection::handleGetInfo(shared_ptr<GetInfoPacket> packet)
 	//try {
 	//String message = server->motd + "�" + server->players->getPlayerCount() + "�" + server->players->getMaxPlayers();
 	//connection->send(new DisconnectPacket(message));
-	connection->send(std::make_shared<DisconnectPacket>(DisconnectPacket::eDisconnect_ServerFull));
+	connection->send(shared_ptr<DisconnectPacket>(new DisconnectPacket(DisconnectPacket::eDisconnect_ServerFull) ) );
 	connection->sendAndQuit();
 	server->connection->removeSpamProtection(connection->getSocket());
 	done = true;

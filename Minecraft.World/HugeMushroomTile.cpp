@@ -9,9 +9,9 @@ const wstring HugeMushroomTile::TEXTURE_TYPE[] = {L"skin_brown", L"skin_red"};
 HugeMushroomTile::HugeMushroomTile(int id, Material *material, int type) : Tile(id, material)
 {
 	this->type = type;
-	icons = nullptr;
-	iconStem = nullptr;
-	iconInside = nullptr;
+	icons = NULL;
+	iconStem = NULL;
+	iconInside = NULL;
 }
 
 Icon *HugeMushroomTile::getTexture(int face, int data)

@@ -10,11 +10,11 @@ namespace WFC = Windows::Foundation::Collections;
 namespace MXSA = Microsoft::Xbox::Services::Achievements;
 namespace CC = concurrency;
 
-GameProgress *GameProgress::instance = nullptr;
+GameProgress *GameProgress::instance = NULL;
 
 void GameProgress::Flush(int iPad)
 {
-	if (instance == nullptr) 
+	if (instance == NULL) 
 		instance = new GameProgress();
 
 	instance->updatePlayer(iPad);
@@ -22,7 +22,7 @@ void GameProgress::Flush(int iPad)
 
 void GameProgress::Tick()
 {
-	if (instance == nullptr)
+	if (instance == NULL)
 		instance = new GameProgress();
 
 	long long currentTime = System::currentTimeMillis();
@@ -103,5 +103,5 @@ void GameProgress::updatePlayer(int iPad)
 
 float GameProgress::calcGameProgress(int achievementsUnlocked)
 {
-	return static_cast<float>(achievementsUnlocked) / 0.60f;
+	return (float) achievementsUnlocked / 0.60f;
 }

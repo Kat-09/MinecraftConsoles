@@ -27,6 +27,6 @@ public:
 	bool isSneaking();
 
 public:
-	static shared_ptr<Packet> create() { return std::make_shared<PlayerInputPacket>(); }
+	static shared_ptr<Packet> create() { return shared_ptr<Packet>(new PlayerInputPacket()); }
 	virtual int getId() { return 27; }
 };

@@ -23,7 +23,7 @@ public:
     virtual bool isInvalidatedBy(shared_ptr<Packet> packet);
 
 public:
-	static shared_ptr<Packet> create() { return std::make_shared<SetEntityLinkPacket>(); }
+	static shared_ptr<Packet> create() { return shared_ptr<Packet>(new SetEntityLinkPacket()); }
 	virtual int getId() { return 39; }
 
 };

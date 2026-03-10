@@ -79,7 +79,7 @@ void DLCSkinFile::addParameter(DLCManager::EDLCParameterType type, const wstring
 				{
 					i++;
 				}
-				size_t iLast=creditValue.find_last_of(L" ", i);
+				int iLast=(int)creditValue.find_last_of(L" ",i);
 				switch(XGetLanguage())
 				{
 				case XC_LANGUAGE_JAPANESE:
@@ -88,7 +88,7 @@ void DLCSkinFile::addParameter(DLCManager::EDLCParameterType type, const wstring
 					iLast = maximumChars;
 					break;
 				default:
-					iLast=creditValue.find_last_of(L" ", i);
+					iLast=(int)creditValue.find_last_of(L" ",i);
 					break;
 				}
 
@@ -178,7 +178,7 @@ void DLCSkinFile::addParameter(DLCManager::EDLCParameterType type, const wstring
 
 int DLCSkinFile::getAdditionalBoxesCount()
 {
-	return static_cast<int>(m_AdditionalBoxes.size());
+	return (int)m_AdditionalBoxes.size();
 }
 vector<SKIN_BOX *> *DLCSkinFile::getAdditionalBoxes()
 {

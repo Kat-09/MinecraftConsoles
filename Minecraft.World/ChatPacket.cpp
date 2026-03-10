@@ -43,11 +43,24 @@ ChatPacket::ChatPacket(const wstring& message, EChatPacketMessage type, int sour
 // Read chat packet (throws IOException)
 void ChatPacket::read(DataInputStream *dis) 
 {
-	m_messageType = static_cast<EChatPacketMessage>(dis->readShort());
+	// izzint - TODO: i could see this validation being hardcoded becoming
+	// a problem for people who want to expand on chat types, plz review!
+	short msgType = dis->readShort();
+	if (msgType < e_ChatCustom || msgType > e_ChatCommandTeleportToMe)
+	{
+		throw IOException(L"ChatPacket::read - invalid chat type");
+	}
+	m_messageType = static_cast<EChatPacketMessage>(msgType);
 
 	short packedCounts = dis->readShort();
 	int stringCount = (packedCounts >> 4) & 0xF;
 	int intCount = (packedCounts >> 0) & 0xF;
+
+	// izzint - again, why didn't 4j patch this out??
+	if (stringCount > 15 || intCount > MAX_LENGTH)
+	{
+		throw IOException(L"ChatPacket::read - too many string arguments");
+	}
 	
 	for(int i = 0; i < stringCount; i++)
 	{
@@ -71,12 +84,12 @@ void ChatPacket::write(DataOutputStream *dos)
 
 	dos->writeShort(packedCounts);
 
-	for(size_t i = 0; i < m_stringArgs.size(); i++)
+	for(int i = 0; i < m_stringArgs.size(); i++)
 	{
 		writeUtf(m_stringArgs[i], dos);
 	}
 
-	for(size_t i = 0; i < m_intArgs.size(); i++)
+	for(int i = 0; i < m_intArgs.size(); i++)
 	{
 		dos->writeInt(m_intArgs[i]);
 	}
@@ -92,7 +105,7 @@ void ChatPacket::handle(PacketListener *listener)
 int ChatPacket::getEstimatedSize() 
 {
 	int stringsSize = 0;
-	for(size_t i = 0; i < m_stringArgs.size(); i++)
+	for(int i = 0; i < m_stringArgs.size(); i++)
 	{
 		stringsSize += m_stringArgs[i].length();
 	}

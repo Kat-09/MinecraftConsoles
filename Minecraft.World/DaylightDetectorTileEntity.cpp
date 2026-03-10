@@ -9,12 +9,12 @@ DaylightDetectorTileEntity::DaylightDetectorTileEntity()
 
 void DaylightDetectorTileEntity::tick()
 {
-	if (level != nullptr && !level->isClientSide && (level->getGameTime() % SharedConstants::TICKS_PER_SECOND) == 0)
+	if (level != NULL && !level->isClientSide && (level->getGameTime() % SharedConstants::TICKS_PER_SECOND) == 0)
 	{
 		tile = getTile();
-		if (tile != nullptr && dynamic_cast<DaylightDetectorTile *>(tile) != nullptr)
+		if (tile != NULL && dynamic_cast<DaylightDetectorTile *>(tile) != NULL)
 		{
-			static_cast<DaylightDetectorTile *>(tile)->updateSignalStrength(level, x, y, z);
+			((DaylightDetectorTile *) tile)->updateSignalStrength(level, x, y, z);
 		}
 	}
 }
@@ -22,7 +22,7 @@ void DaylightDetectorTileEntity::tick()
 // 4J Added
 shared_ptr<TileEntity> DaylightDetectorTileEntity::clone()
 {
-	shared_ptr<DaylightDetectorTileEntity> result = std::make_shared<DaylightDetectorTileEntity>();
+	shared_ptr<DaylightDetectorTileEntity> result = shared_ptr<DaylightDetectorTileEntity>( new DaylightDetectorTileEntity() );
 	TileEntity::clone(result);
 
 	return result;

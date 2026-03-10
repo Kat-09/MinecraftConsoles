@@ -19,7 +19,7 @@ BaseRailTile::Rail::Rail(Level *level, int x, int y, int z)
 	if(m_bValidRail)
 	{
 		int direction = level->getData(x, y, z);
-		if (static_cast<BaseRailTile *>(Tile::tiles[id])->usesDataBit)
+		if (((BaseRailTile *) Tile::tiles[id])->usesDataBit)
 		{
 			usesDataBit = true;
 			direction = direction & ~RAIL_DATA_BIT;
@@ -34,7 +34,7 @@ BaseRailTile::Rail::Rail(Level *level, int x, int y, int z)
 
 BaseRailTile::Rail::~Rail()
 {
-	for( size_t i = 0; i < connections.size(); i++ )
+	for( int i = 0; i < connections.size(); i++ )
 	{
 		delete connections[i];
 	}
@@ -44,7 +44,7 @@ void BaseRailTile::Rail::updateConnections(int direction)
 {
 	if(m_bValidRail)
 	{
-		for( size_t i = 0; i < connections.size(); i++ )
+		for( int i = 0; i < connections.size(); i++ )
 		{
 			delete connections[i];
 		}
@@ -102,7 +102,7 @@ void BaseRailTile::Rail::removeSoftConnections()
 		for (unsigned int i = 0; i < connections.size(); i++)
 		{
 			Rail *rail = getRail(connections[i]);
-			if (rail == nullptr || !rail->connectsTo(this))
+			if (rail == NULL || !rail->connectsTo(this))
 			{
 				delete connections[i];
 				connections.erase(connections.begin()+i);
@@ -130,11 +130,11 @@ bool BaseRailTile::Rail::hasRail(int x, int y, int z)
 
 BaseRailTile::Rail *BaseRailTile::Rail::getRail(TilePos *p)
 {
-	if(!m_bValidRail) return nullptr;
+	if(!m_bValidRail) return NULL;
 	if (isRail(level, p->x, p->y, p->z)) return new Rail(level, p->x, p->y, p->z);
 	if (isRail(level, p->x, p->y + 1, p->z)) return new Rail(level, p->x, p->y + 1, p->z);
 	if (isRail(level, p->x, p->y - 1, p->z)) return new Rail(level, p->x, p->y - 1, p->z);
-	return nullptr;
+	return NULL;
 }
 
 
@@ -253,7 +253,7 @@ bool BaseRailTile::Rail::hasNeighborRail(int x, int y, int z)
 	if(!m_bValidRail) return false;
 	TilePos tp(x,y,z);
 	Rail *neighbor = getRail( &tp );
-	if (neighbor == nullptr) return false;
+	if (neighbor == NULL) return false;
 	neighbor->removeSoftConnections();
 	bool retval = neighbor->canConnectTo(this);
 	delete neighbor;
@@ -331,7 +331,7 @@ void BaseRailTile::Rail::place(bool hasSignal, bool first)
 			for ( auto& it : connections )
 			{
 				Rail *neighbor = getRail(it);
-				if (neighbor == nullptr) continue;
+				if (neighbor == NULL) continue;
 				neighbor->removeSoftConnections();
 
 				if (neighbor->canConnectTo(this))
@@ -359,7 +359,7 @@ BaseRailTile::BaseRailTile(int id, bool usesDataBit) : Tile(id, Material::decora
 	this->usesDataBit = usesDataBit;
 	setShape(0, 0, 0, 1, 2 / 16.0f, 1);
 
-	iconTurn = nullptr;
+	iconTurn = NULL;
 }
 
 bool BaseRailTile::isUsesDataBit()
@@ -369,7 +369,7 @@ bool BaseRailTile::isUsesDataBit()
 
 AABB *BaseRailTile::getAABB(Level *level, int x, int y, int z)
 {
-	return nullptr;
+	return NULL;
 }
 
 bool BaseRailTile::blocksLight()

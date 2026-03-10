@@ -42,7 +42,7 @@ SetPlayerTeamPacket::SetPlayerTeamPacket(PlayerTeam *team, vector<wstring> *play
 		__debugbreak();
 #endif
 	}
-	if (playerNames == nullptr || playerNames->empty())
+	if (playerNames == NULL || playerNames->empty())
 	{
 		app.DebugPrintf("Players cannot be null/empty");
 #ifndef _CONTENT_PACKAGE

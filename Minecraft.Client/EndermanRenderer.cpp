@@ -10,7 +10,7 @@ ResourceLocation EndermanRenderer::ENDERMAN_LOCATION = ResourceLocation(TN_MOB_E
 
 EndermanRenderer::EndermanRenderer() : MobRenderer(new EndermanModel(), 0.5f)
 {
-	model = static_cast<EndermanModel *>(MobRenderer::model);
+	model = (EndermanModel *) MobRenderer::model;
 	this->setArmor(model);
 }
 

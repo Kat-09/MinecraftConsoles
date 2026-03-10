@@ -21,6 +21,6 @@ public:
 	bool isGlobalEvent();
 
 public:
-	static shared_ptr<Packet> create() { return std::make_shared<LevelEventPacket>(); }
+	static shared_ptr<Packet> create() { return shared_ptr<Packet>(new LevelEventPacket()); }
 	virtual int getId() { return 61; }
 };

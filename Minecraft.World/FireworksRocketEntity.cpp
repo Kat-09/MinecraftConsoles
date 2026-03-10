@@ -15,7 +15,7 @@ FireworksRocketEntity::FireworksRocketEntity(Level *level) : Entity(level)
 
 void FireworksRocketEntity::defineSynchedData()
 {
-	entityData->defineNULL(DATA_ID_FIREWORKS_ITEM, nullptr);
+	entityData->defineNULL(DATA_ID_FIREWORKS_ITEM, NULL);
 }
 
 bool FireworksRocketEntity::shouldRenderAtSqrDistance(double distance)
@@ -35,13 +35,13 @@ FireworksRocketEntity::FireworksRocketEntity(Level *level, double x, double y, d
 	heightOffset = 0;
 
 	int flightCount = 1;
-	if (sourceItem != nullptr && sourceItem->hasTag())
+	if (sourceItem != NULL && sourceItem->hasTag())
 	{
 		entityData->set(DATA_ID_FIREWORKS_ITEM, sourceItem);
 
 		CompoundTag *tag = sourceItem->getTag();
 		CompoundTag *compound = tag->getCompound(FireworksItem::TAG_FIREWORKS);
-		if (compound != nullptr)
+		if (compound != NULL)
 		{
 			flightCount += compound->getByte(FireworksItem::TAG_FLIGHT);
 		}
@@ -61,8 +61,8 @@ void FireworksRocketEntity::lerpMotion(double xd, double yd, double zd)
 	if (xRotO == 0 && yRotO == 0)
 	{
 		double sd = Mth::sqrt(xd * xd + zd * zd);
-		yRotO = yRot = static_cast<float>(atan2(xd, zd) * 180 / PI);
-		xRotO = xRot = static_cast<float>(atan2(yd, sd) * 180 / PI);
+		yRotO = yRot = (float) (atan2(xd, zd) * 180 / PI);
+		xRotO = xRot = (float) (atan2(yd, sd) * 180 / PI);
 	}
 }
 
@@ -79,8 +79,8 @@ void FireworksRocketEntity::tick()
 	move(xd, yd, zd);
 
 	double sd = Mth::sqrt(xd * xd + zd * zd);
-	yRot = static_cast<float>(atan2(xd, zd) * 180 / PI);
-	xRot = static_cast<float>(atan2(yd, sd) * 180 / PI);
+	yRot = (float) (atan2(xd, zd) * 180 / PI);
+	xRot = (float) (atan2(yd, sd) * 180 / PI);
 
 	while (xRot - xRotO < -180)
 		xRotO -= 360;
@@ -120,8 +120,8 @@ void FireworksRocketEntity::handleEntityEvent(byte eventId)
 	if (eventId == EntityEvent::FIREWORKS_EXPLODE && level->isClientSide)
 	{
 		shared_ptr<ItemInstance> sourceItem = entityData->getItemInstance(DATA_ID_FIREWORKS_ITEM);
-		CompoundTag *tag = nullptr;
-		if (sourceItem != nullptr && sourceItem->hasTag())
+		CompoundTag *tag = NULL;
+		if (sourceItem != NULL && sourceItem->hasTag())
 		{
 			tag = sourceItem->getTag()->getCompound(FireworksItem::TAG_FIREWORKS);
 		}
@@ -135,7 +135,7 @@ void FireworksRocketEntity::addAdditonalSaveData(CompoundTag *tag)
 	tag->putInt(L"Life", life);
 	tag->putInt(L"LifeTime", lifetime);
 	shared_ptr<ItemInstance> itemInstance = entityData->getItemInstance(DATA_ID_FIREWORKS_ITEM);
-	if (itemInstance != nullptr)
+	if (itemInstance != NULL)
 	{
 		CompoundTag *itemTag = new CompoundTag();
 		itemInstance->save(itemTag);
@@ -150,10 +150,10 @@ void FireworksRocketEntity::readAdditionalSaveData(CompoundTag *tag)
 	lifetime = tag->getInt(L"LifeTime");
 
 	CompoundTag *itemTag = tag->getCompound(L"FireworksItem");
-	if (itemTag != nullptr)
+	if (itemTag != NULL)
 	{
 		shared_ptr<ItemInstance> fromTag = ItemInstance::fromTag(itemTag);
-		if (fromTag != nullptr)
+		if (fromTag != NULL)
 		{
 			entityData->set(DATA_ID_FIREWORKS_ITEM, fromTag);
 		}

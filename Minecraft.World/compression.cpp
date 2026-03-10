@@ -12,7 +12,7 @@
 
 
 DWORD Compression::tlsIdx = 0;
-Compression::ThreadStorage *Compression::tlsDefault = nullptr;
+Compression::ThreadStorage *Compression::tlsDefault = NULL;
 
 Compression::ThreadStorage::ThreadStorage()
 {
@@ -27,7 +27,7 @@ Compression::ThreadStorage::~ThreadStorage()
 void Compression::CreateNewThreadStorage()
 {
 	ThreadStorage *tls = new ThreadStorage();
-	if(tlsDefault == nullptr )
+	if(tlsDefault == NULL )
 	{
 		tlsIdx = TlsAlloc();
 		tlsDefault = tls;
@@ -42,7 +42,7 @@ void Compression::UseDefaultThreadStorage()
 
 void Compression::ReleaseThreadStorage()
 {
-	const ThreadStorage *tls = static_cast<ThreadStorage *>(TlsGetValue(tlsIdx));
+	ThreadStorage *tls = (ThreadStorage *)TlsGetValue(tlsIdx);
 	if( tls == tlsDefault ) return;
 
 	delete tls;
@@ -50,7 +50,7 @@ void Compression::ReleaseThreadStorage()
 
 Compression *Compression::getCompression()
 {
-	const ThreadStorage *tls = static_cast<ThreadStorage *>(TlsGetValue(tlsIdx));
+	ThreadStorage *tls = (ThreadStorage *)TlsGetValue(tlsIdx);
 	return tls->compression;
 }
 
@@ -59,27 +59,9 @@ HRESULT Compression::CompressLZXRLE(void *pDestination, unsigned int *pDestSize,
 	EnterCriticalSection(&rleCompressLock);
 	//static unsigned char rleBuf[1024*100];
 
-	// RLE can expand data (each 0xFF byte becomes 2 bytes), so worst case is 2*SrcSize.
-	// Use the static buffer when it fits, dynamically allocate otherwise.
-	static const unsigned int staticCompressSize = 1024*100;
-	unsigned int rleBufSize = SrcSize * 2;
-	unsigned char *dynamicRleBuf = nullptr;
-	unsigned char *rleBuf;
-
-	if(rleBufSize <= staticCompressSize)
-	{
-		rleBuf = rleCompressBuf;
-		rleBufSize = staticCompressSize;
-	}
-	else
-	{
-		dynamicRleBuf = new unsigned char[rleBufSize];
-		rleBuf = dynamicRleBuf;
-	}
-
-	const unsigned char *pucIn = static_cast<unsigned char*>(pSource);
-	const unsigned char *pucEnd = pucIn + SrcSize;
-	unsigned char *pucOut = rleBuf;
+	unsigned char *pucIn = (unsigned char *)pSource;
+	unsigned char *pucEnd = pucIn + SrcSize;
+	unsigned char *pucOut = (unsigned char *)rleCompressBuf;
 
 	// Compress with RLE first:
 	// 0 - 254 - encodes a single byte
@@ -88,7 +70,7 @@ HRESULT Compression::CompressLZXRLE(void *pDestination, unsigned int *pDestSize,
 	PIXBeginNamedEvent(0,"RLE compression");
 	do
 	{
-		const unsigned char thisOne = *pucIn++;
+		unsigned char thisOne = *pucIn++;
 
 		unsigned int count = 1;
 		while( ( pucIn != pucEnd ) && ( *pucIn == thisOne ) && ( count < 256 ) )
@@ -119,15 +101,12 @@ HRESULT Compression::CompressLZXRLE(void *pDestination, unsigned int *pDestSize,
 			*pucOut++ = thisOne;
 		}
 	} while (pucIn != pucEnd);
-	const unsigned int rleSize = static_cast<unsigned int>(pucOut - rleBuf);
+	unsigned int rleSize = (unsigned int)(pucOut - rleCompressBuf);
 	PIXEndNamedEvent();
 
 	PIXBeginNamedEvent(0,"Secondary compression");
-	Compress(pDestination, pDestSize, rleBuf, rleSize);
+	Compress(pDestination, pDestSize, rleCompressBuf, rleSize);
 	PIXEndNamedEvent();
-
-	if(dynamicRleBuf != nullptr) delete [] dynamicRleBuf;
-
 	LeaveCriticalSection(&rleCompressLock);
 //	printf("Compressed from %d to %d to %d\n",SrcSize,rleSize,*pDestSize);
 
@@ -139,26 +118,9 @@ HRESULT Compression::CompressRLE(void *pDestination, unsigned int *pDestSize, vo
 	EnterCriticalSection(&rleCompressLock);
 	//static unsigned char rleBuf[1024*100];
 
-	// RLE can expand data (each 0xFF byte becomes 2 bytes), so worst case is 2*SrcSize.
-	static const unsigned int staticCompressSize = 1024*100;
-	unsigned int rleBufSize = SrcSize * 2;
-	unsigned char *dynamicRleBuf = nullptr;
-	unsigned char *rleBuf;
-
-	if(rleBufSize <= staticCompressSize)
-	{
-		rleBuf = rleCompressBuf;
-		rleBufSize = staticCompressSize;
-	}
-	else
-	{
-		dynamicRleBuf = new unsigned char[rleBufSize];
-		rleBuf = dynamicRleBuf;
-	}
-
-	const unsigned char *pucIn = static_cast<unsigned char*>(pSource);
-	const unsigned char *pucEnd = pucIn + SrcSize;
-	unsigned char *pucOut = rleBuf;
+	unsigned char *pucIn = (unsigned char *)pSource;
+	unsigned char *pucEnd = pucIn + SrcSize;
+	unsigned char *pucOut = (unsigned char *)rleCompressBuf;
 
 	// Compress with RLE first:
 	// 0 - 254 - encodes a single byte
@@ -167,7 +129,7 @@ HRESULT Compression::CompressRLE(void *pDestination, unsigned int *pDestSize, vo
 	PIXBeginNamedEvent(0,"RLE compression");
 	do
 	{
-		const unsigned char thisOne = *pucIn++;
+		unsigned char thisOne = *pucIn++;
 
 		unsigned int count = 1;
 		while( ( pucIn != pucEnd ) && ( *pucIn == thisOne ) && ( count < 256 ) )
@@ -198,14 +160,15 @@ HRESULT Compression::CompressRLE(void *pDestination, unsigned int *pDestSize, vo
 			*pucOut++ = thisOne;
 		}
 	} while (pucIn != pucEnd);
-	const unsigned int rleSize = static_cast<unsigned int>(pucOut - rleBuf);
+	unsigned int rleSize = (unsigned int)(pucOut - rleCompressBuf);
 	PIXEndNamedEvent();
+	LeaveCriticalSection(&rleCompressLock);
 
 	// Return
 	if (rleSize <= *pDestSize)
 	{
 		*pDestSize = rleSize;
-		memcpy(pDestination, rleBuf, *pDestSize);
+		memcpy(pDestination, rleCompressBuf, *pDestSize);
 	}
 	else
 	{
@@ -213,9 +176,6 @@ HRESULT Compression::CompressRLE(void *pDestination, unsigned int *pDestSize, vo
 	assert(false);
 #endif
 	}
-
-	if(dynamicRleBuf != nullptr) delete [] dynamicRleBuf;
-	LeaveCriticalSection(&rleCompressLock);
 
 	return S_OK;
 }
@@ -229,53 +189,52 @@ HRESULT Compression::DecompressLZXRLE(void *pDestination, unsigned int *pDestSiz
 	// only use 5% of this buffer
 
 	// 4J Stu - Changed this again to dynamically allocate a buffer if it's going to be too big
-	unsigned char *pucIn = nullptr;
+	unsigned char *pucIn = NULL;
 
 	//const unsigned int staticRleSize = 1024*200;
 	//static unsigned char rleBuf[staticRleSize];
 	unsigned int rleSize = staticRleSize;
-	unsigned char *dynamicRleBuf = nullptr;
-	HRESULT decompressResult;
+	unsigned char *dynamicRleBuf = NULL;
 
-	if(*pDestSize > rleSize)
+	unsigned int safeRleSize = max(rleSize, *pDestSize);
+
+	const unsigned int MAX_RLE_ALLOC = 16 * 1024 * 1024; // 16 MB
+	if (safeRleSize > MAX_RLE_ALLOC)
 	{
-		rleSize = *pDestSize;
+		LeaveCriticalSection(&rleDecompressLock);
+		*pDestSize = 0;
+		return E_FAIL;
+	}
+
+	if (safeRleSize > staticRleSize)
+	{
+		rleSize = safeRleSize;
 		dynamicRleBuf = new unsigned char[rleSize];
-		decompressResult = Decompress(dynamicRleBuf, &rleSize, pSource, SrcSize);
+		Decompress(dynamicRleBuf, &rleSize, pSource, SrcSize);
 		pucIn = (unsigned char *)dynamicRleBuf;
 	}
 	else
 	{
-		decompressResult = Decompress(rleDecompressBuf, &rleSize, pSource, SrcSize);
-		pucIn = static_cast<unsigned char*>(rleDecompressBuf);
-	}
-
-	if(decompressResult != S_OK)
-	{
-		app.DebugPrintf("*** DecompressLZXRLE: zlib Decompress FAILED hr=0x%08X srcSize=%u expectedDest=%u rleSize=%u\n",
-			decompressResult, SrcSize, *pDestSize, rleSize);
-		if(dynamicRleBuf != nullptr) delete [] dynamicRleBuf;
-		*pDestSize = 0;
-		LeaveCriticalSection(&rleDecompressLock);
-		return decompressResult;
+		Decompress(rleDecompressBuf, &rleSize, pSource, SrcSize);
+		pucIn = (unsigned char *)rleDecompressBuf;
 	}
 
 	//unsigned char *pucIn = (unsigned char *)rleDecompressBuf;
-	const unsigned char *pucEnd = pucIn + rleSize;
-	unsigned char *pucOut = static_cast<unsigned char*>(pDestination);
-	const unsigned char *pucOutEnd = pucOut + *pDestSize;
+	unsigned char *pucEnd = pucIn + rleSize;
+	unsigned char *pucOut = (unsigned char *)pDestination;
+	unsigned char* pucOutEnd = pucOut + *pDestSize;
 
 	while( pucIn != pucEnd )
 	{
-		const unsigned char thisOne = *pucIn++;
+		unsigned char thisOne = *pucIn++;
 		if( thisOne == 255 )
 		{
-			if( pucIn >= pucEnd ) break;
+			if (pucIn >= pucEnd) break;
 			unsigned int count = *pucIn++;
 			if( count < 3 )
 			{
 				count++;
-				if( pucOut + count > pucOutEnd ) break;
+				if (pucOut + count > pucOutEnd) { pucOut = pucOutEnd; break; }
 				for( unsigned int i = 0; i < count; i++ )
 				{
 					*pucOut++ = 255;
@@ -284,9 +243,9 @@ HRESULT Compression::DecompressLZXRLE(void *pDestination, unsigned int *pDestSiz
 			else
 			{
 				count++;
-				if( pucIn >= pucEnd ) break;
-				const unsigned char data = *pucIn++;
-				if( pucOut + count > pucOutEnd ) break;
+				if (pucIn >= pucEnd) break;
+				unsigned char data = *pucIn++;
+				if (pucOut + count > pucOutEnd) { pucOut = pucOutEnd; break; }
 				for( unsigned int i = 0; i < count; i++ )
 				{
 					*pucOut++ = data;
@@ -295,15 +254,15 @@ HRESULT Compression::DecompressLZXRLE(void *pDestination, unsigned int *pDestSiz
 		}
 		else
 		{
-			if( pucOut >= pucOutEnd ) break;
+			if (pucOut >= pucOutEnd) break;
 			*pucOut++ = thisOne;
 		}
 	}
-	*pDestSize = static_cast<unsigned int>(pucOut - static_cast<unsigned char*>(pDestination));
+	*pDestSize = (unsigned int)(pucOut - (unsigned char *)pDestination);
 
 //	printf("Decompressed from %d to %d to %d\n",SrcSize,rleSize,*pDestSize);
 
-	if(dynamicRleBuf != nullptr) delete [] dynamicRleBuf;
+	if(dynamicRleBuf != NULL) delete [] dynamicRleBuf;
 
 	LeaveCriticalSection(&rleDecompressLock);
 	return S_OK;
@@ -314,22 +273,22 @@ HRESULT Compression::DecompressRLE(void *pDestination, unsigned int *pDestSize, 
 	EnterCriticalSection(&rleDecompressLock);
 	
 	//unsigned char *pucIn = (unsigned char *)rleDecompressBuf;
-	unsigned char *pucIn  = static_cast<unsigned char *>(pSource);
-	const unsigned char *pucEnd = pucIn + SrcSize;
-	unsigned char *pucOut = static_cast<unsigned char*>(pDestination);
-	const unsigned char *pucOutEnd = pucOut + *pDestSize;
+	unsigned char *pucIn  = (unsigned char *)pSource;
+	unsigned char *pucEnd = pucIn + SrcSize;
+	unsigned char *pucOut = (unsigned char *)pDestination;
+	unsigned char* pucOutEnd = pucOut + *pDestSize;
 
 	while( pucIn != pucEnd )
 	{
-		const unsigned char thisOne = *pucIn++;
+		unsigned char thisOne = *pucIn++;
 		if( thisOne == 255 )
 		{
-			if( pucIn >= pucEnd ) break;
+			if (pucIn >= pucEnd) break;
 			unsigned int count = *pucIn++;
 			if( count < 3 )
 			{
 				count++;
-				if( pucOut + count > pucOutEnd ) break;
+				if (pucOut + count > pucOutEnd) { pucOut = pucOutEnd; break; }
 				for( unsigned int i = 0; i < count; i++ )
 				{
 					*pucOut++ = 255;
@@ -338,9 +297,9 @@ HRESULT Compression::DecompressRLE(void *pDestination, unsigned int *pDestSize, 
 			else
 			{
 				count++;
-				if( pucIn >= pucEnd ) break;
-				const unsigned char data = *pucIn++;
-				if( pucOut + count > pucOutEnd ) break;
+				if (pucIn >= pucEnd) break;
+				unsigned char data = *pucIn++;
+				if (pucOut + count > pucOutEnd) { pucOut = pucOutEnd; break; }
 				for( unsigned int i = 0; i < count; i++ )
 				{
 					*pucOut++ = data;
@@ -349,11 +308,11 @@ HRESULT Compression::DecompressRLE(void *pDestination, unsigned int *pDestSize, 
 		}
 		else
 		{
-			if( pucOut >= pucOutEnd ) break;
+			if (pucOut >= pucOutEnd) break;
 			*pucOut++ = thisOne;
 		}
 	}
-	*pDestSize = static_cast<unsigned int>(pucOut - static_cast<unsigned char*>(pDestination));
+	*pDestSize = (unsigned int)(pucOut - (unsigned char *)pDestination);
 
 	LeaveCriticalSection(&rleDecompressLock);
 	return S_OK;
@@ -365,8 +324,8 @@ HRESULT Compression::Compress(void *pDestination, unsigned int *pDestSize, void 
 	// Using zlib for x64 compression - 360 is using native 360 compression and PS3 a stubbed non-compressing version of this
 #if defined __ORBIS__ || defined _DURANGO || defined _WIN64 || defined __PSVITA__
 	SIZE_T destSize = (SIZE_T)(*pDestSize);
-	const int res = ::compress(static_cast<Bytef *>(pDestination), (uLongf *)&destSize, static_cast<Bytef *>(pSource), SrcSize);
-	*pDestSize = static_cast<unsigned int>(destSize);
+	int res = ::compress((Bytef *)pDestination, (uLongf *)&destSize, (Bytef *)pSource, SrcSize);
+	*pDestSize = (unsigned int)destSize;
 	return ( ( res == Z_OK ) ? S_OK : -1 );
 #elif defined __PS3__
 	uint32_t destSize = (uint32_t)(*pDestSize);
@@ -393,8 +352,8 @@ HRESULT Compression::Decompress(void *pDestination, unsigned int *pDestSize, voi
 	// Using zlib for x64 compression - 360 is using native 360 compression and PS3 a stubbed non-compressing version of this
 #if defined __ORBIS__ || defined _DURANGO || defined _WIN64 || defined __PSVITA__
 	SIZE_T destSize = (SIZE_T)(*pDestSize);
-	const int res = ::uncompress(static_cast<Bytef *>(pDestination), (uLongf *)&destSize, static_cast<Bytef *>(pSource), SrcSize);
-	*pDestSize = static_cast<unsigned int>(destSize);
+	int res = ::uncompress((Bytef *)pDestination, (uLongf *)&destSize, (Bytef *)pSource, SrcSize);
+	*pDestSize = (unsigned int)destSize;
 	return ( ( res == Z_OK ) ? S_OK : -1 );
 #elif defined __PS3__
 	uint32_t destSize = (uint32_t)(*pDestSize);
@@ -413,11 +372,11 @@ HRESULT Compression::Decompress(void *pDestination, unsigned int *pDestSize, voi
 #ifndef _XBOX
 VOID Compression::VitaVirtualDecompress(void *pDestination, unsigned int *pDestSize, void *pSource, unsigned int SrcSize) // (LPVOID buf, SIZE_T dwSize, LPVOID dst)
 {
-	const uint8_t *pSrc = static_cast<uint8_t *>(pSource);
+	uint8_t *pSrc = (uint8_t *)pSource;
 	int Offset = 0;
 	int Page = 0;
 	int Index = 0;
-	uint8_t* Data = static_cast<uint8_t *>(pDestination);
+	uint8_t* Data = (uint8_t*)pDestination;
 	while( Index != SrcSize )
 	{
 		// is this a normal value
@@ -431,7 +390,7 @@ VOID Compression::VitaVirtualDecompress(void *pDestination, unsigned int *pDestS
 		{
 			// how many zeros do we have
 			Index += 1;
-			const int Count = pSrc[Index];
+			int Count = pSrc[Index];
 			// to do : this should really be a sequence of memsets
 			for( int i = 0;i < Count;i += 1 )
 			{
@@ -459,8 +418,8 @@ HRESULT Compression::DecompressWithType(void *pDestination, unsigned int *pDestS
 		{
 #if (defined _XBOX || defined _DURANGO || defined _WIN64)
 			SIZE_T destSize = (SIZE_T)(*pDestSize);
-			const HRESULT res = XMemDecompress(decompressionContext, pDestination, (SIZE_T *)&destSize, pSource, SrcSize);
-			*pDestSize = static_cast<unsigned int>(destSize);
+			HRESULT res = XMemDecompress(decompressionContext, pDestination, (SIZE_T *)&destSize, pSource, SrcSize);
+			*pDestSize = (unsigned int)destSize;
 			return res;
 #else
 			assert(0);
@@ -469,9 +428,9 @@ HRESULT Compression::DecompressWithType(void *pDestination, unsigned int *pDestS
 		break;
 	case eCompressionType_ZLIBRLE:
 #if (defined __ORBIS__ || defined __PS3__ || defined _DURANGO || defined _WIN64)
-		if (pDestination != nullptr)
-			return ::uncompress(static_cast<PBYTE>(pDestination), (unsigned long *) pDestSize, static_cast<PBYTE>(pSource), SrcSize); // Decompress
-		else break; // Cannot decompress when destination is nullptr
+		if (pDestination != NULL)
+			return ::uncompress((PBYTE)pDestination, (unsigned long *) pDestSize, (PBYTE) pSource, SrcSize); // Decompress
+		else break; // Cannot decompress when destination is NULL
 #else
 		assert(0);
 		break;
@@ -480,16 +439,16 @@ HRESULT Compression::DecompressWithType(void *pDestination, unsigned int *pDestS
 #if (defined __ORBIS__ || defined __PSVITA__ || defined _DURANGO || defined _WIN64)
 		// Note that we're missing the normal zlib header and footer so we'll use inflate to 
 		// decompress the payload and skip all the CRC checking, etc
-		if (pDestination != nullptr)
+		if (pDestination != NULL)
 		{
 			// Read big-endian srcize from array
-			const PBYTE pbDestSize = (PBYTE) pDestSize;
-			const PBYTE pbSource = static_cast<PBYTE>(pSource);
+			PBYTE pbDestSize = (PBYTE) pDestSize;
+			PBYTE pbSource = (PBYTE) pSource;
 			for (int i = 3; i >= 0; i--) {
 				pbDestSize[3-i] = pbSource[i];
 			}
 
-			const byteArray uncompr = byteArray(*pDestSize);
+			byteArray uncompr = byteArray(*pDestSize);
 
 			// Build decompression stream
 			z_stream strm;
@@ -499,7 +458,7 @@ HRESULT Compression::DecompressWithType(void *pDestination, unsigned int *pDestS
 			strm.next_out = uncompr.data;
 			strm.avail_out = uncompr.length;
 			// Skip those first 4 bytes
-			strm.next_in = static_cast<PBYTE>(pSource) + 4;
+			strm.next_in = (PBYTE) pSource + 4;
 			strm.avail_in = SrcSize - 4;
 
 			int hr = inflateInit2(&strm, -15);
@@ -529,7 +488,7 @@ HRESULT Compression::DecompressWithType(void *pDestination, unsigned int *pDestS
 			delete uncompr.data;
 			return S_OK;
 		}
-		else break; // Cannot decompress when destination is nullptr
+		else break; // Cannot decompress when destination is NULL
 #else 
 		assert(0);
 #endif

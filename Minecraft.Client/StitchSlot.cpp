@@ -5,8 +5,8 @@
 
 StitchSlot::StitchSlot(int originX, int originY, int width, int height) : originX(originX), originY(originY), width(width), height(height)
 {
-	subSlots = nullptr;
-	textureHolder = nullptr;
+	subSlots = NULL;
+	textureHolder = NULL;
 }
 
 TextureHolder *StitchSlot::getHolder()
@@ -27,7 +27,7 @@ int StitchSlot::getY()
 bool StitchSlot::add(TextureHolder *textureHolder)
 {
 	// Already holding a texture -- doesn't account for subslots.
-	if (this->textureHolder != nullptr)
+	if (this->textureHolder != NULL)
 	{
 		return false;
 	}
@@ -42,7 +42,7 @@ bool StitchSlot::add(TextureHolder *textureHolder)
 	}
 
 	// Exact fit! best-case-solution
-	if (textureWidth == width && textureHeight == height && subSlots == nullptr)
+	if (textureWidth == width && textureHeight == height && subSlots == NULL)
 	{
 		// Store somehow
 		this->textureHolder = textureHolder;
@@ -50,7 +50,7 @@ bool StitchSlot::add(TextureHolder *textureHolder)
 	}
 
 	// See if we're already divided before, if not, setup subSlots
-	if (subSlots == nullptr)
+	if (subSlots == NULL)
 	{
 		subSlots = new vector<StitchSlot *>();
 

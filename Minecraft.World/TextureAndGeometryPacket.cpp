@@ -4,30 +4,39 @@
 #include "PacketListener.h"
 #include "TextureAndGeometryPacket.h"
 
-
+#define MAX_SKIN_SIZE - 3.0f
+#define MAX_HITBOX_OFFSET - 0.50f
 
 TextureAndGeometryPacket::TextureAndGeometryPacket()
 {
 	this->textureName = L"";
 	this->dwTextureBytes = 0;
-	this->pbData = nullptr;
+	this->pbData = NULL;
 	this->dwBoxC = 0;
-	this->BoxDataA = nullptr;
+	this->BoxDataA = NULL;
 	uiAnimOverrideBitmask=0;
 }
 
 TextureAndGeometryPacket::~TextureAndGeometryPacket()
 {
 	// can't free these - they're used elsewhere
-// 	if(this->BoxDataA!=nullptr)
+// 	if(this->BoxDataA!=NULL)
 // 	{
 // 		delete [] this->BoxDataA;
 // 	}
 //
-// 	if(this->pbData!=nullptr)
+// 	if(this->pbData!=NULL)
 // 	{
 // 		delete [] this->pbData;
 // 	}
+}
+
+template <typename T>
+T clamp(T v, T min, T max)
+{
+	if (v < min) return min;
+	if (v > max) return max;
+	return v;
 }
 
 TextureAndGeometryPacket::TextureAndGeometryPacket(const wstring &textureName, PBYTE pbData, DWORD dwBytes)
@@ -43,7 +52,7 @@ TextureAndGeometryPacket::TextureAndGeometryPacket(const wstring &textureName, P
 	this->pbData = pbData;
 	this->dwTextureBytes = dwBytes;
 	this->dwBoxC = 0;
-	this->BoxDataA=nullptr;
+	this->BoxDataA=NULL;
 	this->uiAnimOverrideBitmask=0;
 }
 
@@ -75,7 +84,7 @@ TextureAndGeometryPacket::TextureAndGeometryPacket(const wstring &textureName, P
 	}
 	else
 	{
-		this->BoxDataA=nullptr;
+		this->BoxDataA=NULL;
 	}
 }
 
@@ -93,14 +102,14 @@ TextureAndGeometryPacket::TextureAndGeometryPacket(const wstring &textureName, P
 	this->pbData = pbData;
 	this->dwTextureBytes = dwBytes;
 	this->uiAnimOverrideBitmask = uiAnimOverrideBitmask;
-	if(pvSkinBoxes==nullptr)
+	if(pvSkinBoxes==NULL)
 	{
 		this->dwBoxC=0;
-		this->BoxDataA=nullptr;
+		this->BoxDataA=NULL;
 	}
 	else
 	{
-		this->dwBoxC = static_cast<DWORD>(pvSkinBoxes->size());
+		this->dwBoxC = (DWORD)pvSkinBoxes->size();
 		this->BoxDataA= new SKIN_BOX [this->dwBoxC];
 		int iCount=0;
 
@@ -120,8 +129,18 @@ void TextureAndGeometryPacket::handle(PacketListener *listener)
 void TextureAndGeometryPacket::read(DataInputStream *dis) //throws IOException
 {
 	textureName = dis->readUTF();
-	dwSkinID = static_cast<DWORD>(dis->readInt());
-	dwTextureBytes = static_cast<DWORD>(dis->readShort());
+	dwSkinID = (DWORD)dis->readInt();
+
+	short rawTextureBytes = dis->readShort();
+	if (rawTextureBytes <= 0)
+	{
+		dwTextureBytes = 0;
+	}
+	else
+	{
+		dwTextureBytes = (DWORD)(unsigned short)rawTextureBytes;
+		if (dwTextureBytes > 65536) dwTextureBytes = 0;
+	}
 
 	if(dwTextureBytes>0)
 	{
@@ -134,7 +153,16 @@ void TextureAndGeometryPacket::read(DataInputStream *dis) //throws IOException
 	}
 	uiAnimOverrideBitmask = dis->readInt();
 
-	dwBoxC = static_cast<DWORD>(dis->readShort());
+	short rawBoxC = dis->readShort();
+	if (rawBoxC <= 0)
+	{
+		dwBoxC = 0;
+	}
+	else
+	{
+		dwBoxC = (DWORD)(unsigned short)rawBoxC;
+		if (dwBoxC > 256) dwBoxC = 0; // sane limit for skin boxes
+	}
 
 	if(dwBoxC>0)
 	{
@@ -143,7 +171,7 @@ void TextureAndGeometryPacket::read(DataInputStream *dis) //throws IOException
 
 	for(DWORD i=0;i<dwBoxC;i++)
 	{
-		this->BoxDataA[i].ePart = static_cast<eBodyPart>(dis->readShort());
+		this->BoxDataA[i].ePart = (eBodyPart) dis->readShort();
 		this->BoxDataA[i].fX = dis->readFloat();
 		this->BoxDataA[i].fY = dis->readFloat();
 		this->BoxDataA[i].fZ = dis->readFloat();
@@ -152,6 +180,14 @@ void TextureAndGeometryPacket::read(DataInputStream *dis) //throws IOException
 		this->BoxDataA[i].fD = dis->readFloat();
 		this->BoxDataA[i].fU = dis->readFloat();
 		this->BoxDataA[i].fV = dis->readFloat();
+
+		if (this->BoxDataA[i].fH > MAX_SKIN_SIZE) this->BoxDataA[i].fH = MAX_SKIN_SIZE;
+		if (this->BoxDataA[i].fW > MAX_SKIN_SIZE) this->BoxDataA[i].fW = MAX_SKIN_SIZE;
+		if (this->BoxDataA[i].fD > MAX_SKIN_SIZE) this->BoxDataA[i].fD = MAX_SKIN_SIZE;
+
+		this->BoxDataA[i].fX = clamp(this->BoxDataA[i].fX, -MAX_HITBOX_OFFSET, MAX_HITBOX_OFFSET);
+		this->BoxDataA[i].fY = clamp(this->BoxDataA[i].fY, -MAX_HITBOX_OFFSET, MAX_HITBOX_OFFSET);
+		this->BoxDataA[i].fZ = clamp(this->BoxDataA[i].fZ, -MAX_HITBOX_OFFSET, MAX_HITBOX_OFFSET);
 	}
 }
 
@@ -159,17 +195,17 @@ void TextureAndGeometryPacket::write(DataOutputStream *dos) //throws IOException
 {
 	dos->writeUTF(textureName);
 	dos->writeInt(dwSkinID);
-	dos->writeShort(static_cast<short>(dwTextureBytes));
+	dos->writeShort((short)dwTextureBytes);
 	for(DWORD i=0;i<dwTextureBytes;i++)
 	{
 		dos->writeByte(this->pbData[i]);
 	}
 	dos->writeInt(uiAnimOverrideBitmask);
 
-	dos->writeShort(static_cast<short>(dwBoxC));
+	dos->writeShort((short)dwBoxC);
 	for(DWORD i=0;i<dwBoxC;i++)
 	{
-		dos->writeShort(static_cast<short>(this->BoxDataA[i].ePart));
+		dos->writeShort((short)this->BoxDataA[i].ePart);
 		dos->writeFloat(this->BoxDataA[i].fX);
 		dos->writeFloat(this->BoxDataA[i].fY);
 		dos->writeFloat(this->BoxDataA[i].fZ);

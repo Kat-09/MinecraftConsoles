@@ -75,7 +75,7 @@ private:
 	bool hasCrashed;
 
 	C4JThread::EventQueue* levelTickEventQueue;
-
+	
 	static void levelTickUpdateFunc(void* pParam);
 	static void levelTickThreadInitFunc();
 
@@ -114,7 +114,7 @@ public:
 	void addPendingLocalConnection(int idx, ClientConnection *connection);
 	void connectionDisconnected(int idx, DisconnectPacket::eDisconnectReason reason) { m_connectionFailed[idx] = true; m_connectionFailedReason[idx] = reason; }
 
-	shared_ptr<MultiplayerLocalPlayer> createExtraLocalPlayer(int idx, const wstring& name, int pad, int iDimension, ClientConnection *clientConnection = nullptr,MultiPlayerLevel *levelpassedin=nullptr);
+	shared_ptr<MultiplayerLocalPlayer> createExtraLocalPlayer(int idx, const wstring& name, int pad, int iDimension, ClientConnection *clientConnection = NULL,MultiPlayerLevel *levelpassedin=NULL);
 	void createPrimaryLocalPlayer(int iPad);
 	bool setLocalPlayerIdx(int idx);
 	int getLocalPlayerIdx();
@@ -170,11 +170,11 @@ private:
 	LevelStorageSource *levelSource;
 public:
 	static const int frameTimes_length = 512;
-	static int64_t frameTimes[frameTimes_length];
+	static __int64 frameTimes[frameTimes_length];
 	static const int tickTimes_length = 512;
-	static int64_t tickTimes[tickTimes_length];
+	static __int64 tickTimes[tickTimes_length];
 	static int frameTimePos;
-	static int64_t warezTime;
+	static __int64 warezTime;
 private:
 	int rightClickDelay;
 public:
@@ -212,6 +212,7 @@ public:
 	void destroy();
 	volatile bool running;
 	wstring fpsString;
+	wstring chunkupdateString;
 	void run();
 	// 4J-PB - split the run into 3 parts so we can run it from our xbox game loop
 	static Minecraft *GetInstance();
@@ -230,9 +231,9 @@ private:
 	//    String grabHugeScreenshot(File workDir2, int width, int height, int ssWidth, int ssHeight);	// 4J - removed
 
 	// 4J - per player thing?
-	int64_t lastTimer;
+	__int64 lastTimer;
 
-	void renderFpsMeter(int64_t tickTime);
+	void renderFpsMeter(__int64 tickTime);
 public:
 	void stop();
 	// 4J removed
@@ -253,7 +254,7 @@ public:
 	//bool isRaining ;
 
 	// 4J - Moved to per player
-	//int64_t lastTickTime;
+	//__int64 lastTickTime;
 
 private:
 	// 4J- per player?
@@ -300,7 +301,7 @@ public:
 
 	static int maxSupportedTextureSize();
 	void delayTextureReload();
-	static int64_t currentTimeMillis();
+	static __int64 currentTimeMillis();
 
 #ifdef _DURANGO
 	static void inGameSignInCheckAllPrivilegesCallback(LPVOID lpParam, bool hasPrivileges, int iPad);

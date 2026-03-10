@@ -103,7 +103,7 @@ void CXuiCtrlSlotList::SetData(int m_iPad, AbstractContainerMenu* menu, int rows
 
 		slotControl->SetUserIndex( slotControl->m_hObj,  m_iPad );
 
-		slotControl = nullptr;
+		slotControl = NULL;
 	}
 }
 
@@ -226,6 +226,6 @@ void CXuiCtrlSlotList::GetCXuiCtrlSlotItem(int itemIndex, CXuiCtrlSlotItemListIt
 	HXUIOBJ itemControl = this->GetItemControl(itemIndex);
 	VOID *pObj;
 	XuiObjectFromHandle( itemControl, &pObj );
-	*CXuiCtrlSlotItem = static_cast<CXuiCtrlSlotItemListItem *>(pObj);
+	*CXuiCtrlSlotItem = (CXuiCtrlSlotItemListItem *)pObj;
 }
 

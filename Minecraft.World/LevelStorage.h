@@ -29,7 +29,7 @@ public:
 	virtual wstring getLevelId() = 0;
 
 public:
-	virtual ConsoleSaveFile *getSaveFile() { return nullptr; }
+	virtual ConsoleSaveFile *getSaveFile() { return NULL; }
 	virtual void flushSaveFile(bool autosave) {}
 
 	// 4J Added

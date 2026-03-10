@@ -52,7 +52,7 @@ int IUIScene_PauseMenu::ExitGameSaveDialogReturned(void *pParam,int iPad,C4JStor
 			if(!Minecraft::GetInstance()->skins->isUsingDefaultSkin())
 			{
 				TexturePack *tPack = Minecraft::GetInstance()->skins->getSelected();
-				DLCTexturePack *pDLCTexPack=static_cast<DLCTexturePack *>(tPack);
+				DLCTexturePack *pDLCTexPack=(DLCTexturePack *)tPack;
 
 				DLCPack *pDLCPack=pDLCTexPack->getDLCInfoParentPack();//tPack->getDLCPack();
 				if(!pDLCPack->hasPurchasedFile( DLCManager::e_DLCType_Texture, L"" ))
@@ -229,7 +229,7 @@ int IUIScene_PauseMenu::WarningTrialTexturePackReturned(void *pParam,int iPad,C4
 		{
 			// 4J-PB - need to check this user can access the store
 			bool bContentRestricted;
-			ProfileManager.GetChatAndContentRestrictions(iPad,true,nullptr,&bContentRestricted,nullptr);
+			ProfileManager.GetChatAndContentRestrictions(iPad,true,NULL,&bContentRestricted,NULL);
 			if(bContentRestricted)
 			{
 				UINT uiIDA[1];
@@ -248,7 +248,7 @@ int IUIScene_PauseMenu::WarningTrialTexturePackReturned(void *pParam,int iPad,C4
 				app.DebugPrintf("Texture Pack - %s\n",pchPackName);
 				SONYDLC *pSONYDLCInfo=app.GetSONYDLCInfo((char *)pchPackName);		
 
-				if(pSONYDLCInfo!=nullptr)
+				if(pSONYDLCInfo!=NULL)
 				{
 					char chName[42];
 					char chSkuID[SCE_NP_COMMERCE2_SKU_ID_LEN];
@@ -300,7 +300,7 @@ int IUIScene_PauseMenu::WarningTrialTexturePackReturned(void *pParam,int iPad,C4
 
 				DLC_INFO *pDLCInfo=app.GetDLCInfoForProductName((WCHAR *)pDLCPack->getName().c_str());
 
-				StorageManager.InstallOffer(1,(WCHAR *)pDLCInfo->wsProductId.c_str(),nullptr,nullptr);
+				StorageManager.InstallOffer(1,(WCHAR *)pDLCInfo->wsProductId.c_str(),NULL,NULL);
 
 				// the license change coming in when the offer has been installed will cause this scene to refresh	
 			}
@@ -336,7 +336,7 @@ int IUIScene_PauseMenu::WarningTrialTexturePackReturned(void *pParam,int iPad,C4
 			// need to allow downloads here, or the player would need to quit the game to let the download of a texture pack happen. This might affect the network traffic, since the download could take all the bandwidth...
 			XBackgroundDownloadSetMode(XBACKGROUND_DOWNLOAD_MODE_ALWAYS_ALLOW);
 
-			StorageManager.InstallOffer(1,ullIndexA,nullptr,nullptr);
+			StorageManager.InstallOffer(1,ullIndexA,NULL,NULL);
 		}
 	}
 	else
@@ -352,7 +352,7 @@ int IUIScene_PauseMenu::WarningTrialTexturePackReturned(void *pParam,int iPad,C4
 
 int IUIScene_PauseMenu::SaveWorldThreadProc( LPVOID lpParameter )
 {
-	bool bAutosave=static_cast<bool>(lpParameter);
+	bool bAutosave=(bool)lpParameter;
 	if(bAutosave)
 	{
 		app.SetXuiServerAction(ProfileManager.GetPrimaryPad(),eXuiServerAction_AutoSaveGame);
@@ -421,7 +421,7 @@ void IUIScene_PauseMenu::_ExitWorld(LPVOID lpParameter)
 	bool saveStats = true;
 	if (pMinecraft->isClientSide() || g_NetworkManager.IsInSession())
 	{
-		if(lpParameter != nullptr )
+		if(lpParameter != NULL )
 		{
 			// 4J-PB - check if we have lost connection to Live
 			if(ProfileManager.GetLiveConnectionStatus()!=XONLINE_S_LOGON_CONNECTION_ESTABLISHED )
@@ -522,17 +522,17 @@ void IUIScene_PauseMenu::_ExitWorld(LPVOID lpParameter)
 			exitReasonStringId = -1;
 
 			// 4J - Force a disconnection, this handles the situation that the server has already disconnected
-			if( pMinecraft->levels[0] != nullptr ) pMinecraft->levels[0]->disconnect(false);
-			if( pMinecraft->levels[1] != nullptr ) pMinecraft->levels[1]->disconnect(false);
-			if( pMinecraft->levels[2] != nullptr ) pMinecraft->levels[2]->disconnect(false);
+			if( pMinecraft->levels[0] != NULL ) pMinecraft->levels[0]->disconnect(false);
+			if( pMinecraft->levels[1] != NULL ) pMinecraft->levels[1]->disconnect(false);
+			if( pMinecraft->levels[2] != NULL ) pMinecraft->levels[2]->disconnect(false);
 		}
 		else
 		{
 			exitReasonStringId = IDS_EXITING_GAME;
 			pMinecraft->progressRenderer->progressStartNoAbort( IDS_EXITING_GAME );
-			if( pMinecraft->levels[0] != nullptr ) pMinecraft->levels[0]->disconnect();
-			if( pMinecraft->levels[1] != nullptr ) pMinecraft->levels[1]->disconnect();
-			if( pMinecraft->levels[2] != nullptr ) pMinecraft->levels[2]->disconnect();
+			if( pMinecraft->levels[0] != NULL ) pMinecraft->levels[0]->disconnect();
+			if( pMinecraft->levels[1] != NULL ) pMinecraft->levels[1]->disconnect();
+			if( pMinecraft->levels[2] != NULL ) pMinecraft->levels[2]->disconnect();
 		}
 
 		// 4J Stu - This only does something if we actually have a server, so don't need to do any other checks
@@ -548,7 +548,7 @@ void IUIScene_PauseMenu::_ExitWorld(LPVOID lpParameter)
 	}
 	else
 	{
-		if(lpParameter != nullptr && ProfileManager.IsSignedIn(ProfileManager.GetPrimaryPad()) )
+		if(lpParameter != NULL && ProfileManager.IsSignedIn(ProfileManager.GetPrimaryPad()) )
 		{
 			switch( app.GetDisconnectReason() )
 			{
@@ -625,7 +625,7 @@ void IUIScene_PauseMenu::_ExitWorld(LPVOID lpParameter)
 	{
 		Sleep(1);
 	}
-	pMinecraft->setLevel(nullptr,exitReasonStringId,nullptr,saveStats);
+	pMinecraft->setLevel(NULL,exitReasonStringId,nullptr,saveStats);
 
 	TelemetryManager->Flush();
 	

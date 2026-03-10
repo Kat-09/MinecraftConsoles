@@ -20,7 +20,7 @@ using namespace std;
 TileItem::TileItem(int id) : Item(id) 
 {
 	this->tileId = id + 256;
-	itemIcon = nullptr;
+	itemIcon = NULL;
 }
 
 int TileItem::getTileId() 
@@ -39,7 +39,7 @@ int TileItem::getIconType()
 
 Icon *TileItem::getIcon(int auxValue)
 {
-	if (itemIcon != nullptr)
+	if (itemIcon != NULL)
 	{
 		return itemIcon;
 	}
@@ -128,7 +128,7 @@ bool TileItem::useOn(shared_ptr<ItemInstance> instance, shared_ptr<Player> playe
 				// 
 				// 				if(iPlaceSound==-1)
 				// 				{
-				// 					strcpy(szPlaceSoundName,"nullptr");
+				// 					strcpy(szPlaceSoundName,"NULL");
 				// 				}
 				// 				else
 				// 				{
@@ -136,7 +136,7 @@ bool TileItem::useOn(shared_ptr<ItemInstance> instance, shared_ptr<Player> playe
 				// 				}
 				// 				if(iStepSound==-1)
 				// 				{
-				// 					strcpy(szStepSoundName,"nullptr");
+				// 					strcpy(szStepSoundName,"NULL");
 				// 				}
 				// 				else
 				// 				{

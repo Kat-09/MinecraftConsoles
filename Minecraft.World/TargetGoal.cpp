@@ -34,7 +34,7 @@ TargetGoal::TargetGoal(PathfinderMob *mob, bool mustSee, bool mustReach)
 bool TargetGoal::canContinueToUse()
 {
 	shared_ptr<LivingEntity> target = mob->getTarget();
-	if (target == nullptr) return false;
+	if (target == NULL) return false;
 	if (!target->isAlive()) return false;
 
 	double within = getFollowDistance();
@@ -56,7 +56,7 @@ bool TargetGoal::canContinueToUse()
 double TargetGoal::getFollowDistance()
 {
 	AttributeInstance *followRange = mob->getAttribute(SharedMonsterAttributes::FOLLOW_RANGE);
-	return followRange == nullptr ? 16 : followRange->getValue();
+	return followRange == NULL ? 16 : followRange->getValue();
 }
 
 void TargetGoal::start()
@@ -73,16 +73,16 @@ void TargetGoal::stop()
 
 bool TargetGoal::canAttack(shared_ptr<LivingEntity> target, bool allowInvulnerable)
 {
-	if (target == nullptr) return false;
+	if (target == NULL) return false;
 	if (target == mob->shared_from_this()) return false;
 	if (!target->isAlive()) return false;
 	if (!mob->canAttackType(target->GetType())) return false;
 
 	OwnableEntity *ownableMob = dynamic_cast<OwnableEntity *>(mob);
-	if (ownableMob != nullptr && !ownableMob->getOwnerUUID().empty())
+	if (ownableMob != NULL && !ownableMob->getOwnerUUID().empty())
 	{
 		shared_ptr<OwnableEntity> ownableTarget = dynamic_pointer_cast<OwnableEntity>(target);
-		if (ownableTarget != nullptr && ownableMob->getOwnerUUID().compare(ownableTarget->getOwnerUUID()) == 0)
+		if (ownableTarget != NULL && ownableMob->getOwnerUUID().compare(ownableTarget->getOwnerUUID()) == 0)
 		{
 			// We're attacking something owned by the same person...
 			return false;
@@ -117,9 +117,9 @@ bool TargetGoal::canReach(shared_ptr<LivingEntity> target)
 {
 	reachCacheTime = 10 + mob->getRandom()->nextInt(5);
 	Path *path = mob->getNavigation()->createPath(target);
-	if (path == nullptr) return false;
+	if (path == NULL) return false;
 	Node *last = path->last();
-	if (last == nullptr)
+	if (last == NULL)
 	{
 		delete path;
 		return false;

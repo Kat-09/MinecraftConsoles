@@ -257,8 +257,8 @@ bool KeyboardMouseInput::IsMouseButtonReleased(int button) const
 
 void KeyboardMouseInput::ConsumeMouseDelta(float &dx, float &dy)
 {
-	dx = static_cast<float>(m_mouseDeltaAccumX);
-	dy = static_cast<float>(m_mouseDeltaAccumY);
+	dx = (float)m_mouseDeltaAccumX;
+	dy = (float)m_mouseDeltaAccumY;
 	m_mouseDeltaAccumX = 0;
 	m_mouseDeltaAccumY = 0;
 }
@@ -288,7 +288,7 @@ void KeyboardMouseInput::SetMouseGrabbed(bool grabbed)
 	else if (!grabbed && !m_cursorHiddenForUI && g_hWnd)
 	{
 		while (ShowCursor(TRUE) < 0) {}
-		ClipCursor(nullptr);
+		ClipCursor(NULL);
 	}
 }
 
@@ -317,7 +317,7 @@ void KeyboardMouseInput::SetCursorHiddenForUI(bool hidden)
 	else if (!hidden && !m_mouseGrabbed && g_hWnd)
 	{
 		while (ShowCursor(TRUE) < 0) {}
-		ClipCursor(nullptr);
+		ClipCursor(NULL);
 	}
 }
 
@@ -347,13 +347,13 @@ void KeyboardMouseInput::SetWindowFocused(bool focused)
 		else
 		{
 			while (ShowCursor(TRUE) < 0) {}
-			ClipCursor(nullptr);
+			ClipCursor(NULL);
 		}
 	}
 	else
 	{
 		while (ShowCursor(TRUE) < 0) {}
-		ClipCursor(nullptr);
+		ClipCursor(NULL);
 	}
 }
 
@@ -375,12 +375,12 @@ float KeyboardMouseInput::GetMoveY() const
 
 float KeyboardMouseInput::GetLookX(float sensitivity) const
 {
-	return static_cast<float>(m_mouseDeltaX) * sensitivity;
+	return (float)m_mouseDeltaX * sensitivity;
 }
 
 float KeyboardMouseInput::GetLookY(float sensitivity) const
 {
-	return static_cast<float>(-m_mouseDeltaY) * sensitivity;
+	return (float)(-m_mouseDeltaY) * sensitivity;
 }
 
 void KeyboardMouseInput::OnChar(wchar_t c)

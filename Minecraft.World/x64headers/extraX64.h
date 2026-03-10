@@ -120,7 +120,7 @@ public:
 		else
 		{
 			LeaveCriticalSection(&m_cs);
-			return nullptr;
+			return NULL;
 		}
 	}
 private:
@@ -219,7 +219,6 @@ public:
     BYTE m_smallId;
     bool m_isRemote;
     bool m_isHostPlayer;
-    PlayerUID m_resolvedXuid;
     wchar_t m_gamertag[32];
 private:
 	ULONG_PTR m_customData;
@@ -332,10 +331,10 @@ public:
 #define PIXSetMarkerDeprecated(a, b, ...) PIXSetMarker(a, L ## b, __VA_ARGS__)
 #define PIXAddNamedCounter(a, b) PIXReportCounter( L ## b, a)
 #else
-inline void PIXAddNamedCounter(int, const char*, ...) {}
-inline void PIXBeginNamedEvent(int, const char*, ...) {}
-inline void PIXEndNamedEvent() {}
-inline void PIXSetMarkerDeprecated(int, const char*, ...) {}
+void PIXAddNamedCounter(int a, char *b, ...);
+void PIXBeginNamedEvent(int a, char *b, ...);
+void PIXEndNamedEvent();
+void PIXSetMarkerDeprecated(int a, char *b, ...);
 #endif
 
 void XSetThreadProcessor(HANDLE a, int b);

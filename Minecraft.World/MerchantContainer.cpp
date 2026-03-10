@@ -11,7 +11,7 @@ MerchantContainer::MerchantContainer(shared_ptr<Player> player, shared_ptr<Merch
 	items[0] = nullptr;
 	items[1] = nullptr;
 	items[2] = nullptr;
-	activeRecipe = nullptr;
+	activeRecipe = NULL;
 	selectionHint = 0;
 }
 
@@ -32,7 +32,7 @@ shared_ptr<ItemInstance> MerchantContainer::getItem(unsigned int slot)
 
 shared_ptr<ItemInstance> MerchantContainer::removeItem(unsigned int slot, int count)
 {
-	if (items[slot] != nullptr)
+	if (items[slot] != NULL)
 	{
 		if (slot == MerchantMenu::RESULT_SLOT)
 		{
@@ -71,7 +71,7 @@ bool MerchantContainer::isPaymentSlot(int slot)
 
 shared_ptr<ItemInstance> MerchantContainer::removeItemNoUpdate(int slot)
 {
-	if (items[slot] != nullptr)
+	if (items[slot] != NULL)
 	{
 		shared_ptr<ItemInstance> item = items[slot];
 		items[slot] = nullptr;
@@ -83,7 +83,7 @@ shared_ptr<ItemInstance> MerchantContainer::removeItemNoUpdate(int slot)
 void MerchantContainer::setItem(unsigned int slot, shared_ptr<ItemInstance> item)
 {
 	items[slot] = item;
-	if (item != nullptr && item->count > getMaxStackSize()) item->count = getMaxStackSize();
+	if (item != NULL && item->count > getMaxStackSize()) item->count = getMaxStackSize();
 	if (isPaymentSlot(slot))
 	{
 		updateSellItem();
@@ -135,37 +135,37 @@ void MerchantContainer::setChanged()
 
 void MerchantContainer::updateSellItem()
 {
-	activeRecipe = nullptr;
+	activeRecipe = NULL;
 
 	shared_ptr<ItemInstance> buyItem1 = items[MerchantMenu::PAYMENT1_SLOT];
 	shared_ptr<ItemInstance> buyItem2 = items[MerchantMenu::PAYMENT2_SLOT];
 
-	if (buyItem1 == nullptr)
+	if (buyItem1 == NULL)
 	{
 		buyItem1 = buyItem2;
 		buyItem2 = nullptr;
 	}
 
-	if (buyItem1 == nullptr)
+	if (buyItem1 == NULL)
 	{
 		setItem(MerchantMenu::RESULT_SLOT, nullptr);
 	}
 	else
 	{
 		MerchantRecipeList *offers = merchant->getOffers(player);
-		if (offers != nullptr)
+		if (offers != NULL)
 		{
 			MerchantRecipe *recipeFor = offers->getRecipeFor(buyItem1, buyItem2, selectionHint);
-			if (recipeFor != nullptr && !recipeFor->isDeprecated())
+			if (recipeFor != NULL && !recipeFor->isDeprecated())
 			{
 				activeRecipe = recipeFor;
 				setItem(MerchantMenu::RESULT_SLOT, recipeFor->getSellItem()->copy());
 			}
-			else if (buyItem2 != nullptr)
+			else if (buyItem2 != NULL)
 			{
 				// try to switch
 				recipeFor = offers->getRecipeFor(buyItem2, buyItem1, selectionHint);
-				if (recipeFor != nullptr && !recipeFor->isDeprecated())
+				if (recipeFor != NULL && !recipeFor->isDeprecated())
 				{
 					activeRecipe = recipeFor;
 					setItem(MerchantMenu::RESULT_SLOT, recipeFor->getSellItem()->copy());

@@ -10,7 +10,7 @@
 BrewingStandTile::BrewingStandTile(int id) : BaseEntityTile(id, Material::metal, isSolidRender())
 {
 	random = new Random();
-	iconBase = nullptr;
+	iconBase = NULL;
 }
 
 BrewingStandTile::~BrewingStandTile()
@@ -30,7 +30,7 @@ int BrewingStandTile::getRenderShape()
 
 shared_ptr<TileEntity> BrewingStandTile::newTileEntity(Level *level)
 {
-	return std::make_shared<BrewingStandTileEntity>();
+	return shared_ptr<TileEntity>(new BrewingStandTileEntity());
 }
 
 bool BrewingStandTile::isCubeShaped()
@@ -60,7 +60,7 @@ bool BrewingStandTile::use(Level *level, int x, int y, int z, shared_ptr<Player>
 		return true;
 	}
 	shared_ptr<BrewingStandTileEntity> brewingStand = dynamic_pointer_cast<BrewingStandTileEntity>(level->getTileEntity(x, y, z));
-	if (brewingStand != nullptr) player->openBrewingStand(brewingStand);
+	if (brewingStand != NULL) player->openBrewingStand(brewingStand);
 
 	return true;
 }
@@ -86,13 +86,13 @@ void BrewingStandTile::animateTick(Level *level, int xt, int yt, int zt, Random 
 void BrewingStandTile::onRemove(Level *level, int x, int y, int z, int id, int data)
 {
 	shared_ptr<TileEntity> tileEntity = level->getTileEntity(x, y, z);
-	if (tileEntity != nullptr && ( dynamic_pointer_cast<BrewingStandTileEntity>(tileEntity) != nullptr) )
+	if (tileEntity != NULL && ( dynamic_pointer_cast<BrewingStandTileEntity>(tileEntity) != NULL) )
 	{
 		shared_ptr<BrewingStandTileEntity> container = dynamic_pointer_cast<BrewingStandTileEntity>(tileEntity);
 		for (int i = 0; i < container->getContainerSize(); i++)
 		{
 			shared_ptr<ItemInstance> item = container->getItem(i);
-			if (item != nullptr)
+			if (item != NULL)
 			{
 				float xo = random->nextFloat() * 0.8f + 0.1f;
 				float yo = random->nextFloat() * 0.8f + 0.1f;
@@ -104,14 +104,14 @@ void BrewingStandTile::onRemove(Level *level, int x, int y, int z, int id, int d
 					if (count > item->count) count = item->count;
 					item->count -= count;
 
-					shared_ptr<ItemEntity> itemEntity = std::make_shared<ItemEntity>(level, x + xo, y + yo, z + zo, shared_ptr<ItemInstance>(new ItemInstance(item->id, count, item->getAuxValue())));
+					shared_ptr<ItemEntity> itemEntity = shared_ptr<ItemEntity>(new ItemEntity(level, x + xo, y + yo, z + zo, shared_ptr<ItemInstance>( new ItemInstance(item->id, count, item->getAuxValue()))));
 					float pow = 0.05f;
-					itemEntity->xd = static_cast<float>(random->nextGaussian()) * pow;
-					itemEntity->yd = static_cast<float>(random->nextGaussian()) * pow + 0.2f;
-					itemEntity->zd = static_cast<float>(random->nextGaussian()) * pow;
+					itemEntity->xd = (float) random->nextGaussian() * pow;
+					itemEntity->yd = (float) random->nextGaussian() * pow + 0.2f;
+					itemEntity->zd = (float) random->nextGaussian() * pow;
 					if (item->hasTag())
 					{
-						itemEntity->getItem()->setTag(static_cast<CompoundTag *>(item->getTag()->copy()));
+						itemEntity->getItem()->setTag((CompoundTag *) item->getTag()->copy());
 					}
 					level->addEntity(itemEntity);
 				}

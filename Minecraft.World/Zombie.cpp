@@ -68,9 +68,9 @@ void Zombie::defineSynchedData()
 {
 	Monster::defineSynchedData();
 
-	getEntityData()->define(DATA_BABY_ID, static_cast<byte>(0));
-	getEntityData()->define(DATA_VILLAGER_ID, static_cast<byte>(0));
-	getEntityData()->define(DATA_CONVERTING_ID, static_cast<byte>(0));
+	getEntityData()->define(DATA_BABY_ID, (byte) 0);
+	getEntityData()->define(DATA_VILLAGER_ID, (byte) 0);
+	getEntityData()->define(DATA_CONVERTING_ID, (byte) 0);
 }
 
 int Zombie::getArmorValue()
@@ -87,15 +87,14 @@ bool Zombie::useNewAi()
 
 bool Zombie::isBaby()
 {
-	return getEntityData()->getByte(DATA_BABY_ID) == static_cast<byte>(1);
+	return getEntityData()->getByte(DATA_BABY_ID) == (byte) 1;
 }
 
 void Zombie::setBaby(bool baby)
 {
 	getEntityData()->set(DATA_BABY_ID, (byte) (baby ? 1 : 0));
-	updateSize(baby);
 
-	if (level != nullptr && !level->isClientSide)
+	if (level != NULL && !level->isClientSide)
 	{
 		AttributeInstance *speed = getAttribute(SharedMonsterAttributes::MOVEMENT_SPEED);
 		speed->removeModifier(SPEED_MODIFIER_BABY);
@@ -108,12 +107,12 @@ void Zombie::setBaby(bool baby)
 
 bool Zombie::isVillager()
 {
-	return getEntityData()->getByte(DATA_VILLAGER_ID) == static_cast<byte>(1);
+	return getEntityData()->getByte(DATA_VILLAGER_ID) == (byte) 1;
 }
 
 void Zombie::setVillager(bool villager)
 {
-	getEntityData()->set(DATA_VILLAGER_ID, static_cast<byte>(villager ? 1 : 0));
+	getEntityData()->set(DATA_VILLAGER_ID, (byte) (villager ? 1 : 0));
 }
 
 void Zombie::aiStep()
@@ -121,12 +120,12 @@ void Zombie::aiStep()
 	if (level->isDay() && !level->isClientSide && !isBaby())
 	{
 		float br = getBrightness(1);
-		if (br > 0.5f && random->nextFloat() * 30 < (br - 0.4f) * 2 && level->canSeeSky(Mth::floor(x), static_cast<int>(floor(y + 0.5)), Mth::floor(z)))
+		if (br > 0.5f && random->nextFloat() * 30 < (br - 0.4f) * 2 && level->canSeeSky(Mth::floor(x), (int)floor( y + 0.5 ), Mth::floor(z)))
 		{
 			bool burn = true;
 
 			shared_ptr<ItemInstance> helmet = getCarried(SLOT_HELM);
-			if (helmet != nullptr)
+			if (helmet != NULL)
 			{
 				if (helmet->isDamageableItem())
 				{
@@ -155,15 +154,15 @@ bool Zombie::hurt(DamageSource *source, float dmg)
 	if (Monster::hurt(source, dmg))
 	{
 		shared_ptr<LivingEntity> target = getTarget();
-		if ( (target == nullptr) && getAttackTarget() != nullptr && getAttackTarget()->instanceof(eTYPE_LIVINGENTITY) )	target = dynamic_pointer_cast<LivingEntity>( getAttackTarget() );
-		if ( (target == nullptr) && source->getEntity() != nullptr && source->getEntity()->instanceof(eTYPE_LIVINGENTITY) )	target = dynamic_pointer_cast<LivingEntity>( source->getEntity() );
+		if ( (target == NULL) && getAttackTarget() != NULL && getAttackTarget()->instanceof(eTYPE_LIVINGENTITY) )	target = dynamic_pointer_cast<LivingEntity>( getAttackTarget() );
+		if ( (target == NULL) && source->getEntity() != NULL && source->getEntity()->instanceof(eTYPE_LIVINGENTITY) )	target = dynamic_pointer_cast<LivingEntity>( source->getEntity() );
 
-		if ( (target != nullptr) && level->difficulty >= Difficulty::HARD && random->nextFloat() < getAttribute(SPAWN_REINFORCEMENTS_CHANCE)->getValue())
+		if ( (target != NULL) && level->difficulty >= Difficulty::HARD && random->nextFloat() < getAttribute(SPAWN_REINFORCEMENTS_CHANCE)->getValue())
 		{
 			int x = Mth::floor(this->x);
 			int y = Mth::floor(this->y);
 			int z = Mth::floor(this->z);
-			shared_ptr<Zombie> reinforcement = std::make_shared<Zombie>(level);
+			shared_ptr<Zombie> reinforcement = shared_ptr<Zombie>( new Zombie(level) );
 
 			for (int i = 0; i < REINFORCEMENT_ATTEMPTS; i++)
 			{
@@ -179,7 +178,7 @@ bool Zombie::hurt(DamageSource *source, float dmg)
 					{
 						level->addEntity(reinforcement);
 						reinforcement->setTarget(target);
-						reinforcement->finalizeMobSpawn(nullptr);
+						reinforcement->finalizeMobSpawn(NULL);
 
 						getAttribute(SPAWN_REINFORCEMENTS_CHANCE)->addModifier(new AttributeModifier(-0.05f, AttributeModifier::OPERATION_ADDITION));
 						reinforcement->getAttribute(SPAWN_REINFORCEMENTS_CHANCE)->addModifier(new AttributeModifier(-0.05f, AttributeModifier::OPERATION_ADDITION));
@@ -210,11 +209,6 @@ void Zombie::tick()
 	}
 
 	Monster::tick();
-
-	if (level->isClientSide)
-	{
-		updateSize(isBaby());
-	}
 }
 
 bool Zombie::doHurtTarget(shared_ptr<Entity> target)
@@ -223,19 +217,13 @@ bool Zombie::doHurtTarget(shared_ptr<Entity> target)
 
 	if (result)
 	{
-		if (getCarriedItem() == nullptr && isOnFire() && random->nextFloat() < level->difficulty * 0.3f)
+		if (getCarriedItem() == NULL && isOnFire() && random->nextFloat() < level->difficulty * 0.3f)
 		{
 			target->setOnFire(2 * level->difficulty);
 		}
 	}
 
 	return result;
-}
-
-void Zombie::updateSize(bool isBaby)
-{
-	float scale = isBaby ? 0.5f : 1.0f;
-	setSize(0.6f, 1.8f * scale);
 }
 
 int Zombie::getAmbientSound()
@@ -293,11 +281,11 @@ void Zombie::populateDefaultEquipmentSlots()
 		int rand = random->nextInt(3);
 		if (rand == 0)
 		{
-			setEquippedSlot(SLOT_WEAPON, std::make_shared<ItemInstance>(Item::sword_iron));
+			setEquippedSlot(SLOT_WEAPON, shared_ptr<ItemInstance>( new ItemInstance(Item::sword_iron)) );
 		}
 		else
 		{
-			setEquippedSlot(SLOT_WEAPON, std::make_shared<ItemInstance>(Item::shovel_iron));
+			setEquippedSlot(SLOT_WEAPON, shared_ptr<ItemInstance>( new ItemInstance(Item::shovel_iron)) );
 		}
 	}
 }
@@ -328,15 +316,15 @@ void Zombie::killed(shared_ptr<LivingEntity> mob)
 	{
 		if (level->difficulty == Difficulty::NORMAL && random->nextBoolean()) return;
 
-		shared_ptr<Zombie> zombie = std::make_shared<Zombie>(level);
+		shared_ptr<Zombie> zombie = shared_ptr<Zombie>(new Zombie(level));
 		zombie->copyPosition(mob);
 		level->removeEntity(mob);
-		zombie->finalizeMobSpawn(nullptr);
+		zombie->finalizeMobSpawn(NULL);
 		zombie->setVillager(true);
 		if (mob->isBaby()) zombie->setBaby(true);
 		level->addEntity(zombie);
 
-		level->levelEvent(nullptr, LevelEvent::SOUND_ZOMBIE_INFECTED, static_cast<int>(x), static_cast<int>(y), static_cast<int>(z), 0);
+		level->levelEvent(nullptr, LevelEvent::SOUND_ZOMBIE_INFECTED, (int) x, (int) y, (int) z, 0);
 	}
 }
 
@@ -347,14 +335,14 @@ MobGroupData *Zombie::finalizeMobSpawn(MobGroupData *groupData, int extraData /*
 
 	setCanPickUpLoot(random->nextFloat() < MAX_PICKUP_LOOT_CHANCE * difficulty);
 
-	if (groupData == nullptr)
+	if (groupData == NULL)
 	{
 		groupData = new ZombieGroupData(level->random->nextFloat() < 0.05f, level->random->nextFloat() < 0.05f);
 	}
 
-	if ( dynamic_cast<ZombieGroupData *>( groupData ) != nullptr)
+	if ( dynamic_cast<ZombieGroupData *>( groupData ) != NULL)
 	{
-		ZombieGroupData *zombieData = static_cast<ZombieGroupData *>(groupData);
+		ZombieGroupData *zombieData = (ZombieGroupData *) groupData;
 
 		if (zombieData->isVillager)
 		{
@@ -370,7 +358,7 @@ MobGroupData *Zombie::finalizeMobSpawn(MobGroupData *groupData, int extraData /*
 	populateDefaultEquipmentSlots();
 	populateDefaultEquipmentEnchantments();
 
-	if (getCarried(SLOT_HELM) == nullptr)
+	if (getCarried(SLOT_HELM) == NULL)
 	{
 		// [EB]: We have this code in quite some places, shouldn't we set
 		// something like this globally?
@@ -378,7 +366,7 @@ MobGroupData *Zombie::finalizeMobSpawn(MobGroupData *groupData, int extraData /*
 		{
 			// Halloween! OooOOo! 25% of all skeletons/zombies can wear
 			// pumpkins on their heads.
-			setEquippedSlot(SLOT_HELM, std::make_shared<ItemInstance>(random->nextFloat() < 0.1f ? Tile::litPumpkin : Tile::pumpkin));
+			setEquippedSlot(SLOT_HELM, shared_ptr<ItemInstance>( new ItemInstance(random->nextFloat() < 0.1f ? Tile::litPumpkin : Tile::pumpkin) ));
 			dropChances[SLOT_HELM] = 0;
 		}
 	}
@@ -401,7 +389,7 @@ bool Zombie::mobInteract(shared_ptr<Player> player)
 {
 	shared_ptr<ItemInstance> item = player->getSelectedItem();
 
-	if (item != nullptr && item->getItem() == Item::apple_gold && item->getAuxValue() == 0 && isVillager() && hasEffect(MobEffect::weakness))
+	if (item != NULL && item->getItem() == Item::apple_gold && item->getAuxValue() == 0 && isVillager() && hasEffect(MobEffect::weakness))
 	{
 		if (!player->abilities.instabuild) item->count--;
 		if (item->count <= 0)
@@ -426,7 +414,7 @@ bool Zombie::mobInteract(shared_ptr<Player> player)
 void Zombie::startConverting(int time)
 {
 	villagerConversionTime = time;
-	getEntityData()->set(DATA_CONVERTING_ID, static_cast<byte>(1));
+	getEntityData()->set(DATA_CONVERTING_ID, (byte) 1);
 
 	removeEffect(MobEffect::weakness->id);
 	addEffect(new MobEffectInstance(MobEffect::damageBoost->id, time, min(level->difficulty - 1, 0)));
@@ -453,21 +441,21 @@ bool Zombie::removeWhenFarAway()
 
 bool Zombie::isConverting()
 {
-	return getEntityData()->getByte(DATA_CONVERTING_ID) == static_cast<byte>(1);
+	return getEntityData()->getByte(DATA_CONVERTING_ID) == (byte) 1;
 }
 
 void Zombie::finishConversion()
 {
-	shared_ptr<Villager> villager = std::make_shared<Villager>(level);
+	shared_ptr<Villager> villager = shared_ptr<Villager>(new Villager(level));
 	villager->copyPosition(shared_from_this());
-	villager->finalizeMobSpawn(nullptr);
+	villager->finalizeMobSpawn(NULL);
 	villager->setRewardPlayersInVillage();
 	if (isBaby()) villager->setAge(-20 * 60 * 20);
 	level->removeEntity(shared_from_this());
 	level->addEntity(villager);
 
 	villager->addEffect(new MobEffectInstance(MobEffect::confusion->id, SharedConstants::TICKS_PER_SECOND * 10, 0));
-	level->levelEvent(nullptr, LevelEvent::SOUND_ZOMBIE_CONVERTED, static_cast<int>(x), static_cast<int>(y), static_cast<int>(z), 0);
+	level->levelEvent(nullptr, LevelEvent::SOUND_ZOMBIE_CONVERTED, (int) x, (int) y, (int) z, 0);
 }
 
 int Zombie::getConversionProgress()
@@ -478,11 +466,11 @@ int Zombie::getConversionProgress()
 	{
 		int specialBlocksCount = 0;
 
-		for (int xx = static_cast<int>(x) - SPECIAL_BLOCK_RADIUS; xx < static_cast<int>(x) + SPECIAL_BLOCK_RADIUS && specialBlocksCount < MAX_SPECIAL_BLOCKS_COUNT; xx++)
+		for (int xx = (int) x - SPECIAL_BLOCK_RADIUS; xx < (int) x + SPECIAL_BLOCK_RADIUS && specialBlocksCount < MAX_SPECIAL_BLOCKS_COUNT; xx++)
 		{
-			for (int yy = static_cast<int>(y) - SPECIAL_BLOCK_RADIUS; yy < static_cast<int>(y) + SPECIAL_BLOCK_RADIUS && specialBlocksCount < MAX_SPECIAL_BLOCKS_COUNT; yy++)
+			for (int yy = (int) y - SPECIAL_BLOCK_RADIUS; yy < (int) y + SPECIAL_BLOCK_RADIUS && specialBlocksCount < MAX_SPECIAL_BLOCKS_COUNT; yy++)
 			{
-				for (int zz = static_cast<int>(z) - SPECIAL_BLOCK_RADIUS; zz < static_cast<int>(z) + SPECIAL_BLOCK_RADIUS && specialBlocksCount < MAX_SPECIAL_BLOCKS_COUNT; zz++)
+				for (int zz = (int) z - SPECIAL_BLOCK_RADIUS; zz < (int) z + SPECIAL_BLOCK_RADIUS && specialBlocksCount < MAX_SPECIAL_BLOCKS_COUNT; zz++)
 				{
 					int tile = level->getTile(xx, yy, zz);
 

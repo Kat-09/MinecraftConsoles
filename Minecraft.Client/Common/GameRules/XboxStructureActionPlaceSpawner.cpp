@@ -46,7 +46,7 @@ bool XboxStructureActionPlaceSpawner::placeSpawnerInLevel(StructurePiece *struct
 
 	if ( chunkBB->isInside( worldX, worldY, worldZ ) )
 	{
-		if ( level->getTileEntity( worldX, worldY, worldZ ) != nullptr )
+		if ( level->getTileEntity( worldX, worldY, worldZ ) != NULL )
 		{
 			// Remove the current tile entity
 			level->removeTileEntity( worldX, worldY, worldZ );
@@ -59,7 +59,7 @@ bool XboxStructureActionPlaceSpawner::placeSpawnerInLevel(StructurePiece *struct
 #ifndef _CONTENT_PACKAGE
 		wprintf(L"XboxStructureActionPlaceSpawner - placing a %ls spawner at (%d,%d,%d)\n", m_entityId.c_str(), worldX, worldY, worldZ);
 #endif
-		if( entity != nullptr )
+		if( entity != NULL )
 		{
 			entity->setEntityId(m_entityId);
 		}

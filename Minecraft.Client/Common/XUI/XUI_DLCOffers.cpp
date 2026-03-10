@@ -24,7 +24,7 @@
 
 HRESULT CScene_DLCMain::OnInit( XUIMessageInit* pInitData, BOOL& bHandled )
 {
-	iPad = *static_cast<int *>(pInitData->pvInitData);
+	iPad = *(int *) pInitData->pvInitData;
 
 	MapChildControls();
 	
@@ -39,7 +39,7 @@ HRESULT CScene_DLCMain::OnInit( XUIMessageInit* pInitData, BOOL& bHandled )
 
 		VOID *pObj;
 		XuiObjectFromHandle( xList, &pObj );
-		list = static_cast<CXuiCtrl4JList *>(pObj);
+		list = (CXuiCtrl4JList *) pObj;
 
 		ui.SetTooltips( DEFAULT_XUI_MENU_USER, IDS_TOOLTIPS_SELECT, IDS_TOOLTIPS_BACK );
 
@@ -162,7 +162,7 @@ HRESULT CScene_DLCMain::OnNotifyPressEx(HXUIOBJ hObjPressed, XUINotifyPress* pNo
 		param->iType = iIndex;
 
 		// promote the DLC content request type 
-		app.AddDLCRequest(static_cast<eDLCMarketplaceType>(iIndex), true);
+		app.AddDLCRequest((eDLCMarketplaceType)iIndex, true);
 		app.NavigateToScene(iPad,eUIScene_DLCOffersMenu, param);
 	}
 	return S_OK;
@@ -182,14 +182,14 @@ HRESULT CScene_DLCMain::OnNavReturn(HXUIOBJ hObj,BOOL& rfHandled)
 //----------------------------------------------------------------------------------
 HRESULT CScene_DLCOffers::OnInit( XUIMessageInit* pInitData, BOOL& bHandled )
 {
-	DLCOffersParam *param = static_cast<DLCOffersParam *>(pInitData->pvInitData);
+	DLCOffersParam *param = (DLCOffersParam *) pInitData->pvInitData;
 	m_iPad = param->iPad;
 	m_iType = param->iType;
 	m_iOfferC = app.GetDLCOffersCount();
 	m_bIsFemale = false;
-	m_pNoImageFor_DLC=nullptr;
+	m_pNoImageFor_DLC=NULL;
 	bNoDLCToDisplay=true;
-	//hCostText=nullptr;
+	//hCostText=NULL;
 
 	
 	// 4J JEV: Deleting this here seems simpler.
@@ -203,10 +203,10 @@ HRESULT CScene_DLCOffers::OnInit( XUIMessageInit* pInitData, BOOL& bHandled )
 		HRESULT hRes;
 
 
-		hRes=XAvatarInitialize(XAVATAR_COORDINATE_SYSTEM_LEFT_HANDED,0,0,0,nullptr);
+		hRes=XAvatarInitialize(XAVATAR_COORDINATE_SYSTEM_LEFT_HANDED,0,0,0,NULL);
 
 		// get the avatar gender
-		hRes=XAvatarGetMetadataLocalUser(m_iPad,&AvatarMetadata,nullptr);
+		hRes=XAvatarGetMetadataLocalUser(m_iPad,&AvatarMetadata,NULL);
 
 		m_bIsFemale= (XAVATAR_BODY_TYPE_FEMALE == XAvatarMetadataGetBodyType(&AvatarMetadata));
 		// shutdown the avatar system
@@ -223,10 +223,10 @@ HRESULT CScene_DLCOffers::OnInit( XUIMessageInit* pInitData, BOOL& bHandled )
 	m_bIgnorePress=true;
 
 	VOID *pObj;
-	m_hXuiBrush=nullptr;
+	m_hXuiBrush=NULL;
 
 	XuiObjectFromHandle( m_List, &pObj );
-	m_pOffersList = static_cast<CXuiCtrl4JList *>(pObj);
+	m_pOffersList = (CXuiCtrl4JList *)pObj;
 	m_bAllDLCContentRetrieved=false;
 
 	XuiElementInitUserFocus(m_hObj,ProfileManager.GetPrimaryPad(),TRUE);
@@ -242,7 +242,7 @@ HRESULT CScene_DLCOffers::OnInit( XUIMessageInit* pInitData, BOOL& bHandled )
 	// Is the DLC we're looking for available?
 	if(!m_bDLCRequiredIsRetrieved)
 	{
-		if(app.DLCContentRetrieved(static_cast<eDLCMarketplaceType>(m_iType)))
+		if(app.DLCContentRetrieved((eDLCMarketplaceType)m_iType))
 		{	
 			m_bDLCRequiredIsRetrieved=true;
 
@@ -259,13 +259,13 @@ HRESULT CScene_DLCOffers::OnInit( XUIMessageInit* pInitData, BOOL& bHandled )
 
 HRESULT CScene_DLCOffers::GetDLCInfo( int iOfferC, bool bUpdateOnly )
 {
-	CXuiCtrl4JList::LIST_ITEM_INFO *pListInfo=nullptr;
+	CXuiCtrl4JList::LIST_ITEM_INFO *pListInfo=NULL;
 	//XMARKETPLACE_CONTENTOFFER_INFO xOffer;
 	XMARKETPLACE_CURRENCY_CONTENTOFFER_INFO xOffer;
 	const DWORD LOCATOR_SIZE = 256; // Use this to allocate space to hold a ResourceLocator string 
 	WCHAR szResourceLocator[ LOCATOR_SIZE ];
 	ZeroMemory(szResourceLocator,sizeof(WCHAR)*LOCATOR_SIZE);
-	const ULONG_PTR c_ModuleHandle = (ULONG_PTR)GetModuleHandle(nullptr);
+	const ULONG_PTR c_ModuleHandle = (ULONG_PTR)GetModuleHandle(NULL);
 	int iCount=0;
 
 	if(bUpdateOnly) // Just update the info on the current list
@@ -275,13 +275,13 @@ HRESULT CScene_DLCOffers::GetDLCInfo( int iOfferC, bool bUpdateOnly )
 			xOffer = StorageManager.GetOffer(i);
 			// Check that this is in the list of known DLC
 			DLC_INFO *pDLC=app.GetDLCInfoForFullOfferID(xOffer.qwOfferID);
-			if(pDLC==nullptr)
+			if(pDLC==NULL)
 			{
 				// try the trial version
 				pDLC=app.GetDLCInfoForTrialOfferID(xOffer.qwOfferID);
 			}
 
-			if(pDLC==nullptr)
+			if(pDLC==NULL)
 			{
 				// skip this one
 #ifdef _DEBUG
@@ -301,7 +301,7 @@ HRESULT CScene_DLCOffers::GetDLCInfo( int iOfferC, bool bUpdateOnly )
 
 			// can't trust the offer type - partnernet is giving avatar items the CONTENT type
 			//if(Offer.dwOfferType==app.GetDLCContentType((eDLCContentType)m_iType))
-			if(pDLC->eDLCType==static_cast<eDLCContentType>(m_iType))
+			if(pDLC->eDLCType==(eDLCContentType)m_iType)
 			{		
 				if(xOffer.fUserHasPurchased)
 				{
@@ -343,13 +343,13 @@ HRESULT CScene_DLCOffers::GetDLCInfo( int iOfferC, bool bUpdateOnly )
 
 			// Check that this is in the list of known DLC
 			DLC_INFO *pDLC=app.GetDLCInfoForFullOfferID(xOffer.qwOfferID);
-			if(pDLC==nullptr)
+			if(pDLC==NULL)
 			{
 				// try the trial version
 				pDLC=app.GetDLCInfoForTrialOfferID(xOffer.qwOfferID);
 			}
 
-			if(pDLC==nullptr)
+			if(pDLC==NULL)
 			{
 				// skip this one
 #ifdef _DEBUG
@@ -362,7 +362,7 @@ HRESULT CScene_DLCOffers::GetDLCInfo( int iOfferC, bool bUpdateOnly )
 
 			// can't trust the offer type - partnernet is giving avatar items the CONTENT type
 			//if(Offer.dwOfferType==app.GetDLCContentType((eDLCContentType)m_iType))
-			if(pDLC->eDLCType==static_cast<eDLCContentType>(m_iType))
+			if(pDLC->eDLCType==(eDLCContentType)m_iType)
 			{		
 				wstring wstrTemp=xOffer.wszOfferName;
 
@@ -395,7 +395,7 @@ HRESULT CScene_DLCOffers::GetDLCInfo( int iOfferC, bool bUpdateOnly )
 
 				// store the offer index
 				pListInfo[iCount].iData=i;
-				pListInfo[iCount].iSortIndex=static_cast<int>(pDLC->uiSortIndex);
+				pListInfo[iCount].iSortIndex=(int)pDLC->uiSortIndex;
 #ifdef _DEBUG
 				app.DebugPrintf("Adding ");
 				OutputDebugStringW(pListInfo[iCount].pwszText);
@@ -447,9 +447,9 @@ HRESULT CScene_DLCOffers::GetDLCInfo( int iOfferC, bool bUpdateOnly )
 		m_pOffersList->SetCurSelVisible(0);
 
 		DLC_INFO *dlc = app.GetDLCInfoForFullOfferID(xOffer.qwOfferID);
-		if (dlc != nullptr)
+		if (dlc != NULL)
 		{
-			BYTE *pData=nullptr;
+			BYTE *pData=NULL;
 			UINT uiSize=0;
 			DWORD dwSize=0;
 
@@ -460,7 +460,7 @@ HRESULT CScene_DLCOffers::GetDLCInfo( int iOfferC, bool bUpdateOnly )
 			if(iIndex!=-1)
 			{
 				// it's in the xzp
-				if(m_hXuiBrush!=nullptr)
+				if(m_hXuiBrush!=NULL)
 				{
 					XuiDestroyBrush(m_hXuiBrush);
 					// clear the TMS XZP vector memory
@@ -480,7 +480,7 @@ HRESULT CScene_DLCOffers::GetDLCInfo( int iOfferC, bool bUpdateOnly )
 				}
 				else
 				{
-					if(m_hXuiBrush!=nullptr)
+					if(m_hXuiBrush!=NULL)
 					{
 						XuiDestroyBrush(m_hXuiBrush);
 						// clear the TMS XZP vector memory
@@ -568,7 +568,7 @@ HRESULT CScene_DLCOffers::OnNotifyPressEx(HXUIOBJ hObjPressed, XUINotifyPress* p
 		// if it's already been purchased, we need to let the user download it anyway
 		{
 			ullIndexA[0]=StorageManager.GetOffer(ItemInfo.iData).qwOfferID;
-			StorageManager.InstallOffer(1,ullIndexA,nullptr,nullptr);
+			StorageManager.InstallOffer(1,ullIndexA,NULL,NULL);
 		}	
 	}
 	
@@ -662,7 +662,7 @@ HRESULT CScene_DLCOffers::OnNotifySelChanged(HXUIOBJ hObjSource, XUINotifySelCha
 	// reset the image monitor, but not for the first selection
 	if(pNotifySelChangedData->iOldItem!=-1)
 	{
-		m_pNoImageFor_DLC=nullptr;
+		m_pNoImageFor_DLC=NULL;
 	}
 
 	if (m_List.TreeHasFocus())// && offerIndexes.size() > index)
@@ -695,14 +695,14 @@ HRESULT CScene_DLCOffers::OnNotifySelChanged(HXUIOBJ hObjSource, XUINotifySelCha
 		m_PriceTag.SetText(xOffer.wszCurrencyPrice);
 
 		DLC_INFO *dlc = app.GetDLCInfoForTrialOfferID(xOffer.qwOfferID);
-		if(dlc==nullptr)
+		if(dlc==NULL)
 		{
 			dlc = app.GetDLCInfoForFullOfferID(xOffer.qwOfferID);
 		}
 
-		if (dlc != nullptr)
+		if (dlc != NULL)
 		{
-			BYTE *pImage=nullptr;
+			BYTE *pImage=NULL;
 			UINT uiSize=0;
 			DWORD dwSize=0;
 
@@ -713,7 +713,7 @@ HRESULT CScene_DLCOffers::OnNotifySelChanged(HXUIOBJ hObjSource, XUINotifySelCha
 			if(iIndex!=-1)
 			{
 				// it's in the xzp
-				if(m_hXuiBrush!=nullptr)
+				if(m_hXuiBrush!=NULL)
 				{
 					XuiDestroyBrush(m_hXuiBrush);
 					// clear the TMS XZP vector memory
@@ -737,7 +737,7 @@ HRESULT CScene_DLCOffers::OnNotifySelChanged(HXUIOBJ hObjSource, XUINotifySelCha
 				}
 				else
 				{
-					if(m_hXuiBrush!=nullptr)
+					if(m_hXuiBrush!=NULL)
 					{
 						XuiDestroyBrush(m_hXuiBrush);
 						// clear the TMS XZP vector memory
@@ -750,13 +750,13 @@ HRESULT CScene_DLCOffers::OnNotifySelChanged(HXUIOBJ hObjSource, XUINotifySelCha
 		}	
 		else
 		{
-			if(m_hXuiBrush!=nullptr)
+			if(m_hXuiBrush!=NULL)
 			{
 				XuiDestroyBrush(m_hXuiBrush);
 				// clear the TMS XZP vector memory
 				//app.FreeLocalTMSFiles();
 
-				m_hXuiBrush=nullptr;
+				m_hXuiBrush=NULL;
 			}
 		}
 
@@ -791,7 +791,7 @@ HRESULT CScene_DLCOffers::OnTimer(XUIMessageTimer *pData,BOOL& rfHandled)
 	// Is the DLC we're looking for available?
 	if(!m_bDLCRequiredIsRetrieved)
 	{
-		if(app.DLCContentRetrieved(static_cast<eDLCMarketplaceType>(m_iType)))
+		if(app.DLCContentRetrieved((eDLCMarketplaceType)m_iType))
 		{	
 			m_bDLCRequiredIsRetrieved=true;
 		
@@ -802,7 +802,7 @@ HRESULT CScene_DLCOffers::OnTimer(XUIMessageTimer *pData,BOOL& rfHandled)
 	}
 
 	// Check for any TMS image we're waiting for
-	if(m_pNoImageFor_DLC!=nullptr)
+	if(m_pNoImageFor_DLC!=NULL)
 	{
 		// Is it present now?
 		WCHAR *cString = m_pNoImageFor_DLC->wchBanner;
@@ -811,10 +811,10 @@ HRESULT CScene_DLCOffers::OnTimer(XUIMessageTimer *pData,BOOL& rfHandled)
 
 		if(bPresent)
 		{
-			BYTE *pImage=nullptr;
+			BYTE *pImage=NULL;
 			DWORD dwSize=0;
 
-			if(m_hXuiBrush!=nullptr)
+			if(m_hXuiBrush!=NULL)
 			{
 				XuiDestroyBrush(m_hXuiBrush);
 				// clear the TMS XZP vector memory
@@ -822,7 +822,7 @@ HRESULT CScene_DLCOffers::OnTimer(XUIMessageTimer *pData,BOOL& rfHandled)
 			}
 			app.GetMemFileDetails(cString,&pImage,&dwSize);
 			XuiCreateTextureBrushFromMemory(pImage,dwSize,&m_hXuiBrush);
-			m_pNoImageFor_DLC=nullptr;
+			m_pNoImageFor_DLC=NULL;
 		}
 	}
 

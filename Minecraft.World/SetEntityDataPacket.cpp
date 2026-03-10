@@ -10,7 +10,7 @@
 SetEntityDataPacket::SetEntityDataPacket() 
 {
 	id = -1;
-	packedItems = nullptr;
+	packedItems = NULL;
 }
 
 SetEntityDataPacket::~SetEntityDataPacket()

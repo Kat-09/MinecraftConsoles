@@ -19,7 +19,7 @@ bool TradeWithPlayerGoal::canUse()
 	if (mob->hurtMarked) return false;
 
 	shared_ptr<Player> trader = mob->getTradingPlayer();
-	if (trader == nullptr)
+	if (trader == NULL)
 	{
 		// no interaction
 		return false;

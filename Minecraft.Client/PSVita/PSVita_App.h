@@ -83,7 +83,7 @@ public:
 	// BANNED LEVEL LIST
 	virtual void ReadBannedList(int iPad, eTMSAction action=(eTMSAction)0, bool bCallback=false) {}
 
-	C4JStringTable *GetStringTable()																									{ return nullptr;}
+	C4JStringTable *GetStringTable()																									{ return NULL;}
 
 	// original code
 	virtual void TemporaryCreateGameStart();

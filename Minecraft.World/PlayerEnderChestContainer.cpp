@@ -38,10 +38,10 @@ ListTag<CompoundTag> *PlayerEnderChestContainer::createTag()
 	for (int i = 0; i < getContainerSize(); i++)
 	{
 		shared_ptr<ItemInstance> item = getItem(i);
-		if (item != nullptr)
+		if (item != NULL)
 		{
 			CompoundTag *tag = new CompoundTag();
-			tag->putByte(L"Slot", static_cast<byte>(i));
+			tag->putByte(L"Slot", (byte) i);
 			item->save(tag);
 			items->add(tag);
 		}
@@ -51,7 +51,7 @@ ListTag<CompoundTag> *PlayerEnderChestContainer::createTag()
 
 bool PlayerEnderChestContainer::stillValid(shared_ptr<Player> player)
 {
-	if (activeChest != nullptr && !activeChest->stillValid(player))
+	if (activeChest != NULL && !activeChest->stillValid(player))
 	{
 		return false;
 	}
@@ -60,7 +60,7 @@ bool PlayerEnderChestContainer::stillValid(shared_ptr<Player> player)
 
 void PlayerEnderChestContainer::startOpen()
 {
-	if (activeChest != nullptr)
+	if (activeChest != NULL)
 	{
 		activeChest->startOpen();
 	}

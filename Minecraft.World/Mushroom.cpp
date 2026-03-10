@@ -77,7 +77,7 @@ bool Mushroom::growTree(Level *level, int x, int y, int z, Random *random)
 	int data = level->getData(x, y, z);
 
 	level->removeTile(x, y, z);
-	Feature *f = nullptr;
+	Feature *f = NULL;
 
 	if (id == Tile::mushroom_brown_Id)
 	{
@@ -88,14 +88,14 @@ bool Mushroom::growTree(Level *level, int x, int y, int z, Random *random)
 		f = new HugeMushroomFeature(1);
 	}
 
-	if (f == nullptr || !f->place(level, random, x, y, z))
+	if (f == NULL || !f->place(level, random, x, y, z))
 	{
 		level->setTileAndData(x, y, z, id, data, Tile::UPDATE_ALL);
-		if( f != nullptr )
+		if( f != NULL )
 			delete f;
 		return false;
 	}
-	if( f != nullptr )
+	if( f != NULL )
 		delete f;
 	return true;
 }

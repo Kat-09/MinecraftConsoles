@@ -141,8 +141,8 @@ public:
 	virtual void tick();
 	virtual void handleDestroy();
 #ifdef _WINDOWS64
-	virtual void getDirectEditInputs(vector<UIControl_TextInput*> &inputs);
-	virtual void onDirectEditFinished(UIControl_TextInput *input, UIControl_TextInput::EDirectEditResult result);
+	virtual void getDirectEditInputs(vector<UIControl_TextInput*>& inputs);
+	virtual void onDirectEditFinished(UIControl_TextInput* input, UIControl_TextInput::EDirectEditResult result);
 #endif
 	// INPUT
 	virtual void handleInput(int iPad, int key, bool repeat, bool pressed, bool released, bool &handled);
@@ -165,6 +165,7 @@ private:
 #ifdef __PSVITA__
 	virtual void handleTouchInput(unsigned int iPad, S32 x, S32 y, int iId, bool bPressed, bool bRepeat, bool bReleased);
 #endif //__PSVITA__
+
 #if defined(__PSVITA__) || defined(_WINDOWS64)
 	virtual UIControl* GetMainPanel();
 #endif

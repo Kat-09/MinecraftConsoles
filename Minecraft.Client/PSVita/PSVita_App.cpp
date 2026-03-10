@@ -32,15 +32,15 @@ CConsoleMinecraftApp::CConsoleMinecraftApp() : CMinecraftApp()
 	m_bVoiceChatAndUGCRestricted=false;
 	m_bDisplayFullVersionPurchase=false;
 
-	m_ProductListA=nullptr;
+	m_ProductListA=NULL;
 
 	m_pRemoteStorage = new SonyRemoteStorage_Vita;
 
 	m_bSaveIncompleteDialogRunning = false;
 	m_bSaveDataDeleteDialogState = eSaveDataDeleteState_idle;
 
-	m_pSaveToDelete = nullptr;
-	m_pCheckoutProductInfo = nullptr;
+	m_pSaveToDelete = NULL;
+	m_pCheckoutProductInfo = NULL;
 }
 
 void CConsoleMinecraftApp::SetRichPresenceContext(int iPad, int contextId)
@@ -62,7 +62,7 @@ char *CConsoleMinecraftApp::GetCommerceCategory()
 }
 char *CConsoleMinecraftApp::GetTexturePacksCategoryID()
 {
-	return nullptr;	// ProductCodes.chTexturePackID;
+	return NULL;	// ProductCodes.chTexturePackID;
 }
 char *CConsoleMinecraftApp::GetUpgradeKey()
 {
@@ -101,7 +101,7 @@ SONYDLC *CConsoleMinecraftApp::GetSONYDLCInfo(char *pchTitle)
 	{
 		app.DebugPrintf("Couldn't find DLC info for %s\n", pchTitle);
 		assert(0);
-		return nullptr;
+		return NULL;
 	}
 	return it->second;
 
@@ -118,7 +118,7 @@ SONYDLC *CConsoleMinecraftApp::GetSONYDLCInfo(int iTexturePackID)
 		if(it->second->iConfig == iTexturePackID)
 			return it->second;
 	}
-	return nullptr;
+	return NULL;
 }
 
 
@@ -128,7 +128,7 @@ BOOL CConsoleMinecraftApp::ReadProductCodes()
 	char chDLCTitle[64];
 
 	// 4J-PB - Read the file containing the product codes. This will be different for the SCEE/SCEA/SCEJ builds
-	HANDLE file = CreateFile("PSVita/PSVitaProductCodes.bin", GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+	HANDLE file = CreateFile("PSVita/PSVitaProductCodes.bin", GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	if( file == INVALID_HANDLE_VALUE )
 	{
 		DWORD error = GetLastError();
@@ -143,13 +143,13 @@ BOOL CConsoleMinecraftApp::ReadProductCodes()
 	{
 		DWORD bytesRead;
 
-		WRAPPED_READFILE(file,ProductCodes.chProductCode,PRODUCT_CODE_SIZE,&bytesRead,nullptr);
-		WRAPPED_READFILE(file,ProductCodes.chSaveFolderPrefix,SAVEFOLDERPREFIX_SIZE,&bytesRead,nullptr);
-		//WRAPPED_READFILE(file,ProductCodes.chDiscSaveFolderPrefix,SAVEFOLDERPREFIX_SIZE,&bytesRead,nullptr);
-		WRAPPED_READFILE(file,ProductCodes.chCommerceCategory,COMMERCE_CATEGORY_SIZE,&bytesRead,nullptr);
-		//WRAPPED_READFILE(file,ProductCodes.chTexturePackID,SCE_NP_COMMERCE2_CATEGORY_ID_LEN,&bytesRead,nullptr);		// TODO
-		WRAPPED_READFILE(file,ProductCodes.chUpgradeKey,UPGRADE_KEY_SIZE,&bytesRead,nullptr);
-		//WRAPPED_READFILE(file,ProductCodes.chSkuPostfix,SKU_POSTFIX_SIZE,&bytesRead,nullptr);
+		WRAPPED_READFILE(file,ProductCodes.chProductCode,PRODUCT_CODE_SIZE,&bytesRead,NULL);
+		WRAPPED_READFILE(file,ProductCodes.chSaveFolderPrefix,SAVEFOLDERPREFIX_SIZE,&bytesRead,NULL);
+		//WRAPPED_READFILE(file,ProductCodes.chDiscSaveFolderPrefix,SAVEFOLDERPREFIX_SIZE,&bytesRead,NULL);
+		WRAPPED_READFILE(file,ProductCodes.chCommerceCategory,COMMERCE_CATEGORY_SIZE,&bytesRead,NULL);
+		//WRAPPED_READFILE(file,ProductCodes.chTexturePackID,SCE_NP_COMMERCE2_CATEGORY_ID_LEN,&bytesRead,NULL);		// TODO
+		WRAPPED_READFILE(file,ProductCodes.chUpgradeKey,UPGRADE_KEY_SIZE,&bytesRead,NULL);
+		//WRAPPED_READFILE(file,ProductCodes.chSkuPostfix,SKU_POSTFIX_SIZE,&bytesRead,NULL);
 
 		app.DebugPrintf("ProductCodes.chProductCode %s\n",ProductCodes.chProductCode);
 		app.DebugPrintf("ProductCodes.chSaveFolderPrefix %s\n",ProductCodes.chSaveFolderPrefix);
@@ -161,7 +161,7 @@ BOOL CConsoleMinecraftApp::ReadProductCodes()
 
 		// DLC
 		unsigned int uiDLC;
-		WRAPPED_READFILE(file,&uiDLC,sizeof(int),&bytesRead,nullptr);
+		WRAPPED_READFILE(file,&uiDLC,sizeof(int),&bytesRead,NULL);
 
 		for(unsigned int i=0;i<uiDLC;i++)
 		{
@@ -170,16 +170,16 @@ BOOL CConsoleMinecraftApp::ReadProductCodes()
 			memset(chDLCTitle,0,64);
 
 			unsigned int uiVal;
-			WRAPPED_READFILE(file,&uiVal,sizeof(int),&bytesRead,nullptr);
-			WRAPPED_READFILE(file,pDLCInfo->chDLCKeyname,sizeof(char)*uiVal,&bytesRead,nullptr);
+			WRAPPED_READFILE(file,&uiVal,sizeof(int),&bytesRead,NULL);
+			WRAPPED_READFILE(file,pDLCInfo->chDLCKeyname,sizeof(char)*uiVal,&bytesRead,NULL);
 
-			WRAPPED_READFILE(file,&uiVal,sizeof(int),&bytesRead,nullptr);
-			WRAPPED_READFILE(file,chDLCTitle,sizeof(char)*uiVal,&bytesRead,nullptr);
+			WRAPPED_READFILE(file,&uiVal,sizeof(int),&bytesRead,NULL);
+			WRAPPED_READFILE(file,chDLCTitle,sizeof(char)*uiVal,&bytesRead,NULL);
 			app.DebugPrintf("DLC title %s\n",chDLCTitle);
 
-			WRAPPED_READFILE(file,&pDLCInfo->eDLCType,sizeof(int),&bytesRead,nullptr);
-			WRAPPED_READFILE(file,&pDLCInfo->iFirstSkin,sizeof(int),&bytesRead,nullptr);
-			WRAPPED_READFILE(file,&pDLCInfo->iConfig,sizeof(int),&bytesRead,nullptr);
+			WRAPPED_READFILE(file,&pDLCInfo->eDLCType,sizeof(int),&bytesRead,NULL);
+			WRAPPED_READFILE(file,&pDLCInfo->iFirstSkin,sizeof(int),&bytesRead,NULL);
+			WRAPPED_READFILE(file,&pDLCInfo->iConfig,sizeof(int),&bytesRead,NULL);
 
 			// push this into a vector
 
@@ -296,7 +296,7 @@ void CConsoleMinecraftApp::TemporaryCreateGameStart()
 {
 	////////////////////////////////////////////////////////////////////////////////////////////// From CScene_Main::OnInit
 
-	app.setLevelGenerationOptions(nullptr);
+	app.setLevelGenerationOptions(NULL);
 
 	// From CScene_Main::RunPlayGame
 	Minecraft *pMinecraft=Minecraft::GetInstance();
@@ -318,11 +318,11 @@ void CConsoleMinecraftApp::TemporaryCreateGameStart()
 	wstring wWorldName = L"TestWorld";
 
 	bool isFlat = false;
-	int64_t seedValue = 0;//BiomeSource::findSeed(isFlat?LevelType::lvl_flat:LevelType::lvl_normal);	// 4J - was (new Random())->nextLong() - now trying to actually find a seed to suit our requirements
+	__int64 seedValue = 0;//BiomeSource::findSeed(isFlat?LevelType::lvl_flat:LevelType::lvl_normal);	// 4J - was (new Random())->nextLong() - now trying to actually find a seed to suit our requirements
 
 	NetworkGameInitData *param = new NetworkGameInitData();
 	param->seed = seedValue;
-	param->saveData = nullptr;
+	param->saveData = NULL;
 
 	g_NetworkManager.HostGame(0,false,true,MINECRAFT_NET_MAX_PLAYERS,0);
 
@@ -545,7 +545,7 @@ SonyCommerce::CategoryInfo *CConsoleMinecraftApp::GetCategoryInfo()
 {
 	if(m_bCommerceCategoriesRetrieved==false)
 	{
-		return nullptr;
+		return NULL;
 	}
 
 	return &m_CategoryInfo;
@@ -561,10 +561,10 @@ void CConsoleMinecraftApp::ClearCommerceDetails()
 		pProductList->clear();
 	}
 
-	if(m_ProductListA!=nullptr)
+	if(m_ProductListA!=NULL)
 	{
 		delete [] m_ProductListA;
-		m_ProductListA=nullptr;
+		m_ProductListA=NULL;
 	}
 
 	m_ProductListRetrievedC=0;
@@ -590,7 +590,7 @@ void CConsoleMinecraftApp::GetDLCSkuIDFromProductList(char * pchDLCProductID, ch
 	// find the DLC
 	for(int i=0;i<m_ProductListCategoriesC;i++)
 	{
-		for(size_t j=0;j<m_ProductListA[i].size();j++)
+		for(int j=0;j<m_ProductListA[i].size();j++)
 		{
 			std::vector<SonyCommerce::ProductInfo>* pProductList=&m_ProductListA[i];
             auto itEnd = pProductList->end();
@@ -613,11 +613,11 @@ void CConsoleMinecraftApp::GetDLCSkuIDFromProductList(char * pchDLCProductID, ch
 
 void CConsoleMinecraftApp::Checkout(char *pchSkuID)
 {
-	SonyCommerce::ProductInfo* productInfo = nullptr;
+	SonyCommerce::ProductInfo* productInfo = NULL;
 
 	for(int i=0;i<m_ProductListCategoriesC;i++)
 	{
-		for(size_t j=0;j<m_ProductListA[i].size();j++)
+		for(int j=0;j<m_ProductListA[i].size();j++)
 		{
 			std::vector<SonyCommerce::ProductInfo>* pProductList=&m_ProductListA[i];
             auto itEnd = pProductList->end();
@@ -684,7 +684,7 @@ std::vector<SonyCommerce::ProductInfo>* CConsoleMinecraftApp::GetProductList(int
 {
 	if((m_bCommerceProductListRetrieved==false) || (m_bProductListAdditionalDetailsRetrieved==false) )
 	{
-		return nullptr;
+		return NULL;
 	}
 
 	return &m_ProductListA[iIndex];
@@ -697,7 +697,7 @@ bool CConsoleMinecraftApp::DLCAlreadyPurchased(char *pchTitle)
 	// find the DLC
 	for(int i=0;i<m_ProductListCategoriesC;i++)
 	{
-		for(size_t j=0;j<m_ProductListA[i].size();j++)
+		for(int j=0;j<m_ProductListA[i].size();j++)
 		{
 			std::vector<SonyCommerce::ProductInfo>* pProductList=&m_ProductListA[i];
             auto itEnd = pProductList->end();
@@ -1076,7 +1076,7 @@ bool CConsoleMinecraftApp::CheckForEmptyStore(int iPad)
 	SonyCommerce::CategoryInfo *pCategories=app.GetCategoryInfo();
 
 	bool bEmptyStore=true;
-	if(pCategories!=nullptr)
+	if(pCategories!=NULL)
 	{
 		if(pCategories->countOfProducts>0)
 		{
@@ -1288,7 +1288,7 @@ int CConsoleMinecraftApp::cbConfirmDeleteMessageBox(void *pParam, int iPad, cons
 {
 	CConsoleMinecraftApp *pClass = (CConsoleMinecraftApp*) pParam;
 
-	if (pClass != nullptr && pClass->m_pSaveToDelete != nullptr)
+	if (pClass != NULL && pClass->m_pSaveToDelete != NULL)
 	{
 		if (result == C4JStorage::EMessage_ResultDecline)
 		{
@@ -1408,12 +1408,12 @@ void CConsoleMinecraftApp::initSaveDataDeleteDialog()
 		ui.SetSysUIShowing(true);
 
 		// Start getting saves data to use when deleting.
-		if (StorageManager.ReturnSavesInfo() == nullptr)
+		if (StorageManager.ReturnSavesInfo() == NULL)
 		{
 			C4JStorage::ESaveGameState eSGIStatus
 				= StorageManager.GetSavesInfo(
 					ProfileManager.GetPrimaryPad(),
-					nullptr,
+					NULL,
 					this,
 					"save"
 				);
@@ -1471,15 +1471,15 @@ void CConsoleMinecraftApp::updateSaveDataDeleteDialog()
 				if ( dialogResult.result == SCE_COMMON_DIALOG_RESULT_OK )
 				{
 					SceAppUtilSaveDataSlotParam slotParam;
-					ret = sceAppUtilSaveDataSlotGetParam( dialogResult.slotId, &slotParam, nullptr );
+					ret = sceAppUtilSaveDataSlotGetParam( dialogResult.slotId, &slotParam, NULL );
 
 					if (ret == SCE_OK)
 					{
 						int saveindex = -1;
-						PSAVE_INFO pSaveInfo = nullptr;
+						PSAVE_INFO pSaveInfo = NULL;
 						PSAVE_DETAILS pSaveDetails = StorageManager.ReturnSavesInfo();
 
-						if (pSaveDetails != nullptr)
+						if (pSaveDetails != NULL)
 						{
 							app.DebugPrintf("[SaveDataDeleteDialog] Searching for save files:\n");
 
@@ -1504,7 +1504,7 @@ void CConsoleMinecraftApp::updateSaveDataDeleteDialog()
 							app.DebugPrintf("[SaveDataDeleteDialog] ERROR: PERFORMING DELETE OPERATION, pSavesDetails is null.\n");
 						}
 
-						if (pSaveInfo != nullptr)
+						if (pSaveInfo != NULL)
 						{
 							app.DebugPrintf(
 								"[SaveDataDeleteDialog] User wishes to delete slot_%d:\n\t"
@@ -1603,7 +1603,7 @@ void CConsoleMinecraftApp::getSaveDataDeleteDialogParam(SceSaveDataDialogParam *
 		for (unsigned int i = 2; i < SCE_APPUTIL_SAVEDATA_SLOT_MAX; i++)
 		{
 			SceAppUtilSaveDataSlotParam slotParam;
-			int ret = sceAppUtilSaveDataSlotGetParam( i, &slotParam, nullptr );
+			int ret = sceAppUtilSaveDataSlotGetParam( i, &slotParam, NULL );
 
 			if (ret == SCE_OK)
 			{
@@ -1645,8 +1645,8 @@ void CConsoleMinecraftApp::getSaveDataDeleteDialogParam(SceSaveDataDialogParam *
 	// baseParam->commonParam.dimmerColor = &s_dColor;
 
 
-	static uint8_t *strPtr = nullptr;
-	if (strPtr != nullptr) delete strPtr;
+	static uint8_t *strPtr = NULL;
+	if (strPtr != NULL) delete strPtr;
 	strPtr = mallocAndCreateUTF8ArrayFromString( IDS_TOOLTIPS_DELETESAVE );
 
 	listParam.listTitle = (const SceChar8 *) strPtr;

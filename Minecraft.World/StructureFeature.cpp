@@ -109,7 +109,7 @@ bool StructureFeature::isIntersection(int cellX, int cellZ)
 bool StructureFeature::isInsideFeature(int cellX, int cellY, int cellZ)
 {
 	restoreSavedData(level);
-	return getStructureAt(cellX, cellY, cellZ) != nullptr;
+	return getStructureAt(cellX, cellY, cellZ) != NULL;
 }
 
 StructureStart *StructureFeature::getStructureAt(int cellX, int cellY, int cellZ)
@@ -142,7 +142,7 @@ StructureStart *StructureFeature::getStructureAt(int cellX, int cellY, int cellZ
 			}
 		}
 	}
-	return nullptr;
+	return NULL;
 }
 
 bool StructureFeature::isInsideBoundingFeature(int cellX, int cellY, int cellZ)
@@ -169,16 +169,16 @@ TilePos *StructureFeature::getNearestGeneratedFeature(Level *level, int cellX, i
 	restoreSavedData(level);
 
 	random->setSeed(level->getSeed());
-	int64_t xScale = random->nextLong();
-	int64_t zScale = random->nextLong();
-	int64_t xx = (cellX >> 4) * xScale;
-	int64_t zz = (cellZ >> 4) * zScale;
+	__int64 xScale = random->nextLong();
+	__int64 zScale = random->nextLong();
+	__int64 xx = (cellX >> 4) * xScale;
+	__int64 zz = (cellZ >> 4) * zScale;
 	random->setSeed(xx ^ zz ^ level->getSeed());
 
 	addFeature(level, cellX >> 4, cellZ >> 4, 0, 0, byteArray());
 
 	double minDistance = DBL_MAX;
-	TilePos *selected = nullptr;
+	TilePos *selected = NULL;
 
 	for(auto& it : cachedStructures)
 	{
@@ -203,14 +203,14 @@ TilePos *StructureFeature::getNearestGeneratedFeature(Level *level, int cellX, i
 			}
 		}
 	}
-	if (selected != nullptr)
+	if (selected != NULL)
 	{
 		return selected;
 	}
 	else
 	{
 		vector<TilePos> *guesstimatedFeaturePositions = getGuesstimatedFeaturePositions();
-		if (guesstimatedFeaturePositions != nullptr)
+		if (guesstimatedFeaturePositions != NULL)
 		{
 			TilePos *pSelectedPos = new TilePos(0,0,0);
 
@@ -233,22 +233,22 @@ TilePos *StructureFeature::getNearestGeneratedFeature(Level *level, int cellX, i
 			return pSelectedPos;
 		}
 	}
-	return nullptr;
+	return NULL;
 }
 
 vector<TilePos> *StructureFeature::getGuesstimatedFeaturePositions()
 {
-	return nullptr;
+	return NULL;
 }
 
 void StructureFeature::restoreSavedData(Level *level)
 {
 #ifdef ENABLE_STRUCTURE_SAVING
-	if (savedData == nullptr)
+	if (savedData == NULL)
 	{
 		savedData = dynamic_pointer_cast<StructureFeatureSavedData>( level->getSavedData(typeid(StructureFeatureSavedData), getFeatureName()) );
 
-		if (savedData == nullptr)
+		if (savedData == NULL)
 		{
 			savedData = shared_ptr<StructureFeatureSavedData>( new StructureFeatureSavedData(getFeatureName()) );
 			level->setSavedData(getFeatureName(), savedData);

@@ -45,7 +45,7 @@ void IUIScene_StartGame::HandleDLCMountingComplete()
 
 	// 4J-PB - there may be texture packs we don't have, so use the info from TMS for this
 	// REMOVE UNTIL WORKING
-	DLC_INFO *pDLCInfo=nullptr;
+	DLC_INFO *pDLCInfo=NULL;
 
 	// first pass - look to see if there are any that are not in the list
 	bool bTexturePackAlreadyListed;
@@ -86,7 +86,7 @@ void IUIScene_StartGame::HandleDLCMountingComplete()
 		// add a TMS request for them
 		app.DebugPrintf("+++ Adding TMSPP request for texture pack data\n");
 		app.AddTMSPPFileTypeRequest(e_DLC_TexturePackData);
-		if(m_iConfigA!=nullptr)
+		if(m_iConfigA!=NULL)
 		{
 			delete m_iConfigA;
 		}
@@ -123,7 +123,7 @@ void IUIScene_StartGame::HandleDLCMountingComplete()
 
 void IUIScene_StartGame::handleSelectionChanged(F64 selectedId)
 {
-	m_iSetTexturePackDescription = static_cast<int>(selectedId);
+	m_iSetTexturePackDescription = (int)selectedId;
 
 	if(!m_texturePackDescDisplayed)
 	{	
@@ -135,13 +135,13 @@ void IUIScene_StartGame::UpdateTexturePackDescription(int index)
 {
 	TexturePack *tp = Minecraft::GetInstance()->skins->getTexturePackByIndex(index);
 
-	if(tp==nullptr)
+	if(tp==NULL)
 	{
 #if TO_BE_IMPLEMENTED		
 		// this is probably a texture pack icon added from TMS
 
 		DWORD dwBytes=0,dwFileBytes=0;
-		PBYTE pbData=nullptr,pbFileData=nullptr;
+		PBYTE pbData=NULL,pbFileData=NULL;
 
 		CXuiCtrl4JList::LIST_ITEM_INFO ListItem;
 		// get the current index of the list, and then get the data
@@ -171,7 +171,7 @@ void IUIScene_StartGame::UpdateTexturePackDescription(int index)
 		}
 		else
 		{
-			m_texturePackComparison->UseBrush(nullptr);
+			m_texturePackComparison->UseBrush(NULL);
 		}
 #endif
 	}
@@ -214,7 +214,7 @@ void IUIScene_StartGame::UpdateCurrentTexturePack(int iSlot)
 	TexturePack *tp = Minecraft::GetInstance()->skins->getTexturePackByIndex(m_currentTexturePackIndex);
 
 	// if the texture pack is null, you don't have it yet
-	if(tp==nullptr)
+	if(tp==NULL)
 	{
 #if TO_BE_IMPLEMENTED
 		// Upsell
@@ -254,7 +254,7 @@ void IUIScene_StartGame::UpdateCurrentTexturePack(int iSlot)
 
 int IUIScene_StartGame::TrialTexturePackWarningReturned(void *pParam,int iPad,C4JStorage::EMessageResult result)
 {
-	IUIScene_StartGame* pScene = static_cast<IUIScene_StartGame *>(pParam);
+	IUIScene_StartGame* pScene = (IUIScene_StartGame*)pParam;
 
 	if(result==C4JStorage::EMessage_ResultAccept)
 	{
@@ -269,7 +269,7 @@ int IUIScene_StartGame::TrialTexturePackWarningReturned(void *pParam,int iPad,C4
 
 int IUIScene_StartGame::UnlockTexturePackReturned(void *pParam,int iPad,C4JStorage::EMessageResult result)
 {
-	IUIScene_StartGame* pScene = static_cast<IUIScene_StartGame *>(pParam);
+	IUIScene_StartGame* pScene = (IUIScene_StartGame*)pParam;
 
 	if(result==C4JStorage::EMessage_ResultAccept)
 	{
@@ -279,7 +279,7 @@ int IUIScene_StartGame::UnlockTexturePackReturned(void *pParam,int iPad,C4JStora
 			ULONGLONG ullIndexA[1];
 			DLC_INFO *pDLCInfo = app.GetDLCInfoForTrialOfferID(pScene->m_pDLCPack->getPurchaseOfferId());
 
-			if(pDLCInfo!=nullptr)
+			if(pDLCInfo!=NULL)
 			{
 				ullIndexA[0]=pDLCInfo->ullOfferID_Full;
 			}
@@ -289,9 +289,9 @@ int IUIScene_StartGame::UnlockTexturePackReturned(void *pParam,int iPad,C4JStora
 			}
 
 
-			StorageManager.InstallOffer(1,ullIndexA,nullptr,nullptr);
+			StorageManager.InstallOffer(1,ullIndexA,NULL,NULL);
 #elif defined _XBOX_ONE
-			//StorageManager.InstallOffer(1,StorageManager.GetOffer(iIndex).wszProductID,nullptr,nullptr);
+			//StorageManager.InstallOffer(1,StorageManager.GetOffer(iIndex).wszProductID,NULL,NULL);
 #endif
 
 			// the license change coming in when the offer has been installed will cause this scene to refresh	
@@ -311,7 +311,7 @@ int IUIScene_StartGame::UnlockTexturePackReturned(void *pParam,int iPad,C4JStora
 
 int IUIScene_StartGame::TexturePackDialogReturned(void *pParam,int iPad,C4JStorage::EMessageResult result)
 {
-	IUIScene_StartGame *pClass = static_cast<IUIScene_StartGame *>(pParam);
+	IUIScene_StartGame *pClass = (IUIScene_StartGame *)pParam;
 
 
 #ifdef _XBOX
@@ -332,7 +332,7 @@ int IUIScene_StartGame::TexturePackDialogReturned(void *pParam,int iPad,C4JStora
 		if( result==C4JStorage::EMessage_ResultAccept ) // Full version
 		{
 			ullIndexA[0]=ullOfferID_Full;
-			StorageManager.InstallOffer(1,ullIndexA,nullptr,nullptr);
+			StorageManager.InstallOffer(1,ullIndexA,NULL,NULL);
 
 		}
 		else // trial version
@@ -343,7 +343,7 @@ int IUIScene_StartGame::TexturePackDialogReturned(void *pParam,int iPad,C4JStora
 			{
 
 				ullIndexA[0]=pDLCInfo->ullOfferID_Trial;
-				StorageManager.InstallOffer(1,ullIndexA,nullptr,nullptr);
+				StorageManager.InstallOffer(1,ullIndexA,NULL,NULL);
 			}
 		}		
 	}
@@ -360,7 +360,7 @@ int IUIScene_StartGame::TexturePackDialogReturned(void *pParam,int iPad,C4JStora
 				app.GetDLCFullOfferIDForPackID(pClass->m_MoreOptionsParams.dwTexturePack,ProductId);
 
 
-				StorageManager.InstallOffer(1,(WCHAR *)ProductId.c_str(),nullptr,nullptr);
+				StorageManager.InstallOffer(1,(WCHAR *)ProductId.c_str(),NULL,NULL);
 
 				// the license change coming in when the offer has been installed will cause this scene to refresh	
 			}

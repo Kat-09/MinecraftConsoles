@@ -133,9 +133,7 @@ enum eGameSetting
 {
 	eGameSetting_MusicVolume=0,
 	eGameSetting_SoundFXVolume,
-	eGameSetting_RenderDistance,
 	eGameSetting_Gamma,
-	eGameSetting_FOV,
 	eGameSetting_Difficulty,
 	eGameSetting_Sensitivity_InGame,
 	eGameSetting_Sensitivity_InMenu,
@@ -862,6 +860,7 @@ enum EControllerActions
 	MINECRAFT_ACTION_INVENTORY,
 	MINECRAFT_ACTION_PAUSEMENU,
 	MINECRAFT_ACTION_DROP,
+	MINECRAFT_ACTION_PICK_ITEM,
 	MINECRAFT_ACTION_SNEAK_TOGGLE,
 	MINECRAFT_ACTION_CRAFTING,
 	MINECRAFT_ACTION_RENDER_THIRD_PERSON,

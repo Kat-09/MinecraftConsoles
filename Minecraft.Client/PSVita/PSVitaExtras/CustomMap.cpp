@@ -4,12 +4,12 @@
 
 CustomMap::CustomMap()
 {
-	m_NodePool = nullptr;
+	m_NodePool = NULL;
 	m_NodePoolSize = 0;
 	m_NodePoolIndex = 0;
 
 	m_HashSize = 1024;
-	m_HashTable = static_cast<SCustomMapNode **>(malloc(m_HashSize * sizeof(SCustomMapNode)));
+	m_HashTable = (SCustomMapNode**) malloc(m_HashSize * sizeof(SCustomMapNode));
 
 	clear();
 }
@@ -87,7 +87,7 @@ void CustomMap::insert(const ChunkPos &Key, bool Value)
 	Node->Hash = Hash;
 	Node->first = Key;
 	Node->second = Value;
-	Node->Next = nullptr;
+	Node->Next = NULL;
 
 	// are any nodes in this hash index
 	if( !m_HashTable[Index] )
@@ -115,16 +115,16 @@ void CustomMap::resize()
 	SCustomMapNode **NodePool;
 	if( m_NodePool )
 	{
-		NodePool = static_cast<SCustomMapNode **>(realloc(m_NodePool, m_NodePoolSize * sizeof(SCustomMapNode)));
+		NodePool = (SCustomMapNode**) realloc(m_NodePool, m_NodePoolSize * sizeof(SCustomMapNode));
 	}
 	else
 	{
-		NodePool = static_cast<SCustomMapNode **>(malloc(m_NodePoolSize * sizeof(SCustomMapNode)));
+		NodePool = (SCustomMapNode**) malloc(m_NodePoolSize * sizeof(SCustomMapNode));
 	}
 
 	for( int i = 0;i < m_NodePoolSize - OldPoolSize;i += 1 )
 	{
-		NodePool[i + OldPoolSize] = static_cast<SCustomMapNode *>(malloc(sizeof(SCustomMapNode)));
+		NodePool[i + OldPoolSize] = (SCustomMapNode*) malloc(sizeof(SCustomMapNode));
 	}
 
 	m_NodePool = NodePool;

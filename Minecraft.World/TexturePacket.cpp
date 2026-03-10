@@ -10,13 +10,13 @@ TexturePacket::TexturePacket()
 {
 	this->textureName = L"";
 	this->dwBytes = 0;
-	this->pbData = nullptr;
+	this->pbData = NULL;
 }
 
 TexturePacket::~TexturePacket() 
 {
 	// can't free this - it's used elsewhere
-// 	if(this->pbData!=nullptr)
+// 	if(this->pbData!=NULL)
 // 	{
 // 		delete [] this->pbData;
 // 	}
@@ -37,23 +37,31 @@ void TexturePacket::handle(PacketListener *listener)
 void TexturePacket::read(DataInputStream *dis) //throws IOException
 {
 	textureName = dis->readUTF();
-	dwBytes = static_cast<DWORD>(dis->readShort());
-
-	if(dwBytes>0)
+	short rawBytes = dis->readShort();
+	if (rawBytes <= 0)
 	{
-		this->pbData= new BYTE [dwBytes];
+		dwBytes = 0;
+		return;
+	}
+	dwBytes = (DWORD)(unsigned short)rawBytes;
+	if (dwBytes > 65536)
+	{
+		dwBytes = 0;
+		return;
+	}
 
-		for(DWORD i=0;i<dwBytes;i++)
-		{
-			this->pbData[i] = dis->readByte();
-		}
+	this->pbData = new BYTE[dwBytes];
+
+	for (DWORD i = 0; i < dwBytes; i++)
+	{
+		this->pbData[i] = dis->readByte();
 	}
 }
 
 void TexturePacket::write(DataOutputStream *dos) //throws IOException 
 {
 	dos->writeUTF(textureName);
-	dos->writeShort(static_cast<short>(dwBytes));
+	dos->writeShort((short)dwBytes);
 	for(DWORD i=0;i<dwBytes;i++)
 	{
 		dos->writeByte(this->pbData[i]);

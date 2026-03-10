@@ -170,15 +170,15 @@ class ZipFile
 {
 public:
 	ZipFile(File *file) {}
-	InputStream *getInputStream(ZipEntry *entry) { return nullptr; }
-	ZipEntry *getEntry(const wstring& name) {return nullptr;}
+	InputStream *getInputStream(ZipEntry *entry) { return NULL; }
+	ZipEntry *getEntry(const wstring& name) {return NULL;}
 	void close() {}
 };
 
 class ImageIO
 {
 public:
-	static BufferedImage *read(InputStream *in) { return nullptr; }
+	static BufferedImage *read(InputStream *in) { return NULL; }
 };
 
 class Keyboard

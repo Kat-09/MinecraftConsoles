@@ -48,7 +48,7 @@ bool SkullItem::useOn(shared_ptr<ItemInstance> instance, shared_ptr<Player> play
 		shared_ptr<TileEntity> skullTE = level->getTileEntity(x, y, z);
 		shared_ptr<SkullTileEntity> skull = dynamic_pointer_cast<SkullTileEntity>(skullTE);
 
-		if (skull != nullptr)
+		if (skull != NULL)
 		{
 			wstring extra = L"";
 			if (instance->hasTag() && instance->getTag()->contains(L"SkullOwner"))
@@ -57,7 +57,7 @@ bool SkullItem::useOn(shared_ptr<ItemInstance> instance, shared_ptr<Player> play
 			}
 			skull->setSkullType(instance->getAuxValue(), extra);
 			skull->setRotation(rot);
-			static_cast<SkullTile *>(Tile::skull)->checkMobSpawn(level, x, y, z, skull);
+			((SkullTile *) Tile::skull)->checkMobSpawn(level, x, y, z, skull);
 		}
 
 		instance->count--;

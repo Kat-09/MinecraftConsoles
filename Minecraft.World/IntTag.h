@@ -28,7 +28,7 @@ public:
 	{
 		if (Tag::equals(obj))
 		{
-			IntTag *o = static_cast<IntTag *>(obj);
+			IntTag *o = (IntTag *) obj;
 			return data == o->data;
 		}
 		return false;

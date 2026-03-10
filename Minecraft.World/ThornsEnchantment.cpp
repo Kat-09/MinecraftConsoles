@@ -62,14 +62,14 @@ void ThornsEnchantment::doThornsAfterAttack(shared_ptr<Entity> source, shared_pt
 		source->hurt(DamageSource::thorns(target), getDamage(level, random));
 		source->playSound(eSoundType_DAMAGE_THORNS, .5f, 1.0f);
 
-		if (item != nullptr)
+		if (item != NULL)
 		{
 			item->hurtAndBreak(3, target);
 		}
 	}
 	else
 	{
-		if (item != nullptr)
+		if (item != NULL)
 		{
 			item->hurtAndBreak(1, target);
 		}

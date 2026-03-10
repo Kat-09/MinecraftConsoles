@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "UI.h"
 #include "UIControl_TextInput.h"
 

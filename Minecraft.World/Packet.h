@@ -15,7 +15,7 @@ typedef shared_ptr<Packet> (*packetCreateFn)();
 class Packet
 {
 public:
-	class PacketStatistics
+	class PacketStatistics 
 	{
 	private:
 		int count;
@@ -24,9 +24,9 @@ public:
 		static const int TOTAL_TICKS = 100;
 
 		// 4J Added
-		int64_t countSamples[TOTAL_TICKS];
-		int64_t sizeSamples[TOTAL_TICKS];
-		int64_t timeSamples[TOTAL_TICKS];
+		__int64 countSamples[TOTAL_TICKS];
+		__int64 sizeSamples[TOTAL_TICKS];
+		__int64 timeSamples[TOTAL_TICKS];
 		int samplesPos;
 
 	public:
@@ -38,8 +38,8 @@ public:
 		int getCount();
 		int getTotalSize();
 		double getAverageSize();
-		int64_t getRunningTotal();
-		int64_t getRunningCount();
+		__int64 getRunningTotal();
+		__int64 getRunningCount();
 		void IncrementPos();
 	};
 
@@ -58,7 +58,7 @@ public:
 	static void map(int id, bool receiveOnClient, bool receiveOnServer, bool sendToAnyClient, bool renderStats, const type_info& clazz, packetCreateFn );
 
 public:
-	const int64_t createTime;
+	const __int64 createTime;
 
 	Packet();
 

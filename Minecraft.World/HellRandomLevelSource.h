@@ -37,7 +37,7 @@ private:
 	Level *level;
 
 public:
-	HellRandomLevelSource(Level *level, int64_t seed);
+	HellRandomLevelSource(Level *level, __int64 seed);
 	~HellRandomLevelSource();
 
 	NetherBridgeFeature *netherBridgeFeature;

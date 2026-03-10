@@ -3,7 +3,7 @@
 #include "AABB.h"
 
 DWORD Vec3::tlsIdx = 0;
-Vec3::ThreadStorage *Vec3::tlsDefault = nullptr;
+Vec3::ThreadStorage *Vec3::tlsDefault = NULL;
 
 Vec3::ThreadStorage::ThreadStorage()
 {
@@ -19,7 +19,7 @@ Vec3::ThreadStorage::~ThreadStorage()
 void Vec3::CreateNewThreadStorage()
 {
 	ThreadStorage *tls = new ThreadStorage();
-	if(tlsDefault == nullptr )
+	if(tlsDefault == NULL )
 	{
 		tlsIdx = TlsAlloc();
 		tlsDefault = tls;
@@ -34,7 +34,7 @@ void Vec3::UseDefaultThreadStorage()
 
 void Vec3::ReleaseThreadStorage()
 {
-	ThreadStorage *tls = static_cast<ThreadStorage *>(TlsGetValue(tlsIdx));
+	ThreadStorage *tls = (ThreadStorage *)TlsGetValue(tlsIdx);
 	if( tls == tlsDefault ) return;
 
 	delete tls;
@@ -55,7 +55,7 @@ void Vec3::resetPool()
 
 Vec3 *Vec3::newTemp(double x, double y, double z)
 {
-	ThreadStorage *tls = static_cast<ThreadStorage *>(TlsGetValue(tlsIdx));
+	ThreadStorage *tls = (ThreadStorage *)TlsGetValue(tlsIdx);
 	Vec3 *thisVec = &tls->pool[tls->poolPointer];
 	thisVec->set(x, y, z);
 	tls->poolPointer = ( tls->poolPointer + 1 ) % ThreadStorage::POOL_SIZE;
@@ -157,10 +157,10 @@ Vec3 *Vec3::clipX(Vec3 *b, double xt)
 	double yd = b->y - y;
 	double zd = b->z - z;
 
-	if (xd * xd < 0.0000001f) return nullptr;
+	if (xd * xd < 0.0000001f) return NULL;
 
 	double d = (xt - x) / xd;
-	if (d < 0 || d > 1) return nullptr;
+	if (d < 0 || d > 1) return NULL;
 	return Vec3::newTemp(x + xd * d, y + yd * d, z + zd * d);
 }
 
@@ -170,10 +170,10 @@ Vec3 *Vec3::clipY(Vec3 *b, double yt)
 	double yd = b->y - y;
 	double zd = b->z - z;
 
-	if (yd * yd < 0.0000001f) return nullptr;
+	if (yd * yd < 0.0000001f) return NULL;
 
 	double d = (yt - y) / yd;
-	if (d < 0 || d > 1) return nullptr;
+	if (d < 0 || d > 1) return NULL;
 	return Vec3::newTemp(x + xd * d, y + yd * d, z + zd * d);
 }
 
@@ -183,10 +183,10 @@ Vec3 *Vec3::clipZ(Vec3 *b, double zt)
 	double yd = b->y - y;
 	double zd = b->z - z;
 
-	if (zd * zd < 0.0000001f) return nullptr;
+	if (zd * zd < 0.0000001f) return NULL;
 
 	double d = (zt - z) / zd;
-	if (d < 0 || d > 1) return nullptr;
+	if (d < 0 || d > 1) return NULL;
 	return Vec3::newTemp(x + xd * d, y + yd * d, z + zd * d);
 }
 
