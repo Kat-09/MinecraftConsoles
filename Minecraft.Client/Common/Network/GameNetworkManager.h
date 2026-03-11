@@ -14,16 +14,20 @@ using namespace std;
 #include "PlatformNetworkManagerStub.h"
 #endif
 #include "SessionInfo.h"
-#include "..\..\Windows64\Windows64_Minecraft.h"
+
 
 #ifdef __ORBIS__
 #include "..\..\Orbis\Network\PsPlusUpsellWrapper_Orbis.h"
 #endif
 
+
+
 class ClientConnection;
 class Minecraft;
 
 const int NON_QNET_SENDDATA_ACK_REQUIRED = 1;
+
+
 
 // This class implements the game-side interface to the networking system. As such, it is platform independent and may contain bits of game-side code where appropriate.
 // It shouldn't ever reference any platform specifics of the network implementation (eg QNET), rather it should interface with an implementation of PlatformNetworkManager to

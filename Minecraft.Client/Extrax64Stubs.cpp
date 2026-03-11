@@ -624,9 +624,13 @@ bool				C_4JProfile::QuerySigninStatus(void) { return true; }
 void				C_4JProfile::GetXUID(int iPad, PlayerUID * pXuid, bool bOnlineXuid)
 {
 #ifdef _WINDOWS64
-	// Each pad gets a unique XUID derived from the persistent uid.dat value.
-	// Pad 0 uses the base XUID directly. Pads 1-3 get a deterministic hash
-	// of (base + pad) to produce fully independent IDs with no overlap risk.
+		if (IQNet::s_isHosting)
+			*pXuid = (PlayerUID) + iPad;
+	else if (iPad == 0)
+			*pXuid = (PlayerUID) + 0;
+	else
+		*pXuid = (PlayerUID) + iPad;
+#else
 	* pXuid = 0xe000d45248242f2e + iPad;
 #endif
 }

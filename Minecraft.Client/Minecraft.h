@@ -45,6 +45,8 @@ class PsPlusUpsellWrapper;
 
 using namespace std;
 
+
+
 class Minecraft
 {
 private:
@@ -81,6 +83,7 @@ private:
 
 public:
 	int width, height;
+	
 	int width_phys, height_phys; // 4J - added
 	//    private OpenGLCapabilities openGLCapabilities;
 

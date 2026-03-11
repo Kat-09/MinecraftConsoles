@@ -785,8 +785,16 @@ void ClientConnection::handleAddPlayer(shared_ptr<AddPlayerPacket> packet)
 	{
 		if (minecraft->localplayers[idx] != NULL && minecraft->localplayers[idx]->name == packet->name)
 		{
-			app.DebugPrintf("AddPlayerPacket received for local player name %ls\n", packet->name.c_str());
-			return;
+			INetworkPlayer *localNetPlayer = g_NetworkManager.GetLocalPlayerByUserIndex(idx);
+			if(localNetPlayer != NULL)
+			{
+				PlayerUID localXuid = minecraft->localplayers[idx]->getXuid(); + localNetPlayer->GetSmallId();
+				if(localXuid == packet->xuid)
+				{
+					app.DebugPrintf("AddPlayerPacket received for local controller %d (xuid match), skipping RemotePlayer creation\n", idx);
+					return;
+				}
+			}
 		}
 	}
 #endif

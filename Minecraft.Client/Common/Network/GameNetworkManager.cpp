@@ -44,8 +44,9 @@
 
 #ifdef _WINDOWS64
 #include "..\..\Windows64\Network\WinsockNetLayer.h"
+
+
 #endif
-#include <..\..\..\Windows64\Windows64_Minecraft.h>
 
 // Global instance
 CGameNetworkManager g_NetworkManager;
@@ -1507,13 +1508,22 @@ void CGameNetworkManager::CreateSocket( INetworkPlayer *pNetworkPlayer, bool loc
 	}
 	else
 	{
+
 #ifdef _WINDOWS64
+		
 		// Non-host split-screen: open a dedicated TCP connection for this pad
+		
+		
 		if (localPlayer && !g_NetworkManager.IsHost() && g_NetworkManager.IsInGameplay())
 		{
 			int padIdx = pNetworkPlayer->GetUserIndex();
+			
+			
 			BYTE assignedSmallId = 0;
 			
+			extern char g_Win64Username[17];
+			g_Win64Username[0] = static_cast<char>(padIdx);
+
 			if (!WinsockNetLayer::JoinSplitScreen(padIdx, &assignedSmallId))
 			{
 				app.DebugPrintf("Split-screen pad %d: failed to open TCP to host\n", padIdx);
@@ -1524,7 +1534,8 @@ void CGameNetworkManager::CreateSocket( INetworkPlayer *pNetworkPlayer, bool loc
 			// Update the local I (at pad index) with the host-assigned smallId.
 			// The NetworkPlayerXbox created by NotifyPlayerJoined already points to
 			// m_player[padIdx], so we just set the smallId for network routing.
-			IQNet::m_player[padIdx].m_smallId = assignedSmallId;
+			IQNet::m_player[padIdx].m_smallId = padIdx;
+			
 			
 
 			// Network socket (not hostLocal) — data goes through TCP via GetLocalSocket
@@ -1534,11 +1545,7 @@ void CGameNetworkManager::CreateSocket( INetworkPlayer *pNetworkPlayer, bool loc
 			
 
 			
-
-			char g_Win64Usernamecpy[17] = { 0 };
-			strncpy(g_Win64Username, g_Win64Usernamecpy, 17);
-
-			g_Win64Username[0] = static_cast<char>(padIdx);
+			
 
 			ClientConnection* connection = new ClientConnection(pMinecraft, socket, padIdx);
 			if (connection->createdOk)
@@ -1551,7 +1558,6 @@ void CGameNetworkManager::CreateSocket( INetworkPlayer *pNetworkPlayer, bool loc
 				pMinecraft->connectionDisconnected(padIdx, DisconnectPacket::eDisconnect_ConnectionCreationFailed);
 				delete connection;
 			}
-			strncpy(g_Win64Usernamecpy, g_Win64Username, 17);
 			return;
 		}
 #endif

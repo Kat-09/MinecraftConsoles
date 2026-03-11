@@ -45,7 +45,8 @@
 #include "..\..\Minecraft.World\OldChunkStorage.h"
 #include "Common\PostProcesser.h"
 #include "Network\WinsockNetLayer.h"
-#include "..\Windows64\Windows64_Minecraft.h"
+
+
 
 // Forward-declare the internal Renderer class and its global instance from 4J_Render_PC_d.lib.
 // C4JRender (RenderManager) is a stateless wrapper — all D3D state lives in InternalRenderManager.
@@ -112,6 +113,7 @@ int g_rScreenHeight = 1080;
 float g_iAspectRatio = static_cast<float>(g_iScreenWidth) / g_iScreenHeight;
 static bool g_bResizeReady = false;
 
+char g_Win64Username[17] = {0};
 wchar_t g_Win64UsernameW[17] = { 0 };
 
 // Fullscreen toggle state
