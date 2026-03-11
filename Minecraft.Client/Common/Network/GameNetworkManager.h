@@ -14,6 +14,7 @@ using namespace std;
 #include "PlatformNetworkManagerStub.h"
 #endif
 #include "SessionInfo.h"
+#include "..\..\Windows64\Windows64_Minecraft.h"
 
 #ifdef __ORBIS__
 #include "..\..\Orbis\Network\PsPlusUpsellWrapper_Orbis.h"

@@ -236,6 +236,7 @@ void CPlatformNetworkManagerStub::DoWork()
 				qnetPlayer->m_smallId = 0;
 				qnetPlayer->m_isRemote = false;
 				qnetPlayer->m_isHostPlayer = false;
+
 				qnetPlayer->m_gamertag[0] = 0;
 				qnetPlayer->SetCustomDataValue(0);
 				if (IQNet::s_playerCount > 1)
